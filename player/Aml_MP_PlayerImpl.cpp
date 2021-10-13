@@ -690,7 +690,8 @@ exit:
 
 int AmlMpPlayerImpl::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts)
 {
-    std::unique_lock<std::mutex> _l(mLock);
+    //audio isn`t supoort non-blocking mode, must different threads to write av es
+    //std::unique_lock<std::mutex> _l(mLock);
     RETURN_IF(-1, mPlayer == nullptr);
 
     return mPlayer->writeEsData(type, buffer, size, pts);
