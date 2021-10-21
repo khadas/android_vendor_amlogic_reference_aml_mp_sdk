@@ -24,7 +24,7 @@ class AmlHwDemux : public AmlDemuxBase
 public:
     AmlHwDemux();
     ~AmlHwDemux();
-    int open(bool isHardwareSource, Aml_MP_DemuxId demuxId) override;
+    int open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer = false) override;
     int close() override;
     int start() override;
     int stop() override;
@@ -43,6 +43,7 @@ private:
     sptr<Looper> mLooper;
     sptr<HwTsParser> mTsParser;
     bool mIsHardwareSource;
+    bool mIsSecureBuffer;
 
     std::atomic<bool> mStopped{};
 

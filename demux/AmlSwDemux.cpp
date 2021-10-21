@@ -148,7 +148,7 @@ AmlSwDemux::~AmlSwDemux()
     close();
 }
 
-int AmlSwDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId)
+int AmlSwDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer)
 {
     if (isHardwareSource) {
         MLOGE("swdemux don't support hw source!!!");

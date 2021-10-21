@@ -36,7 +36,7 @@ class HwTsParser : public AmlDemuxBase::ITsParser, public LooperCallback
 public:
     HwTsParser(const std::function<SectionCallback>& cb, const std::string& name);
     ~HwTsParser();
-    int dvr_open(int demuxId, bool isHardwareSource);
+    int dvr_open(int demuxId, bool isHardwareSource, bool isSecureBuffer);
     int feedTs(const uint8_t* buffer, size_t size);
     int dvr_close();
     void reset();
@@ -48,6 +48,7 @@ private:
     virtual int handleEvent(int fd, int events, void* data);
 
     std::string mDemuxName;
+    bool mIsSecurebuffer = false;
 
     std::mutex mLock;
     std::map<int, int> mChannelFds; //pid, fd
@@ -69,10 +70,11 @@ AmlHwDemux::~AmlHwDemux()
     close();
 }
 
-int AmlHwDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId)
+int AmlHwDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer)
 {
     mDemuxId = demuxId;
     mIsHardwareSource = isHardwareSource;
+    mIsSecureBuffer = isSecureBuffer;
 
     std::stringstream s;
     s << "/dev/dvb0.demux" << mDemuxId;
@@ -99,7 +101,7 @@ int AmlHwDemux::close()
 
 int AmlHwDemux::start()
 {
-    mTsParser->dvr_open(mDemuxId, mIsHardwareSource);
+    mTsParser->dvr_open(mDemuxId, mIsHardwareSource, mIsSecureBuffer);
     if (mLooper == nullptr) {
         mLooper = new Looper(Looper::PREPARE_ALLOW_NON_CALLBACKS);
         if (mLooper == nullptr) {
@@ -233,7 +235,7 @@ HwTsParser::~HwTsParser()
 }
 
 
-int HwTsParser::dvr_open(int demuxId, bool isHardwareSource) {
+int HwTsParser::dvr_open(int demuxId, bool isHardwareSource, bool isSecurebuffer) {
     int ret = 0;
     char name[32];
     snprintf(name, sizeof(name), "/dev/dvb0.dvr%d", demuxId);
@@ -244,9 +246,15 @@ int HwTsParser::dvr_open(int demuxId, bool isHardwareSource) {
     }
     MLOGI("open %s  ok \n", name);
 
+    mIsSecurebuffer = isSecurebuffer;
     if (!isHardwareSource) {
-        MLOGI("set ---> INPUT_LOCAL \n");
-        ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL);
+        if (isSecurebuffer) {
+            MLOGI("set ---> INPUT_LOCAL_SEC \n");
+            ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL_SEC);
+        } else {
+            MLOGI("set ---> INPUT_LOCAL \n");
+            ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL);
+        }
     } else {
         MLOGI("set ---> INPUT_DEMOD \n" );
         ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_DEMOD);
@@ -275,8 +283,21 @@ int HwTsParser::feedTs(const uint8_t* buffer, size_t size)
     if (mDvrFd < 0) {
         return -1;
     }
+    uint8_t* buffer_secure = NULL;
+    struct dmx_sec_ts_data ts_sec_data;
+    if (mIsSecurebuffer) {
+        ts_sec_data.buf_start = (uint32_t)buffer;
+        ts_sec_data.buf_end = (uint32_t)(buffer+size);
+        buffer_secure = (uint8_t *)(&ts_sec_data);
+        left = sizeof(struct dmx_sec_ts_data);
+    }
     while (left > 0) {
-        ret = write(mDvrFd, buffer + off, left);
+        if (mIsSecurebuffer) {
+            ret = write(mDvrFd, buffer_secure, left);
+            // MLOGI("Write DVR data: buffer_secure:%p, left:%d, ret:%d", buffer_secure, left, ret);
+        } else {
+            ret = write(mDvrFd, buffer + off, left);
+        }
         if (ret == -1) {
             if (errno != EINTR) {
                 MLOGE("Write DVR data failed: %s", strerror(errno));
@@ -388,7 +409,6 @@ int HwTsParser::handleEvent(int fd, int events, void* data)
 
     int version = buffer->data()[5]>>1 & 0x1F;
     int pid = (int)data;
-
     if (mSectionCallback) {
         mSectionCallback(pid, buffer, version);
     }

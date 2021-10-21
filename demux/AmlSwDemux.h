@@ -25,7 +25,7 @@ class AmlSwDemux : public AmlDemuxBase
 public:
     AmlSwDemux();
     ~AmlSwDemux();
-    virtual int open(bool isHardwareSource, Aml_MP_DemuxId demuxId) override;
+    virtual int open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer = false) override;
     virtual int close() override;
     virtual int start() override;
     virtual int stop() override;

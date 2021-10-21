@@ -30,7 +30,7 @@ public:
     static sptr<AmlDemuxBase> create(bool isHardwareDemux);
     virtual ~AmlDemuxBase();
 
-    virtual int open(bool isHardwareSource, Aml_MP_DemuxId demuxId = AML_MP_DEMUX_ID_DEFAULT) = 0;
+    virtual int open(bool isHardwareSource, Aml_MP_DemuxId demuxId = AML_MP_DEMUX_ID_DEFAULT, bool isSecureBuffer = false) = 0;
     virtual int close() = 0;
     virtual int start() = 0;
     virtual int stop() = 0;

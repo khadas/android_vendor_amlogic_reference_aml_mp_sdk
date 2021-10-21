@@ -100,10 +100,11 @@ void ProgramInfo::debugLog() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Parser::Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, bool isHardwareDemux)
+Parser::Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, bool isHardwareDemux, bool isSecureBuffer)
 : mDemuxId(demuxId)
 , mIsHardwareSource(isHardwareSource)
 , mIsHardwareDemux(isHardwareDemux)
+, mIsSecureBuffer(isSecureBuffer)
 , mProgramInfo(new ProgramInfo)
 {
 
@@ -127,7 +128,7 @@ int Parser::open(bool autoParsing)
         return -1;
     }
 
-    int ret = mDemux->open(mIsHardwareSource, mDemuxId);
+    int ret = mDemux->open(mIsHardwareSource, mDemuxId, mIsSecureBuffer);
     if (ret < 0) {
         MLOGE("demux open failed!");
         return -1;
@@ -143,7 +144,6 @@ int Parser::open(bool autoParsing)
         addSectionFilter(0, patCb);
         addSectionFilter(1, catCb);
     }
-
     return 0;
 }
 

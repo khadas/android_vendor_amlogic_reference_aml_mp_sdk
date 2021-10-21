@@ -118,7 +118,7 @@ public:
 class Parser : public AmlMpRefBase
 {
 public:
-    Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, bool isHardwareDemux);
+    Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, bool isHardwareDemux, bool isSecureBuffer = false);
     ~Parser();
     int open(bool autoParsing = true);
     int close();
@@ -268,6 +268,7 @@ private:
     int mProgramMapPid = -1;
     bool mIsHardwareSource = false;
     bool mIsHardwareDemux = false;
+    bool mIsSecureBuffer = false;
     Aml_MP_DemuxId mDemuxId = AML_MP_HW_DEMUX_ID_0;
 
     sptr<AmlDemuxBase> mDemux;
