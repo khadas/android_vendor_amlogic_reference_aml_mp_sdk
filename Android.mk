@@ -210,11 +210,6 @@ AML_MP_VENDOR_SHARED_LIBS_ge_30 := \
 	libmediahal_tsplayer \
 	libamgralloc_ext
 
-ifeq ($(HAVE_WVIPTV_CAS), true)
-AML_MP_VENDOR_SHARED_LIBS_ge_30 += \
-	libdec_ca_wvcas
-endif
-
 #######################################
 ifeq ($(HAVE_CAS_HAL), true)
 AML_MP_SYSTEM_STATIC_LIBS_29 := \
