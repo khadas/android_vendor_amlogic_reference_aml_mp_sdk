@@ -64,6 +64,11 @@ am_tsplayer_audio_codec audioCodecConvert(Aml_MP_CodecID aml_MP_AudioCodec) {
             return AV_AUDIO_CODEC_AC4;
         case AML_MP_AUDIO_CODEC_FLAC:
             return AV_AUDIO_CODEC_FLAC;
+        case AML_MP_AUDIO_CODEC_VORBIS:
+            return AV_AUDIO_CODEC_VORBIS;
+        case AML_MP_AUDIO_CODEC_OPUS:
+            return AV_AUDIO_CODEC_OPUS;
+
         default:
             return AV_AUDIO_CODEC_AUTO;
     }
