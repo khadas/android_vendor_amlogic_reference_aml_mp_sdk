@@ -37,6 +37,8 @@ am_tsplayer_video_codec videoCodecConvert(Aml_MP_CodecID aml_MP_VideoCodec) {
             return AV_VIDEO_CODEC_VP9;
         case AML_MP_VIDEO_CODEC_HEVC:
             return AV_VIDEO_CODEC_H265;
+        case AML_MP_VIDEO_CODEC_MJPEG:
+            return AV_VIDEO_CODEC_MJPEG;
         default:
             return AV_VIDEO_CODEC_AUTO;
     }
