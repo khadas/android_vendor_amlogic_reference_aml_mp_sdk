@@ -46,6 +46,9 @@ typedef struct {
     void*                       cryptoData;
     uint8_t*                    secureBuffer;
     size_t                      secureBufferSize;
+    uint8_t*                    clearKey;
+    uint8_t*                    clearIV;
+    uint32_t                    keyLength;
 } Aml_MP_DVRRecorderEncryptParams;
 
 typedef struct {
@@ -240,6 +243,9 @@ typedef struct {
     void*                       cryptoData;
     uint8_t*                    secureBuffer;
     size_t                      secureBufferSize;
+    uint8_t*                    clearKey;
+    uint8_t*                    clearIV;
+    uint32_t                    keyLength;
 } Aml_MP_DVRPlayerDecryptParams;
 
 typedef struct {

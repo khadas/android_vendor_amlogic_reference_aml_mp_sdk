@@ -544,6 +544,10 @@ int AmlDVRPlayer::setDecryptParams(Aml_MP_DVRPlayerDecryptParams * decryptParams
 
     MLOGI("mSecureBuffer:%p, mSecureBufferSize:%d", mSecureBuffer, mSecureBufferSize);
 
+    mPlaybackOpenParams.clearkey = decryptParams->clearKey;
+    mPlaybackOpenParams.cleariv = decryptParams->clearIV;
+    mPlaybackOpenParams.keylen = decryptParams->keyLength;
+
     return 0;
 }
 

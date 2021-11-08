@@ -288,6 +288,10 @@ int AmlDVRRecorder::setEncryptParams(Aml_MP_DVRRecorderEncryptParams* encryptPar
     mSecureBuffer = encryptParams->secureBuffer;
     mSecureBufferSize = encryptParams->secureBufferSize;
 
+    mRecOpenParams.clearkey = encryptParams->clearKey;
+    mRecOpenParams.cleariv = encryptParams->clearIV;
+    mRecOpenParams.keylen = encryptParams->keyLength;
+
     return 0;
 }
 
