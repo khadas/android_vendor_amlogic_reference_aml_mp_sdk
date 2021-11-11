@@ -23,7 +23,8 @@ LOCAL_STATIC_LIBRARIES := libamlMpTestSupporter libgtest
 
 LOCAL_SHARED_LIBRARIES += \
     libaml_mp_sdk \
-    libgui
+	libamdvr.system \
+    libgui \
 
 ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 30))
 LOCAL_SYSTEM_EXT_MODULE := true

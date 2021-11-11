@@ -189,8 +189,9 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode)
     ret = mPlayback->setSubtitleDisplayWindow(mDisplayParam.width, 0, mDisplayParam.width, mDisplayParam.height);
     #endif
 
+#ifdef ANDROID
+#ifndef __ANDROID_VNDK__
     if (!mDisplayParam.videoMode) {
-    #ifdef ANDROID
         if (mDisplayParam.aNativeWindow) {
             mPlayback->setANativeWindow(mDisplayParam.aNativeWindow);
         } else {
@@ -209,13 +210,21 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode)
 
             mPlayback->setANativeWindow(window);
         }
-    #endif
     } else {
         setOsdBlank(1);
         mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_WINDOW_ZORDER, &mDisplayParam.zorder);
         mPlayback->setVideoWindow(mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
         MLOGI("x:%d y:%d width:%d height:%d\n", mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
     }
+#else
+    if (mDisplayParam.channelId < 0) {
+        printf("Please specify the ui channel id by --id option!\n");
+        return -1;
+    }
+
+    mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
+#endif
+#endif
     ret = mPlayback->start(mProgramInfo, casSession, mPlayMode);
     if (ret < 0) {
         MLOGE("playback start failed!");
@@ -254,7 +263,8 @@ int AmlMpTestSupporter::startDVRPlayback()
     if (mEventCallback != nullptr) {
         mDVRPlayback->registerEventCallback(mEventCallback, mUserData);
     }
-    #ifdef ANDROID
+#ifdef ANDROID
+#ifndef __ANDROID_VNDK__
     mNativeUI = new NativeUI();
     if (mDisplayParam.width < 0) {
         mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
@@ -277,12 +287,54 @@ int AmlMpTestSupporter::startDVRPlayback()
     }
 
     mDVRPlayback->setANativeWindow(window);
-    #endif
+#else
+    if (mDisplayParam.channelId < 0) {
+        printf("Please specify the ui channel id by --id option!\n");
+        return -1;
+    }
+
+    mDVRPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
+#endif
+#endif
+
     ret = mDVRPlayback->start();
     if (ret < 0) {
         MLOGE("DVR playback start failed!");
         return -1;
     }
+
+    return 0;
+}
+
+int AmlMpTestSupporter::startUIOnly()
+{
+#ifdef ANDROID
+    mNativeUI = new NativeUI();
+    if (mDisplayParam.width < 0) {
+        mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
+    }
+
+    if (mDisplayParam.height < 0) {
+        mDisplayParam.height = mNativeUI->getDefaultSurfaceHeight();
+    }
+
+    mNativeUI->controlSurface(
+            mDisplayParam.x,
+            mDisplayParam.y,
+            mDisplayParam.x + mDisplayParam.width,
+            mDisplayParam.y + mDisplayParam.height);
+    mNativeUI->controlSurface(mDisplayParam.zorder);
+    sp<ANativeWindow> window = mNativeUI->getNativeWindow();
+    if (window == nullptr) {
+        MLOGE("create native window failed!");
+        return -1;
+    }
+
+    int videoTunnelId = -1;
+    int ret = mNativeWindowHelper.setSidebandNonTunnelMode(window.get(), videoTunnelId);
+    printf("created ui channel id:%d\n", ret, videoTunnelId);
+
+#endif
 
     return 0;
 }

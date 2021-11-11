@@ -15,7 +15,7 @@
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>
 #endif
-#include <ui/DisplayInfo.h>
+//#include <ui/DisplayInfo.h>
 #include <system/window.h>
 #endif
 

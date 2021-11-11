@@ -31,6 +31,7 @@ public:
     int start();
     int stop();
     void signalQuit();
+    int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
 
 protected:
     virtual const Command* getCommandTable() const override;

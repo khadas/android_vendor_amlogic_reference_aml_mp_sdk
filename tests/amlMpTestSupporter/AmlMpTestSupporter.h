@@ -12,6 +12,7 @@
 
 #include <utils/AmlMpRefBase.h>
 #include <utils/AmlMpHandle.h>
+#include <utils/AmlMpUtils.h>
 #include <string>
 #include <thread>
 #include <vector>
@@ -60,6 +61,7 @@ public:
         int zorder              = 0;
         int videoMode           = 0;
         ANativeWindow* aNativeWindow = nullptr;
+        int channelId           = -1;
     };
 
     AmlMpTestSupporter();
@@ -70,6 +72,7 @@ public:
     void setDisplayParam(const DisplayParam& displayParam);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL);
     int startRecord();
+    int startUIOnly();
     int stop();
 
     bool hasVideo() const;
@@ -104,6 +107,7 @@ private:
     bool mCryptoMode = false;
     #ifdef ANDROID
     sptr<NativeUI> mNativeUI;
+    NativeWindowHelper mNativeWindowHelper;
     #endif
     std::thread mSignalHandleThread;
     sptr<CommandProcessor> mCommandProcessor;

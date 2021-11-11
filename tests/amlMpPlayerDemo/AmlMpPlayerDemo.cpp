@@ -30,6 +30,8 @@ struct Argument
     int zorder = 0;
     int record = 0;
     int crypto = 0;
+    int uiMode = 0;
+    int channelId = -1;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -43,6 +45,8 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"videomode",   required_argument,  nullptr, 'v'},
         {"record",      no_argument,        nullptr, 'r'},
         {"crypto",      no_argument,        nullptr, 'c'},
+        {"ui",          no_argument,        nullptr, 'u'},
+        {"id",          required_argument,  nullptr, 'd'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -117,6 +121,21 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 'u':
+        {
+            printf("ui mode!\n");
+            argument->uiMode = true;
+        }
+        break;
+
+        case 'd':
+        {
+            int channelId = strtol(optarg, nullptr, 0);
+            printf("channel id:%d\n", channelId);
+            argument->channelId = channelId;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -129,7 +148,11 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         printf("url:%s\n", argument->url.c_str());
     }
 
-    return 0;
+    if (argument->uiMode || !argument->url.empty()) {
+        return 0;
+    }
+
+    return -1;
 }
 
 static void showUsage()
@@ -150,6 +173,8 @@ static void showUsage()
             "                 6: set video param, start video, set audio param, start audio --> stop video, stop audio\n"
             "   --record:     record mode, record file name is \"" AML_MP_TEST_SUPPORTER_RECORD_FILE "\"\n"
             "   --crypto      crypto mode\n"
+            "   --ui          create ui only\n"
+            "   --id          specify the corresponding ui channel id\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -166,8 +191,9 @@ static void showUsage()
 int main(int argc, char *argv[])
 {
     Argument argument{};
+    int ret;
 
-    if (parseCommandArgs(argc, argv, &argument) < 0 || argument.url.empty()) {
+    if (parseCommandArgs(argc, argv, &argument) < 0) {
         showUsage();
         return 0;
     }
@@ -175,29 +201,37 @@ int main(int argc, char *argv[])
     sptr<AmlMpTestSupporter> mpTestSupporter = new AmlMpTestSupporter;
     mpTestSupporter->installSignalHandler();
 
-    mpTestSupporter->setDataSource(argument.url);
-    int ret = mpTestSupporter->prepare(argument.crypto);
-    if (ret < 0) {
-        printf("prepare failed!\n");
-        return -1;
-    }
-    MLOGI("argument.record=%d\n", argument.record);
-    if (!argument.record) {
-        AmlMpTestSupporter::DisplayParam displayParam;
-        displayParam.x = argument.x;
-        displayParam.y = argument.y;
-        displayParam.width = argument.viewWidth;
-        displayParam.height = argument.viewHeight;
-        displayParam.zorder = argument.zorder;
-        displayParam.videoMode = argument.videoMode;
-        mpTestSupporter->setDisplayParam(displayParam);
-        MLOGI(">>>> AmlMpPlayerDemo Start\n");
-        mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode);
-        MLOGI("<<<< AmlMpPlayerDemo Start\n");
-    } else {
-        mpTestSupporter->startRecord();
-    }
+    AmlMpTestSupporter::DisplayParam displayParam;
+    displayParam.x = argument.x;
+    displayParam.y = argument.y;
+    displayParam.width = argument.viewWidth;
+    displayParam.height = argument.viewHeight;
+    displayParam.zorder = argument.zorder;
+    displayParam.videoMode = argument.videoMode;
+    displayParam.channelId = argument.channelId;
+    mpTestSupporter->setDisplayParam(displayParam);
 
+    if (argument.uiMode) {
+        mpTestSupporter->startUIOnly();
+    } else {
+        mpTestSupporter->setDataSource(argument.url);
+        ret = mpTestSupporter->prepare(argument.crypto);
+        if (ret < 0) {
+            printf("prepare failed!\n");
+            return -1;
+        }
+        MLOGI("argument.record=%d\n", argument.record);
+        if (!argument.record) {
+            MLOGI(">>>> AmlMpPlayerDemo Start\n");
+            ret = mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode);
+            if (ret < 0) {
+                return -1;
+            }
+            MLOGI("<<<< AmlMpPlayerDemo Start\n");
+        } else {
+            mpTestSupporter->startRecord();
+        }
+    }
     mpTestSupporter->fetchAndProcessCommands();
     mpTestSupporter->stop();
     mpTestSupporter.clear();
