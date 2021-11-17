@@ -127,6 +127,10 @@ int AmlDVRPlayer::start(bool initialPaused)
         ret = AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_SET_AUDIO_PATCH_MANAGE_MODE, (void*)&audioPatchManageMode);
         MLOGI(" TsPlayer set AudioPatchManageMode: %d, return %s, result(%d)", audioPatchManageMode, (ret)? "FAIL" : "OK", ret);
     }
+    if (mSPDIFStatus != -1) {
+        ret = AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, (void*)&mSPDIFStatus);
+        MLOGI(" TsPlayer set spdif status: %d, return %s, result(%d)", mSPDIFStatus, (ret)? "FAIL" : "OK", ret);
+    }
 #endif
 
     if (AmlMpConfig::instance().mTsPlayerNonTunnel) {
@@ -418,6 +422,13 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
             mUseTif = *(bool*)parameter;
             break;
         }
+
+        case AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION:
+        {
+            RETURN_IF(-1, parameter == nullptr);
+            mSPDIFStatus = *(int*)parameter;
+        }
+        break;
 
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
