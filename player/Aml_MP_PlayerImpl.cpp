@@ -1899,7 +1899,7 @@ int AmlMpPlayerImpl::switchDecodeMode_l(Aml_MP_VideoDecodeMode decodeMode, std::
     }
 
     ret = stop_l(lock);
-    ret += mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_MODE, &mVideoDecodeMode);
+    //When start video decoding will set work mode to player, no need to set here
     if (AML_MP_VIDEO_DECODE_MODE_IONLY == mVideoDecodeMode) {
         ret += startVideoDecoding_l();
     } else {
