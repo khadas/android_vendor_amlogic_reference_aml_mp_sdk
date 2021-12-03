@@ -37,6 +37,7 @@ public:
     ~AmlDVRPlayer();
     int registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
     int setStreams(Aml_MP_DVRStreamArray* streams);
+    int onlySetStreams(Aml_MP_DVRStreamArray* streams);
     int start(bool initialPaused);
     int stop();
     int pause();

@@ -67,6 +67,7 @@ int Aml_MP_DVRRecorder_SetStreams(AML_MP_DVRRECORDER recorder, Aml_MP_DVRStreamA
     return ret;
 }
 
+
 int Aml_MP_DVRRecorder_Start(AML_MP_DVRRECORDER recorder)
 {
     sptr<AmlDVRRecorder> amlMpHandle = aml_handle_cast<AmlDVRRecorder>(recorder);
@@ -192,6 +193,16 @@ int Aml_MP_DVRPlayer_SetStreams(AML_MP_DVRPLAYER player, Aml_MP_DVRStreamArray* 
     RETURN_IF(-1, dvrPlayer == nullptr);
 
     int ret = dvrPlayer->setStreams(streams);
+
+    return ret;
+}
+
+int Aml_MP_DVRPlayer_OnlySetStreams(AML_MP_DVRPLAYER player, Aml_MP_DVRStreamArray* streams)
+{
+    sptr<AmlDVRPlayer> dvrPlayer = aml_handle_cast<AmlDVRPlayer>(player);
+    RETURN_IF(-1, dvrPlayer == nullptr);
+
+    int ret = dvrPlayer->onlySetStreams(streams);
 
     return ret;
 }
