@@ -100,10 +100,10 @@ void ProgramInfo::debugLog() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Parser::Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, bool isHardwareDemux, bool isSecureBuffer)
+Parser::Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, Aml_MP_DemuxType demuxType, bool isSecureBuffer)
 : mDemuxId(demuxId)
 , mIsHardwareSource(isHardwareSource)
-, mIsHardwareDemux(isHardwareDemux)
+, mDemuxType(demuxType)
 , mIsSecureBuffer(isSecureBuffer)
 , mProgramInfo(new ProgramInfo)
 {
@@ -117,12 +117,12 @@ Parser::~Parser()
 
 int Parser::open(bool autoParsing)
 {
-    bool isHardwareDemux = mIsHardwareDemux;
+    Aml_MP_DemuxType demuxType = mDemuxType;
     if (mIsHardwareSource) {
-        isHardwareDemux = true;
+        demuxType = AML_MP_HARDWARE_DEMUX;
     }
 
-    mDemux = AmlDemuxBase::create(isHardwareDemux);
+    mDemux = AmlDemuxBase::create(demuxType);
     if (mDemux == nullptr) {
         MLOGE("create demux failed!");
         return -1;

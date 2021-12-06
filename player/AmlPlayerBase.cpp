@@ -12,6 +12,9 @@
 #include <utils/AmlMpUtils.h>
 #include "AmlPlayerBase.h"
 #include "AmlTsPlayer.h"
+#ifdef HAVE_TUNER_HAL
+#include "AmlTvPlayer.h"
+#endif
 #ifdef HAVE_CTC
 #include "AmlCTCPlayer.h"
 #endif
@@ -34,7 +37,11 @@ wptr<AmlPlayerBase> AmlPlayerBase::sSubtitleCbHandle;
 sptr<AmlPlayerBase> AmlPlayerBase::create(Aml_MP_PlayerCreateParams* createParams, int instanceId)
 {
     sptr<AmlPlayerBase> player;
-
+#ifdef HAVE_TUNER_HAL
+    if (createParams->options & AML_MP_OPTION_PREFER_TUNER_HAL) {
+        player = new AmlTvPlayer(createParams, instanceId);
+    } else
+#endif
     if (createParams->channelId == AML_MP_CHANNEL_ID_MAIN ||
         !AmlMpPlayerRoster::instance().isAmTsPlayerExist() ||
         isSupportMultiHwDemux() ||

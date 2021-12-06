@@ -21,6 +21,10 @@ HAVE_VMXIPTV_CAS := true
 HAVE_VMXWEB_CAS := true
 endif
 
+ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 31))
+HAVE_TUNER_HAL := true
+endif
+
 #######################################
 AML_MP_PLAYER_SRC := \
 	player/Aml_MP.cpp \
@@ -34,6 +38,11 @@ AML_MP_PLAYER_SYSTEM_SRC_29 := \
 
 AML_MP_PLAYER_VENDOR_SRC_29 := \
 	player/AmlCTCPlayer.cpp \
+
+ifeq ($(HAVE_TUNER_HAL), true)
+AML_MP_PLAYER_SYSTEM_SRC_ge_30 += \
+	player/AmlTvPlayer.cpp
+endif
 
 AML_MP_CAS_SRC := \
 	cas/Aml_MP_CAS.cpp \
@@ -74,6 +83,17 @@ AML_MP_DEMUX_SRC := \
 	demux/AmlHwDemux.cpp \
 	demux/AmlSwDemux.cpp \
 	demux/AmlTsParser.cpp
+
+ifeq ($(HAVE_TUNER_HAL), true)
+AML_MP_DEMUX_SYSTEM_SRC_ge_30 += \
+	tunerhal/TunerService.cpp \
+	tunerhal/TunerDemux.cpp \
+	tunerhal/TunerDvr.cpp \
+	tunerhal/TunerFilter.cpp \
+	tunerhal/MediaCodecWrapper.cpp \
+	tunerhal/AudioTrackWrapper.cpp \
+	demux/AmlTunerHalDemux.cpp
+endif
 
 AML_MP_UTILS_SRC := \
 	utils/AmlMpAtomizer.cpp \
@@ -122,7 +142,8 @@ AML_MP_INC := $(LOCAL_PATH)/include \
 	$(TOP)/hardware/amlogic/media/amcodec/include \
 	$(TOP)/vendor/amlogic/common/prebuilt/libmediadrm/ \
 	$(AML_REFERENCE_PATH)/frameworks/services/subtiltleserver/client \
-	$(AML_REFERENCE_PATH)/frameworks/services/subtitleserver/client
+	$(AML_REFERENCE_PATH)/frameworks/services/subtitleserver/client \
+	$(TOP)/frameworks/av/media/libmediametrics/include
 
 AML_MP_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include \
 	$(LOCAL_PATH) \
@@ -169,6 +190,11 @@ AML_MP_VENDOR_CFLAGS_28 := \
 ifeq ($(HAVE_CAS_HAL), true)
 AML_MP_VENDOR_CFLAGS_28 += \
 	-DHAVE_CAS_HAL
+endif
+
+ifeq ($(HAVE_TUNER_HAL), true)
+AML_MP_SYSTEM_CFLAGS_ge_30 += \
+	-DHAVE_TUNER_HAL
 endif
 
 AML_MP_VENDOR_CFLAGS_ge_30 := \
@@ -226,6 +252,19 @@ AML_MP_SYSTEM_SHARED_LIBS_ge_30 := \
 	libamgralloc_ext \
 	libamdvr.system \
 
+ifeq ($(HAVE_TUNER_HAL), true)
+AML_MP_SYSTEM_SHARED_LIBS_ge_30 += \
+	android.hardware.tv.tuner@1.0 \
+	android.hidl.memory@1.0 \
+	libhidlbase \
+	libhidlmemory \
+	libstagefright \
+	libmedia \
+	libmediandk \
+	libaudioclient \
+	libfmq
+endif
+
 AML_MP_VENDOR_SHARED_LIBS_28 := \
 	libSubtitleClient \
 	libamdvr \
@@ -278,7 +317,7 @@ LOCAL_STATIC_LIBRARIES := $(AML_MP_SYSTEM_STATIC_LIBS_$(PLATFORM_SDK_VERSION))
 #LOCAL_WHOLE_STATIC_LIBRARIES :=
 #LOCAL_LDFLAGS :=
 ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 30))
-LOCAL_SRC_FILES += $(AML_MP_PLAYER_SYSTEM_SRC_ge_30) $(AML_MP_CAS_SYSTEM_SRC_ge_30)
+LOCAL_SRC_FILES += $(AML_MP_PLAYER_SYSTEM_SRC_ge_30) $(AML_MP_CAS_SYSTEM_SRC_ge_30) $(AML_MP_DEMUX_SYSTEM_SRC_ge_30)
 LOCAL_CFLAGS += $(AML_MP_SYSTEM_CFLAGS_ge_30)
 LOCAL_SHARED_LIBRARIES += $(AML_MP_SYSTEM_SHARED_LIBS_ge_30)
 LOCAL_STATIC_LIBRARIES += $(AML_MP_SYSTEM_STATIC_LIBS_ge_30)

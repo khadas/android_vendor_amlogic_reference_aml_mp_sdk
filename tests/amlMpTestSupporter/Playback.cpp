@@ -213,8 +213,9 @@ int CasPlugin::stopIPTVDescrambling()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType)
+Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType, uint64_t options)
 : mDemuxId(demuxId)
+, mOptions(options)
 {
     MLOGI("Playback structure,sourceType:%d\n", sourceType);
     Aml_MP_PlayerCreateParams createParams;
@@ -223,6 +224,7 @@ Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Am
     createParams.demuxId = demuxId;
     createParams.sourceType = sourceType;
     createParams.drmMode = streamType;
+    createParams.options = options;
     int ret = Aml_MP_Player_Create(&createParams, &mPlayer);
     if (ret < 0) {
         MLOGE("create player failed!");

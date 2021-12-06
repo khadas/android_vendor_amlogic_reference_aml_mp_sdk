@@ -63,7 +63,7 @@ class Playback : public TestModule, public ISourceReceiver
 public:
     using PlayMode = AmlMpTestSupporter::PlayMode;
 
-    Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType);
+    Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType, uint64_t options);
     ~Playback();
 #ifdef ANDROID
     void setANativeWindow(const android::sp<ANativeWindow>& window);
@@ -108,6 +108,7 @@ private:
     AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;
     void* mUserData = nullptr;
+    uint64_t mOptions = 0;
 
     PlayMode mPlayMode = PlayMode::START_ALL_STOP_ALL;
 

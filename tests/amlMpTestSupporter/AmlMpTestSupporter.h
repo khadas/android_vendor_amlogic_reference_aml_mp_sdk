@@ -73,6 +73,7 @@ public:
     int setDataSource(const std::string& url);
     int prepare(bool cryptoMode = false);
     void setDisplayParam(const DisplayParam& displayParam);
+    void addOptions(uint64_t options);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
     int startRecord();
     int startUIOnly();
@@ -122,6 +123,7 @@ private:
 
     bool mIsDVRPlayback = false;
     bool mCryptoMode = false;
+    uint64_t mOptions = 0;
     #ifdef ANDROID
     sptr<NativeUI> mNativeUI;
     NativeWindowHelper mNativeWindowHelper;

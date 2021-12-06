@@ -21,13 +21,19 @@ struct AmlMpBuffer;
 ///////////////////////////////////////////////////////////////////////////////
 typedef int (*Aml_MP_Demux_SectionFilterCb)(int pid, size_t size, const uint8_t* data, void* userData);
 
+typedef enum {
+    AML_MP_HARDWARE_DEMUX,
+    AML_MP_SOFTWARE_DEMUX,
+    AML_MP_TUNERHAL_DEMUX,
+} Aml_MP_DemuxType;
+
 class AmlDemuxBase : public AmlMpRefBase
 {
 public:
     typedef void* CHANNEL;
     typedef void* FILTER;
 
-    static sptr<AmlDemuxBase> create(bool isHardwareDemux);
+    static sptr<AmlDemuxBase> create(Aml_MP_DemuxType demuxType);
     virtual ~AmlDemuxBase();
 
     virtual int open(bool isHardwareSource, Aml_MP_DemuxId demuxId = AML_MP_DEMUX_ID_DEFAULT, bool isSecureBuffer = false) = 0;

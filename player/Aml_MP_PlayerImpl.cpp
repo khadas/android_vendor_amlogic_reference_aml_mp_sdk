@@ -1602,7 +1602,7 @@ int AmlMpPlayerImpl::prepare_l()
     }
 
     if (mParser == nullptr && mPrepareWaitingType != kPrepareWaitingNone) {
-        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, true);
+        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_HARDWARE_DEMUX);
         mParser->setProgram(mVideoParams.pid, mAudioParams.pid);
         mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
                 return programEventCallback(event, param1, param2, data);

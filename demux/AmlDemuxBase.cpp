@@ -12,6 +12,9 @@
 #include "AmlDemuxBase.h"
 #include "AmlHwDemux.h"
 #include "AmlSwDemux.h"
+#ifdef HAVE_TUNER_HAL
+#include "AmlTunerHalDemux.h"
+#endif
 #include <utils/AmlMpHandle.h>
 #include <utils/AmlMpBuffer.h>
 #include <sstream>
@@ -197,14 +200,24 @@ void AmlDemuxBase::Channel::setEnable(bool enable)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-sptr<AmlDemuxBase> AmlDemuxBase::create(bool isHardwareDemux)
+sptr<AmlDemuxBase> AmlDemuxBase::create(Aml_MP_DemuxType demuxType)
 {
     sptr<AmlDemuxBase> demux;
-
-    if (isHardwareDemux) {
-        demux = new AmlHwDemux();
-    } else {
-        demux = new AmlSwDemux();
+    switch (demuxType) {
+        case AML_MP_HARDWARE_DEMUX:
+            demux = new AmlHwDemux();
+            break;
+        case AML_MP_SOFTWARE_DEMUX:
+            demux = new AmlSwDemux();
+            break;
+        #ifdef HAVE_TUNER_HAL
+        case AML_MP_TUNERHAL_DEMUX:
+            demux = new AmlTunerHalDemux();
+            break;
+        #endif
+        default:
+            demux = new AmlHwDemux();
+            break;
     }
 
     return demux;

@@ -71,6 +71,7 @@ typedef struct {
     Aml_MP_DemuxId          demuxId;
     Aml_MP_InputSourceType  sourceType;
     Aml_MP_InputStreamType  drmMode;
+    uint64_t                options;
 } Aml_MP_PlayerCreateParams;
 
 ///////////////////////////////////////////////////////////////////////////////

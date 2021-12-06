@@ -92,11 +92,16 @@ typedef enum {
     AML_MP_INPUT_STREAM_SECURE_MEMORY,
 } Aml_MP_InputStreamType;
 
+
 typedef enum {
     AML_MP_INPUT_BUFFER_TYPE_NORMAL,
     AML_MP_INPUT_BUFFER_TYPE_SECURE,
     AML_MP_INPUT_BUFFER_TYPE_TVP,
 } Aml_MP_InputBufferType;
+
+typedef enum {
+    AML_MP_OPTION_PREFER_TUNER_HAL = 1 << 0,
+} Aml_MP_OPTION;
 
 typedef struct {
     Aml_MP_InputBufferType type;

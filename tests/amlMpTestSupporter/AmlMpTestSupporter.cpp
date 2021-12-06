@@ -143,7 +143,15 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     Aml_MP_DemuxId demuxId = mSource->getDemuxId();
     int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
-    mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, mSource->getFlags()&Source::kIsHardwareSource);
+    Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
+    if (mOptions & AML_MP_OPTION_PREFER_TUNER_HAL) {
+        demuxType = AML_MP_TUNERHAL_DEMUX;
+    } else if(mSource->getFlags()&Source::kIsHardwareSource) {
+        demuxType = AML_MP_HARDWARE_DEMUX;
+    } else {
+        demuxType = AML_MP_SOFTWARE_DEMUX;
+    }
+    mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, demuxType);
     mParser->setProgram(programNumber);
     if (mParser == nullptr) {
         MLOGE("create parser failed!");
@@ -151,11 +159,6 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
         return nullptr;
     }
 
-    mParserReceiver = new ParserReceiver(mParser);
-
-    mSource->addSourceReceiver(mParserReceiver);
-
-    ret = mSource->start();
     if (ret < 0) {
         MLOGE("source start failed!");
         //return -1;
@@ -168,6 +171,11 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
         //return -1;
         return nullptr;
     }
+
+    mParserReceiver = new ParserReceiver(mParser);
+    mSource->addSourceReceiver(mParserReceiver);
+
+    ret = mSource->start();
 
     MLOGI("parsing...");
     ret = mParser->wait();
@@ -265,8 +273,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
 
     if (mPlayback == nullptr) {
         MLOGI("sourceType:%d, inputStreamType:%d\n", sourceType, inputStreamType);
-
-        mTestModule = mPlayback = new Playback(demuxId, sourceType, inputStreamType);
+        mTestModule = mPlayback = new Playback(demuxId, sourceType, inputStreamType, mOptions);
     }
 
     if (mEventCallback != nullptr) {
@@ -589,6 +596,10 @@ void AmlMpTestSupporter::setDisplayParam(const DisplayParam& param)
     mDisplayParam = param;
     MLOGI("x:%d, y:%d, width:%d, height:%d, zorder:%d, videoMode:%d\n",
             mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height, mDisplayParam.zorder, mDisplayParam.videoMode);
+}
+
+void AmlMpTestSupporter::addOptions(uint64_t options) {
+    mOptions |= options;
 }
 
 int AmlMpTestSupporter::setOsdBlank(int blank)

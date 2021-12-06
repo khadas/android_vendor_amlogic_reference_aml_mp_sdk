@@ -32,6 +32,7 @@ struct Argument
     int crypto = 0;
     int uiMode = 0;
     int channelId = -1;
+    int tunerhal = 0;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -47,6 +48,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"crypto",      no_argument,        nullptr, 'c'},
         {"ui",          no_argument,        nullptr, 'u'},
         {"id",          required_argument,  nullptr, 'd'},
+        {"tunerhal",    no_argument,        nullptr, 't'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -136,6 +138,13 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 't':
+        {
+            printf("prefer tunerhal!\n");
+            argument->tunerhal = true;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -175,6 +184,7 @@ static void showUsage()
             "   --crypto      crypto mode\n"
             "   --ui          create ui only\n"
             "   --id          specify the corresponding ui channel id\n"
+            "   --tunerhal    test tunerhal playback\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -210,6 +220,9 @@ int main(int argc, char *argv[])
     displayParam.videoMode = argument.videoMode;
     displayParam.channelId = argument.channelId;
     mpTestSupporter->setDisplayParam(displayParam);
+    if (argument.tunerhal) {
+        mpTestSupporter->addOptions(AML_MP_OPTION_PREFER_TUNER_HAL);
+    }
 
     if (argument.uiMode) {
         mpTestSupporter->startUIOnly();
