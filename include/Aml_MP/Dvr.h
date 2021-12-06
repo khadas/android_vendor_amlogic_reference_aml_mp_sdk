@@ -329,6 +329,18 @@ int Aml_MP_DVRPlayer_RegisterEventCallback(AML_MP_DVRPLAYER player, Aml_MP_Playe
 int Aml_MP_DVRPlayer_SetStreams(AML_MP_DVRPLAYER player, Aml_MP_DVRStreamArray* streams);
 
 /**
+ * \brief Aml_MP_DVRPlayer_OnlySetStreams
+ * Set DVR player streams info only,not
+ * start stop video and audio codec.
+ *
+ * \param [in]  DVR player handle
+ * \param [in]  DVR play streams
+ *
+ * \return 0 if success
+ */
+int Aml_MP_DVRPlayer_OnlySetStreams(AML_MP_DVRPLAYER player, Aml_MP_DVRStreamArray* streams);
+
+/**
  * \brief Aml_MP_DVRPlayer_Start
  * Strat DVR player
  *

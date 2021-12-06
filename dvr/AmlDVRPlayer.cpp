@@ -104,6 +104,45 @@ int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
     return ret;
 }
 
+int AmlDVRPlayer::onlySetStreams(Aml_MP_DVRStreamArray* streams)
+{
+    int ret = 0;
+    Aml_MP_DVRStream* videoStream   = &streams->streams[AML_MP_DVR_VIDEO_INDEX];
+    Aml_MP_DVRStream* audioStream   = &streams->streams[AML_MP_DVR_AUDIO_INDEX];
+    Aml_MP_DVRStream* adStream      = &streams->streams[AML_MP_DVR_AD_INDEX];
+
+    MLOG("video:pid %#x, codecId: %s, audio:pid %#x, codecId: %s, ad:pid: %#x, codecId: %s", videoStream->pid, mpCodecId2Str(videoStream->codecId),
+            audioStream->pid, mpCodecId2Str(audioStream->codecId), adStream->pid, mpCodecId2Str(adStream->codecId));
+
+    memset(&mPlayPids, 0, sizeof(mPlayPids));
+    mPlayPids.video.type = DVR_STREAM_TYPE_VIDEO;
+    mPlayPids.video.pid = videoStream->pid;
+    mPlayPids.video.format = convertToDVRVideoFormat(videoStream->codecId);
+
+    mPlayPids.audio.type = DVR_STREAM_TYPE_AUDIO;
+    mPlayPids.audio.pid = audioStream->pid;
+    mPlayPids.audio.format = convertToDVRAudioFormat(audioStream->codecId);
+
+    mPlayPids.ad.type = DVR_STREAM_TYPE_AD;
+    mPlayPids.ad.pid = adStream->pid;
+    mPlayPids.ad.format = convertToDVRAudioFormat(adStream->codecId);
+
+    //If audio and AD pid is same, set invalid pid for AD
+    if (mPlayPids.ad.pid == mPlayPids.audio.pid) {
+        mPlayPids.ad.pid = AML_MP_INVALID_PID;
+        mPlayPids.ad.format = (DVR_AudioFormat_t)(-1);
+    }
+
+    if (mDVRPlayerHandle) {
+        ret = dvr_wrapper_only_update_playback(mDVRPlayerHandle, &mPlayPids);
+        if (ret < 0) {
+            MLOGE("update playback failed!");
+        }
+    }
+
+    return ret;
+}
+
 int AmlDVRPlayer::start(bool initialPaused)
 {
     MLOG();
