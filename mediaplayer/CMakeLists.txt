@@ -2,6 +2,11 @@ cmake_minimum_required (VERSION 2.8)
 
 project(aml_mp_mediaplayer)
 
+OPTION(HAVE_AMUMEDIA "have AMUplayer" ON)
+IF(HAVE_AMUMEDIA)
+    LIST(APPEND AML_MP_DEFINITIONS HAVE_AMUMEDIA)
+ENDIF()
+
 SET(AML_MP_MEDIAPLAYER_SRC
     Aml_MP_MediaPlayer.cpp
     Aml_MP_MediaPlayerImpl.cpp

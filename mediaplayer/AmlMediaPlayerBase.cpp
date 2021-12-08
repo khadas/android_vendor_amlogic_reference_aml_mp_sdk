@@ -37,16 +37,25 @@ int AmlMediaPlayer_Ops::initAmlMediaPlayerLib(Aml_MP_MediaPlayerCreateParams* cr
         return 0;
     }
 
+#ifdef HAVE_AMUMEDIA
+    if (libHandle == NULL) {
+        libHandle = dlopen("libAmIptvMedia.so", RTLD_NOW);
+        if (libHandle == NULL) {
+                MLOGE("unable to dlopen libAmIptvMedia.so: %s", dlerror());
+                return err;
+        }
+    }
+    MLOGI("dlopen libAmIptvMedia ok\n");
+#else
     if (libHandle == NULL) {
         libHandle = dlopen("libdrmp.so", RTLD_NOW);
         if (libHandle == NULL) {
-            //libHandle = dlopen("libdrmp.so", RTLD_NOW);//AmUMedaplayer
-            if (libHandle == NULL) {
-                    MLOGE("unable to dlopen libdrmp.so: %s", dlerror());
-                    return err;
-            }
+                MLOGE("unable to dlopen libdrmp.so: %s", dlerror());
+                return err;
         }
     }
+    MLOGI("dlopen libdrmp ok\n");
+#endif
 
     typedef AmlMediaPlayerBase *(*create)(Aml_MP_MediaPlayerCreateParams* createParams, int instanceId);
     createAmlMediaPlayerFunc =
