@@ -35,13 +35,15 @@ NativeUI::NativeUI()
 
     //android::DisplayInfo displayInfo;
     //CHECK_EQ(OK, mComposerClient->getDisplayInfo(displayToken, &displayInfo));
-
     //mDisplayWidth = displayInfo.w;
     //mDisplayHeight = displayInfo.h;
+    mDisplayWidth = mSurfaceWidth;
+    mDisplayHeight = mSurfaceHeight;
+    MLOGI("mDisplayWidth: %d, mDisplayHeight: %d", mDisplayWidth, mDisplayHeight);
+    //mSurfaceWidth = mDisplayWidth >> 1;
+    //mSurfaceHeight = mDisplayHeight >> 1;
+    //MLOGI("mSurfaceWidth: %d, mSurfaceHeight: %d", mSurfaceWidth, mSurfaceHeight);
 
-    mSurfaceWidth = mDisplayWidth >> 1;
-    mSurfaceHeight = mDisplayHeight >> 1;
-    MLOGI("mSurfaceWidth: %d, mSurfaceHeight: %d", mSurfaceWidth, mSurfaceHeight);
 
     mSurfaceControl = mComposerClient->createSurface(android::String8("AmlMpPlayer"), mSurfaceWidth, mSurfaceHeight, android::PIXEL_FORMAT_RGB_565, 0);
     CHECK(mSurfaceControl->isValid());

@@ -243,6 +243,27 @@ Playback::~Playback()
     MLOGI("dtor playback end!");
 }
 
+int Playback::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
+{
+    AML_MP_TRACE(10);
+    std::unique_lock<std::mutex> _l(mLock);
+
+    mSyncSource = syncSource;
+    MLOGI("mSyncSource is", mSyncSource);
+
+    return 0;
+}
+
+int Playback::setPcrPid(int pid)
+{
+    AML_MP_TRACE(10);
+    std::unique_lock<std::mutex> _l(mLock);
+
+    mPcrPid = pid;
+
+    return 0;
+}
+
 int Playback::setSubtitleDisplayWindow(int x, int y, int width, int height) {
     MLOGI("setSubtitleDisplayWindow, x:%d, y: %d, width: %d, height: %d", x, y, width, height);
     int ret = Aml_MP_Player_SetSubtitleWindow(mPlayer, x, y,width, height);
@@ -347,7 +368,10 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
     if (mProgramInfo->scrambled) {
         Aml_MP_Player_SetCasSession(mPlayer, casSession);
     }
-
+    Aml_MP_Player_SetAVSyncSource(mPlayer, mSyncSource);
+    if (mSyncSource == AML_MP_AVSYNC_SOURCE_PCR && mPcrPid != AML_MP_INVALID_PID) {
+        Aml_MP_Player_SetPcrPid(mPlayer, mPcrPid);
+        }
     if (mPlayMode == PlayMode::START_AUDIO_START_VIDEO) {
         if (setAudioParams()) {
             ret |= Aml_MP_Player_StartAudioDecoding(mPlayer);

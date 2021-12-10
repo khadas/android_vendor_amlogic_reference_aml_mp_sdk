@@ -1,7 +1,7 @@
 project(amlMpUnitTest)
 
 SET(AML_MP_UNITTEST_SRC
-    AmlMpPlayerTest.cpp
+    AmlMpPlayerVideoTest.cpp
     TestUrlList.cpp
 )
 
