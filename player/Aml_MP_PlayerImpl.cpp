@@ -104,8 +104,6 @@ AmlMpPlayerImpl::~AmlMpPlayerImpl()
 int AmlMpPlayerImpl::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData)
 {
     MLOG();
-    AML_MP_TRACE(10);
-
     {
         std::unique_lock<std::mutex> _l(mLock);
         if (mState != STATE_IDLE) {
@@ -123,7 +121,6 @@ int AmlMpPlayerImpl::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* 
 
 int AmlMpPlayerImpl::setVideoParams(const Aml_MP_VideoParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     if (getStreamState_l(AML_MP_STREAM_TYPE_VIDEO) != STREAM_STATE_STOPPED) {
@@ -146,7 +143,6 @@ int AmlMpPlayerImpl::setVideoParams(const Aml_MP_VideoParams* params)
 
 int AmlMpPlayerImpl::setAudioParams(const Aml_MP_AudioParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     if (getStreamState_l(AML_MP_STREAM_TYPE_AUDIO) != STREAM_STATE_STOPPED) {
         MLOGE("audio started already!");
@@ -173,7 +169,6 @@ int AmlMpPlayerImpl::setAudioParams_l(const Aml_MP_AudioParams* params)
 
 int AmlMpPlayerImpl::setSubtitleParams(const Aml_MP_SubtitleParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     if (getStreamState_l(AML_MP_STREAM_TYPE_SUBTITLE) != STREAM_STATE_STOPPED) {
@@ -194,7 +189,6 @@ int AmlMpPlayerImpl::setSubtitleParams_l(const Aml_MP_SubtitleParams* params)
 
 int AmlMpPlayerImpl::setADParams(Aml_MP_AudioParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     if (getStreamState_l(AML_MP_STREAM_TYPE_AD) != STREAM_STATE_STOPPED) {
@@ -238,7 +232,6 @@ int AmlMpPlayerImpl::setCasSession(AML_MP_CASSESSION casSession)
 
 int AmlMpPlayerImpl::setIptvCASParams(Aml_MP_CASServiceType serviceType, const Aml_MP_IptvCASParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG();
 
@@ -250,7 +243,6 @@ int AmlMpPlayerImpl::setIptvCASParams(Aml_MP_CASServiceType serviceType, const A
 
 int AmlMpPlayerImpl::start()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG();
 
@@ -327,7 +319,6 @@ int AmlMpPlayerImpl::start_l()
 
 int AmlMpPlayerImpl::stop()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
     MLOG();
     RETURN_IF(-1, mPlayer == nullptr);
@@ -365,7 +356,6 @@ int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock)
 
 int AmlMpPlayerImpl::pause()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG();
 
@@ -389,7 +379,6 @@ int AmlMpPlayerImpl::pause_l() {
 
 int AmlMpPlayerImpl::resume()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     return resume_l();
@@ -412,7 +401,6 @@ int AmlMpPlayerImpl::resume_l() {
 
 int AmlMpPlayerImpl::flush()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG();
     RETURN_IF(-1, mPlayer == nullptr);
@@ -463,7 +451,6 @@ int AmlMpPlayerImpl::flush()
 
 int AmlMpPlayerImpl::setPlaybackRate(float rate)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
     MLOG("rate:%f", rate);
 
@@ -510,7 +497,6 @@ int AmlMpPlayerImpl::setPlaybackRate(float rate)
 
 int AmlMpPlayerImpl::switchAudioTrack(const Aml_MP_AudioParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG("new apid: 0x%x, fmt:%s", params->pid, mpCodecId2Str(params->audioCodec));
     int ret = -1;
@@ -534,7 +520,6 @@ int AmlMpPlayerImpl::switchAudioTrack(const Aml_MP_AudioParams* params)
 
 int AmlMpPlayerImpl::switchSubtitleTrack(const Aml_MP_SubtitleParams* params)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG("new spid: 0x%x, fmt:%s", params->pid, mpCodecId2Str(params->subtitleCodec));
     int ret = 0;
@@ -718,7 +703,6 @@ int AmlMpPlayerImpl::getBufferStat(Aml_MP_BufferStat* bufferStat)
 
 int AmlMpPlayerImpl::setANativeWindow(ANativeWindow* nativeWindow)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     #ifdef ANDROID
@@ -795,7 +779,6 @@ int AmlMpPlayerImpl::setVideoWindow(int x, int y, int width, int height)
 
 int AmlMpPlayerImpl::setVolume(float volume)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     int ret = 0;
@@ -815,7 +798,6 @@ int AmlMpPlayerImpl::setVolume(float volume)
 
 int AmlMpPlayerImpl::getVolume(float* volume)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     RETURN_IF(-1, mPlayer == nullptr);
@@ -825,7 +807,7 @@ int AmlMpPlayerImpl::getVolume(float* volume)
 
 int AmlMpPlayerImpl::showVideo()
 {
-    AML_MP_TRACE(10);
+    MLOG();
     std::unique_lock<std::mutex> _l(mLock);
 
     RETURN_IF(-1, mPlayer == nullptr);
@@ -835,7 +817,7 @@ int AmlMpPlayerImpl::showVideo()
 
 int AmlMpPlayerImpl::hideVideo()
 {
-    AML_MP_TRACE(10);
+    MLOG();
     std::unique_lock<std::mutex> _l(mLock);
 
     RETURN_IF(-1, mPlayer == nullptr);
@@ -845,7 +827,7 @@ int AmlMpPlayerImpl::hideVideo()
 
 int AmlMpPlayerImpl::showSubtitle()
 {
-    AML_MP_TRACE(10);
+    MLOG();
     std::unique_lock<std::mutex> _l(mLock);
 
     RETURN_IF(-1, mPlayer == nullptr);
@@ -855,7 +837,7 @@ int AmlMpPlayerImpl::showSubtitle()
 
 int AmlMpPlayerImpl::hideSubtitle()
 {
-    AML_MP_TRACE(10);
+    MLOG();
     std::unique_lock<std::mutex> _l(mLock);
 
     RETURN_IF(-1, mPlayer == nullptr);
@@ -1056,7 +1038,7 @@ int AmlMpPlayerImpl::getParameter(Aml_MP_PlayerParameterKey key, void* parameter
 
 int AmlMpPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
 {
-    AML_MP_TRACE(10);
+    MLOGI("%s ! mSyncSource %d", __FUNCTION__, syncSource);
     std::unique_lock<std::mutex> _l(mLock);
 
     mSyncSource = syncSource;
@@ -1067,7 +1049,7 @@ int AmlMpPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
 
 int AmlMpPlayerImpl::setPcrPid(int pid)
 {
-    AML_MP_TRACE(10);
+    MLOGI("%s ! setPcrPid %d", __FUNCTION__, pid);
     std::unique_lock<std::mutex> _l(mLock);
 
     mPcrPid = pid;
@@ -1077,7 +1059,6 @@ int AmlMpPlayerImpl::setPcrPid(int pid)
 
 int AmlMpPlayerImpl::startVideoDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     return startVideoDecoding_l();
@@ -1120,7 +1101,6 @@ int AmlMpPlayerImpl::startVideoDecoding_l()
 
 int AmlMpPlayerImpl::stopVideoDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
 
     MLOG();
@@ -1148,7 +1128,6 @@ int AmlMpPlayerImpl::stopVideoDecoding()
 
 int AmlMpPlayerImpl::startAudioDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOGI("startAudioDecoding\n");
     return startAudioDecoding_l();
@@ -1203,7 +1182,6 @@ int AmlMpPlayerImpl::startAudioDecoding_l()
 
 int AmlMpPlayerImpl::stopAudioDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
 
     return stopAudioDecoding_l(lock);
@@ -1240,7 +1218,6 @@ int AmlMpPlayerImpl::stopAudioDecoding_l(std::unique_lock<std::mutex>& lock)
 
 int AmlMpPlayerImpl::startADDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     return startADDecoding_l();
@@ -1289,7 +1266,6 @@ int AmlMpPlayerImpl::startADDecoding_l()
 
 int AmlMpPlayerImpl::stopADDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
 
     return stopADDecoding_l(lock);
@@ -1325,7 +1301,6 @@ int AmlMpPlayerImpl::stopADDecoding_l(std::unique_lock<std::mutex>& lock)
 
 int AmlMpPlayerImpl::startSubtitleDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
 
     return startSubtitleDecoding_l();
@@ -1369,7 +1344,6 @@ int AmlMpPlayerImpl::startSubtitleDecoding_l()
 
 int AmlMpPlayerImpl::stopSubtitleDecoding()
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> lock(mLock);
 
     return stopSubtitleDecoding_l(lock);
@@ -1396,7 +1370,6 @@ int AmlMpPlayerImpl::stopSubtitleDecoding_l(std::unique_lock<std::mutex>& lock) 
 
 int AmlMpPlayerImpl::setSubtitleWindow(int x, int y, int width, int height)
 {
-    AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
     MLOG("subtitle window:(%d %d %d %d)", x, y, width, height);
 
@@ -1413,7 +1386,6 @@ int AmlMpPlayerImpl::setSubtitleWindow(int x, int y, int width, int height)
 //internal function
 int AmlMpPlayerImpl::startDescrambling_l()
 {
-    AML_MP_TRACE(10);
 
     if (mCasServiceType == AML_MP_CAS_SERVICE_TYPE_INVALID) {
         MLOGE("unknown cas type!");
@@ -1438,7 +1410,6 @@ int AmlMpPlayerImpl::startDescrambling_l()
 //internal function
 int AmlMpPlayerImpl::stopDescrambling_l()
 {
-    AML_MP_TRACE(10);
 
     if (mCasHandle) {
         mCasHandle->stopDescrambling();
@@ -1883,7 +1854,7 @@ int AmlMpPlayerImpl::resetAudioCodec_l(bool callStart)
 }
 
 int AmlMpPlayerImpl::switchDecodeMode_l(Aml_MP_VideoDecodeMode decodeMode, std::unique_lock<std::mutex>& lock) {
-    AML_MP_TRACE(10);
+
     int ret = 0;
     MLOG("decodeMode: %s", mpVideoDecideMode2Str(decodeMode));
 
