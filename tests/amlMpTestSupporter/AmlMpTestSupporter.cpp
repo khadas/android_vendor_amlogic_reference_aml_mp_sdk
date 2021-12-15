@@ -44,60 +44,31 @@ void AmlMpTestSupporter::registerEventCallback(Aml_MP_PlayerEventCallback cb, vo
     mUserData = userData;
 }
 
-sptr<NativeUI> AmlMpTestSupporter::createNativeUI()
-{
-    if (mNativeUI == nullptr)
-    {
-         mNativeUI = new NativeUI();
-    }
-
-    if (mDisplayParam.width < 0)
-    {
-        mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
-    }
-
-    if (mDisplayParam.height < 0)
-    {
-        mDisplayParam.height = mNativeUI->getDefaultSurfaceHeight();
-    }
-    return mNativeUI;
-
-}
-
-sp<ANativeWindow> AmlMpTestSupporter::getSurfaceControl()
-{
-    mNativeUI->controlSurface(
-            mDisplayParam.x,
-            mDisplayParam.y,
-            mDisplayParam.x + mDisplayParam.width,
-            mDisplayParam.y + mDisplayParam.height);
-    mNativeUI->controlSurface(mDisplayParam.zorder);
-    sp<ANativeWindow> window = mNativeUI->getNativeWindow();
-    return window;
-}
-
 int AmlMpTestSupporter::setDataSource(const std::string& url)
 {
     mUrl = url;
+
     return 0;
 }
 
-sptr<Source> AmlMpTestSupporter::getSource()
+int AmlMpTestSupporter::prepare(bool cryptoMode)
 {
     int ret = 0;
+
+    mCryptoMode = cryptoMode;
+
     mSource = Source::create(mUrl.c_str());
     if (mSource == nullptr) {
         MLOGE("create source failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     ret = mSource->initCheck();
     if (ret < 0) {
         MLOGE("source initCheck failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
+
     Aml_MP_DemuxId demuxId = mSource->getDemuxId();
     int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
@@ -118,25 +89,14 @@ sptr<Source> AmlMpTestSupporter::getSource()
     if (mSource->getFlags()&Source::kIsDVRSource) {
         mIsDVRPlayback = true;
         MLOGI("dvr playback");
-        //return 0;
-        return nullptr;
+        return 0;
     }
-    return mSource;
-}
 
-sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
-{
-    int ret = 0;
-    sptr<Source> mSource = getSource();
-    Aml_MP_DemuxId demuxId = mSource->getDemuxId();
-    int programNumber = mSource->getProgramNumber();
-    Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, mSource->getFlags()&Source::kIsHardwareSource);
     mParser->setProgram(programNumber);
     if (mParser == nullptr) {
         MLOGE("create parser failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     mParserReceiver = new ParserReceiver(mParser);
@@ -146,23 +106,20 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     ret = mSource->start();
     if (ret < 0) {
         MLOGE("source start failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     ret = mParser->open();
     if (ret < 0) {
         MLOGE("parser open failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     MLOGI("parsing...");
     ret = mParser->wait();
     if (ret < 0) {
         MLOGE("parser wait failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     MLOGI("parsed done!");
@@ -173,46 +130,13 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     mProgramInfo = mParser->getProgramInfo();
     if (mProgramInfo == nullptr) {
         MLOGE("get programInfo failed!");
-        //return -1;
-        return nullptr;
-    }
-    return mProgramInfo;
-}
-
-int AmlMpTestSupporter::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
-{
-    AML_MP_TRACE(10);
-    std::unique_lock<std::mutex> _l(mLock);
-
-    mSyncSource = syncSource;
-    MLOGI("mSyncSource is", mSyncSource);
-
-    return 0;
-}
-
-int AmlMpTestSupporter::setPcrPid(int pid)
-{
-    AML_MP_TRACE(10);
-    std::unique_lock<std::mutex> _l(mLock);
-
-    mPcrPid = pid;
-
-    return 0;
-}
-
-int AmlMpTestSupporter::prepare(bool cryptoMode)
-{
-    int ret = 0;
-
-    mCryptoMode = cryptoMode;
-    if (getProgramInfo() == nullptr)
-    {
         return -1;
-    };
+    }
+
     return ret;
 }
 
-int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceReceiver)
+int AmlMpTestSupporter::startPlay(PlayMode playMode)
 {
     int ret = 0;
     mPlayMode = playMode;
@@ -250,7 +174,17 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
         mPlayback->registerEventCallback(mEventCallback, mUserData);
     }
     #ifdef ANDROID
-    createNativeUI();
+    if (mNativeUI == nullptr) {
+        mNativeUI = new NativeUI();
+    }
+
+    if (mDisplayParam.width < 0) {
+        mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
+    }
+
+    if (mDisplayParam.height < 0) {
+        mDisplayParam.height = mNativeUI->getDefaultSurfaceHeight();
+    }
 
     ret = mPlayback->setSubtitleDisplayWindow(mDisplayParam.width, 0, mDisplayParam.width, mDisplayParam.height);
     #endif
@@ -261,12 +195,20 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
         if (mDisplayParam.aNativeWindow) {
             mPlayback->setANativeWindow(mDisplayParam.aNativeWindow);
         } else {
-            sp<ANativeWindow> window = getSurfaceControl();
+            mNativeUI->controlSurface(
+                    mDisplayParam.x,
+                    mDisplayParam.y,
+                    mDisplayParam.x + mDisplayParam.width,
+                    mDisplayParam.y + mDisplayParam.height);
+
+            mNativeUI->controlSurface(mDisplayParam.zorder);
+            sp<ANativeWindow> window = mNativeUI->getNativeWindow();
             if (window == nullptr) {
                 MLOGE("create native window failed!");
                 return -1;
             }
-        mPlayback->setANativeWindow(window);
+
+            mPlayback->setANativeWindow(window);
         }
     } else {
         setOsdBlank(1);
@@ -279,31 +221,17 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
         printf("Please specify the ui channel id by --id option!\n");
         return -1;
     }
+
     mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
 #endif
 #endif
-    if (mStart == true)
-    {
-        mPlayback->setAVSyncSource(mSyncSource);
-        if (mSyncSource == AML_MP_AVSYNC_SOURCE_PCR && mPcrPid != AML_MP_INVALID_PID)
-        {
-            mPlayback->setPcrPid(mPcrPid);
-        }
-        ret = mPlayback->start(mProgramInfo, casSession, mPlayMode);
-        if (ret < 0)
-        {
-            MLOGE("playback start failed!");
-            return -1;
-        }
-    }else {
-        ALOGI("<<<<AmlMpTestSupporter haven't set A/V params and startdecoding\n");
+    ret = mPlayback->start(mProgramInfo, casSession, mPlayMode);
+    if (ret < 0) {
+        MLOGE("playback start failed!");
+        return -1;
     }
-    if (mSourceReceiver == true)
-    {
-        mSource->addSourceReceiver(mPlayback);
-    }else {
-        ALOGI("<<<<AmlMpTestSupporter haven't addSourceReceiver\n");
-    }
+
+    mSource->addSourceReceiver(mPlayback);
     ALOGI("<<<< AmlMpTestSupporter startPlay\n");
     return 0;
 }
@@ -337,8 +265,6 @@ int AmlMpTestSupporter::startDVRPlayback()
     }
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
-    createNativeUI();
-/*
     mNativeUI = new NativeUI();
     if (mDisplayParam.width < 0) {
         mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
@@ -347,14 +273,7 @@ int AmlMpTestSupporter::startDVRPlayback()
     if (mDisplayParam.height < 0) {
         mDisplayParam.height = mNativeUI->getDefaultSurfaceHeight();
     }
-*/
-    sp<ANativeWindow> window = getSurfaceControl();
-    if (window == nullptr) {
-        MLOGE("create native window failed!");
-        return -1;
-    }
 
-/*
     mNativeUI->controlSurface(
             mDisplayParam.x,
             mDisplayParam.y,
@@ -366,7 +285,6 @@ int AmlMpTestSupporter::startDVRPlayback()
         MLOGE("create native window failed!");
         return -1;
     }
-*/
 
     mDVRPlayback->setANativeWindow(window);
 #else

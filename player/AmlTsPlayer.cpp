@@ -689,7 +689,7 @@ int AmlTsPlayer::showVideo() {
 
 int AmlTsPlayer::hideVideo() {
     am_tsplayer_result ret;
-    MLOGI("hidevideo---------");
+
     ret = AmTsPlayer_hideVideo(mPlayer);
     if (ret != AM_TSPLAYER_OK) {
         return -1;
@@ -917,6 +917,7 @@ int AmlTsPlayer::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
+
     return 0;
 }
 

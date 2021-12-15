@@ -1060,7 +1060,6 @@ int AmlMpPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     std::unique_lock<std::mutex> _l(mLock);
 
     mSyncSource = syncSource;
-    MLOGI("mSyncSource is", mSyncSource);
 
     return 0;
 }

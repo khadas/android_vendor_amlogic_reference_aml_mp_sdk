@@ -76,12 +76,6 @@ public:
     int setSubtitleDisplayWindow(int x, int y, int width, int height);
     int setVideoWindow(int x, int y, int width, int height);
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
-    int setAVSyncSource(Aml_MP_AVSyncSource syncSource);
-    int setPcrPid(int pid);
-
-    Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
-    mutable std::mutex mLock;
-    int mPcrPid = AML_MP_INVALID_PID;
 
 protected:
     const Command* getCommandTable() const override;

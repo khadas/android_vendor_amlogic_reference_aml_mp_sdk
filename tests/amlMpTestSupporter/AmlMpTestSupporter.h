@@ -17,8 +17,6 @@
 #include <thread>
 #include <vector>
 #include <Aml_MP/Aml_MP.h>
-#include "TestUtils.h"
-
 
 #ifdef ANDROID
 struct ANativeWindow;
@@ -72,12 +70,10 @@ public:
     int setDataSource(const std::string& url);
     int prepare(bool cryptoMode = false);
     void setDisplayParam(const DisplayParam& displayParam);
-    int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
+    int startPlay(PlayMode playMode = START_ALL_STOP_ALL);
     int startRecord();
     int startUIOnly();
     int stop();
-    int setAVSyncSource(Aml_MP_AVSyncSource syncSource);
-    int setPcrPid(int pid);
 
     bool hasVideo() const;
 
@@ -86,10 +82,6 @@ public:
     int setOsdBlank(int blank);
 
     sptr<TestModule> getPlayback() const;
-    sptr<NativeUI> createNativeUI();
-    sp<ANativeWindow> getSurfaceControl();
-    sptr<Source> getSource();
-    sptr<ProgramInfo> getProgramInfo();
 
 private:
     int startDVRPlayback();
@@ -125,9 +117,6 @@ private:
     PlayMode mPlayMode = START_ALL_STOP_ALL;
 
     DisplayParam mDisplayParam;
-    mutable std::mutex mLock;
-    Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
-    int mPcrPid = AML_MP_INVALID_PID;
 
     AmlMpTestSupporter(const AmlMpTestSupporter&) = delete;
     AmlMpTestSupporter& operator=(const AmlMpTestSupporter&) = delete;
