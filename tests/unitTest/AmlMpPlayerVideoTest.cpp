@@ -173,6 +173,9 @@ void AmlMpPlayerBase::startPlaying(const std::string & url)
 void AmlMpPlayerBase::stopPlaying()
 {
     mpTestSupporter->stop();
+    if (mpTestSupporter2 != nullptr) {
+        mpTestSupporter2->stop();
+    }
     mFirstVFrameDisplayed = false;
     mPlayingHaveErrors = false;
 }

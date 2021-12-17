@@ -32,7 +32,7 @@ const std::string VCOM_MAP = "vcom-map-0 { video_composer.0(1) video_render.0}";
 namespace aml_mp {
 static const char * mName = LOG_TAG;
 static const int kWaitFirstVfameTimeOutMs = 2 * 1000ll;
-static const int kWaitPlayingErrorsMs = 15 * 1000ll;
+static int kWaitPlayingErrorsMs = 15 * 1000ll;
 static const int kWaitVideoChangedMs = 2 * 1000ll;
 static const int kWaitAudioChangedMs = 2 * 1000ll;
 static const int kSleepTimeMs = 0.05 * 1000ll;
@@ -71,6 +71,8 @@ public:
     bool waitDataLossEvent(int timeoutMs);
     void eventCallback(Aml_MP_PlayerEventType event, int64_t param);
     void createMpTestSupporter();
+    void createMpTestSupporter2();
+
     std::string defaultFailureMessage(const std::string & url)
     const
     {
@@ -90,9 +92,15 @@ public:
     void SetVideoWindow(const std::string & url, int32_t x, int32_t y, int32_t width, int32_t height);
     void setAudioVideoParam(const std::string & url);
     void SetGetVolume(const std::string & url, float volume);
+    void videoDecoding(const std::string & url, bool mStart, bool mSourceReceiver);
+    void audioDecoding(const std::string & url, bool mStart, bool mSourceReceiver);
+    void FCCAndPIPTest(const std::string & url, bool mPIP);
+    Aml_MP_PlayerWorkMode mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
 
 protected:
     sptr <AmlMpTestSupporter> mpTestSupporter;
+    sptr <AmlMpTestSupporter> mpTestSupporter2;
+
     std::mutex mLock;
     std::condition_variable mCond;
     bool mFirstVFrameDisplayed = false;

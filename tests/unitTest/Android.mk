@@ -10,7 +10,8 @@ LOCAL_SRC_FILES := \
     TestUrlList.cpp \
     AmlMpPlayerVideoTest.cpp \
     AmlMpPlayerAudioTest.cpp \
-    AmlMpPlayerSubtitleTest.cpp
+    AmlMpPlayerSubtitleTest.cpp\
+    AmlMpPlayerTest.cpp
 
 LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 LOCAL_C_INCLUDES :=
