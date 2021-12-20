@@ -1,13 +1,18 @@
 LOCAL_PATH:= $(call my-dir)
 
 #######################################
+AML_REFERENCE_PATH := $(TOP)/vendor/amlogic/common
+ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 31))
+AML_REFERENCE_PATH := $(TOP)/vendor/amlogic/reference
+endif
+
 ifeq ($(BUILD_WITH_WIDEVINECAS),true)
 ifneq (, $(wildcard $(TOP)/vendor/amlogic/common/prebuilt/libmediadrm/wvcas/include))
 HAVE_WVIPTV_CAS := true
 endif
 endif
 
-ifneq (, $(wildcard $(TOP)/vendor/amlogic/common/external/DTVKit/cas_hal))
+ifneq (, $(wildcard $(AML_REFERENCE_PATH)/external/DTVKit/cas_hal))
 HAVE_CAS_HAL := true
 endif
 
@@ -109,21 +114,21 @@ AML_MP_VENDOR_SRCS := \
 #######################################
 AML_MP_INC := $(LOCAL_PATH)/include \
 	$(TOP)/vendor/amlogic/common/apps/LibTsPlayer/jni/include \
-	$(TOP)/vendor/amlogic/common/libdvr/include \
-        $(TOP)/vendor/amlogic/common/libdvr_release/include \
-	$(TOP)/vendor/amlogic/common/external/DTVKit/cas_hal/libamcas/include \
+	$(AML_REFERENCE_PATH)/libdvr/include \
+	$(AML_REFERENCE_PATH)/libdvr_release/include \
+	$(AML_REFERENCE_PATH)/external/DTVKit/cas_hal/libamcas/include \
 	$(TOP)/vendor/amlogic/common/mediahal_sdk/include \
 	$(TOP)/hardware/amlogic/gralloc \
 	$(TOP)/hardware/amlogic/media/amcodec/include \
-	$(TOP)/vendor/amlogic/common/frameworks/services/subtiltleserver/client \
 	$(TOP)/vendor/amlogic/common/prebuilt/libmediadrm/ \
-	$(TOP)/vendor/amlogic/common/frameworks/services/subtitleserver/client
+	$(AML_REFERENCE_PATH)/frameworks/services/subtiltleserver/client \
+	$(AML_REFERENCE_PATH)/frameworks/services/subtitleserver/client
 
 AML_MP_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include \
 	$(LOCAL_PATH) \
 	$(TOP)/hardware/amlogic/media/amcodec/include \
-	$(TOP)/vendor/amlogic/common/libdvr/include \
-        $(TOP)/vendor/amlogic/common/libdvr_release/include \
+	$(AML_REFERENCE_PATH)/libdvr/include \
+	$(AML_REFERENCE_PATH)/libdvr_release/include \
 	$(TOP)/vendor/amlogic/common/mediahal_sdk/include \
 
 #######################################
