@@ -311,6 +311,7 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID,          //setPresentationId(int*)
     AML_MP_PLAYER_PARAMETER_USE_TIF,                        //setUseTif(bool*)
     AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION,               //SetSPDIFProtection(int*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                    //setVideoCrop(Aml_MP_Rect*)
 
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,
@@ -556,6 +557,15 @@ typedef struct {
     int page;
     Aml_MP_TeletextEvent event;
 } AML_MP_TeletextCtrlParam;
+
+////////////////////////////////////////
+//AML_MP_PLAYER_PARAMETER_VIDEO_CROP
+typedef struct {
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
+} Aml_MP_Rect;
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {

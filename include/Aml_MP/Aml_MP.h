@@ -208,7 +208,6 @@ int Aml_MP_Player_Resume(AML_MP_PLAYER handle);
 /**
  * \brief Aml_MP_Player_Flush
  * Flush player
- * This function is not implement, not recommand to use it
  *
  * \param [in]  player handle
  *

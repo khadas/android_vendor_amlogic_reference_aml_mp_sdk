@@ -760,8 +760,10 @@ int AmlMpPlayerImpl::setVideoWindow(int x, int y, int width, int height)
         transcation.setCrop_legacy(mSurfaceControl, android::Rect(width, height));
 #endif
         transcation.setLayer(mSurfaceControl, mZorder);
-
         transcation.apply();
+
+        // setVideoWindow is used for create surface now, don't need to call the underlying implementation.
+        return 0;
     }
 #endif
 #endif
@@ -994,6 +996,14 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
     {
         RETURN_IF(-1, parameter == nullptr);
         mSPDIFStatus = *(int*)parameter;
+    }
+    break;
+
+    case AML_MP_PLAYER_PARAMETER_VIDEO_CROP:
+    {
+        Aml_MP_Rect videoCrop = *(Aml_MP_Rect*)parameter;
+        mVideoCrop = videoCrop;
+        MLOGI("set source crop:[%d, %d, %d, %d]", mVideoCrop.left, mVideoCrop.top, mVideoCrop.right, mVideoCrop.bottom);
     }
     break;
 
@@ -1788,6 +1798,10 @@ int AmlMpPlayerImpl::applyParameters_l()
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_USE_TIF, &mUseTif);
     }
 
+    if (mVideoCrop.right >= 0 && mVideoCrop.bottom >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_CROP, &mVideoCrop);
+    }
+
     return 0;
 }
 
@@ -1912,11 +1926,11 @@ void AmlMpPlayerImpl::collectBuffingInfos_l()
     mPlayer->getCurrentPts(AML_MP_STREAM_TYPE_AUDIO, &apts);
 
     if (mVideoParams.pid != AML_MP_INVALID_PID) {
-        MLOGI("Video(%#x) buffer stat:%d/%d, %.2fms, pts:%f", mVideoParams.pid, bufferStat.videoBuffer.dataLen, bufferStat.videoBuffer.size, bufferStat.videoBuffer.bufferedMs*1.0, vpts/1e6);
+        MLOGI("Video(%#x) buffer stat:%d/%d, %.2fms, pts:%f", mVideoParams.pid, bufferStat.videoBuffer.dataLen, bufferStat.videoBuffer.size, bufferStat.videoBuffer.bufferedMs*1.0, vpts/9e4);
     }
 
     if (mAudioParams.pid != AML_MP_INVALID_PID) {
-        MLOGI("Audio(%#x) buffer stat:%d/%d, %.2fms, pts:%f", mAudioParams.pid, bufferStat.audioBuffer.dataLen, bufferStat.audioBuffer.size, bufferStat.audioBuffer.bufferedMs*1.0, apts/1e6);
+        MLOGI("Audio(%#x) buffer stat:%d/%d, %.2fms, pts:%f", mAudioParams.pid, bufferStat.audioBuffer.dataLen, bufferStat.audioBuffer.size, bufferStat.audioBuffer.bufferedMs*1.0, apts/9e4);
     }
 }
 

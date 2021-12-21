@@ -838,6 +838,13 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 #endif
         }
 
+        case AML_MP_PLAYER_PARAMETER_VIDEO_CROP:
+        {
+            Aml_MP_Rect videoCrop = *(Aml_MP_Rect*)parameter;
+            ret = AmTsPlayer_setVideoWindow(mPlayer, videoCrop.left, videoCrop.top, videoCrop.right, videoCrop.bottom);
+        }
+        break;
+
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
