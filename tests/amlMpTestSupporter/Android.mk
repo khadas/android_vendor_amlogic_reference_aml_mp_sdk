@@ -25,6 +25,15 @@ AML_MP_TEST_SUPPORTER_SHARED_LIBS := \
 	libui \
 	libstagefright_foundation \
 
+AML_MP_TEST_SUPPORTER_SHARED_LIBS_28 := \
+	libaml_mp_sdk \
+	libamdvr.product \
+	libgui \
+
+AML_MP_TEST_SUPPORTER_VENDOR_SHARED_LIBS_28 := \
+	libaml_mp_sdk.vendor \
+	libamdvr \
+
 AML_MP_TEST_SUPPORTER_SHARED_LIBS_29 := \
 	libaml_mp_sdk \
 	libamdvr.product \

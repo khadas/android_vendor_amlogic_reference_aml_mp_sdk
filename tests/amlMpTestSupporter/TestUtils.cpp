@@ -30,8 +30,8 @@ NativeUI::NativeUI()
     mComposerClient = new android::SurfaceComposerClient;
     CHECK_EQ(mComposerClient->initCheck(), OK);
 
-    sp<android::IBinder> displayToken  = nullptr;
-    displayToken = mComposerClient->getInternalDisplayToken();
+    //sp<android::IBinder> displayToken  = nullptr;
+    //displayToken = mComposerClient->getInternalDisplayToken();
 
     //android::DisplayInfo displayInfo;
     //CHECK_EQ(OK, mComposerClient->getDisplayInfo(displayToken, &displayInfo));
@@ -53,7 +53,7 @@ NativeUI::NativeUI()
         .setFlags(mSurfaceControl, android::layer_state_t::eLayerOpaque, android::layer_state_t::eLayerOpaque)
 #if ANDROID_PLATFORM_SDK_VERSION >= 31
         .setCrop(mSurfaceControl, android::Rect(mSurfaceWidth, mSurfaceHeight))
-#else
+#elif ANDROID_PLATFORM_SDK_VERSION >= 29
         .setCrop_legacy(mSurfaceControl, android::Rect(mSurfaceWidth, mSurfaceHeight))
 #endif
         .show(mSurfaceControl)
@@ -74,7 +74,7 @@ NativeUI::NativeUI()
     android::SurfaceComposerClient::Transaction()
 #if ANDROID_PLATFORM_SDK_VERSION >= 31
         .setCrop(mSurfaceControlUi, android::Rect(mDisplayWidth, mDisplayHeight))
-#else
+#elif ANDROID_PLATFORM_SDK_VERSION >= 29
         .setCrop_legacy(mSurfaceControlUi, android::Rect(mDisplayWidth, mDisplayHeight))
 #endif
         .setLayer(mSurfaceControlUi, UI_LAYER)
@@ -146,7 +146,7 @@ void NativeUI::controlSurface(int left, int top, int right, int bottom)
         transcation.setSize(mSurfaceControl, width, height);
 #if ANDROID_PLATFORM_SDK_VERSION >= 31
         transcation.setCrop(mSurfaceControl, android::Rect(width, height));
-#else
+#elif ANDROID_PLATFORM_SDK_VERSION >= 29
         transcation.setCrop_legacy(mSurfaceControl, android::Rect(width, height));
 #endif
     }

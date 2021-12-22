@@ -756,7 +756,7 @@ int AmlMpPlayerImpl::setVideoWindow(int x, int y, int width, int height)
         transcation.setSize(mSurfaceControl, width, height);
 #if ANDROID_PLATFORM_SDK_VERSION >= 31
         transcation.setCrop(mSurfaceControl, android::Rect(width, height));
-#else
+#elif ANDROID_PLATFORM_SDK_VERSION >= 29
         transcation.setCrop_legacy(mSurfaceControl, android::Rect(width, height));
 #endif
         transcation.setLayer(mSurfaceControl, mZorder);

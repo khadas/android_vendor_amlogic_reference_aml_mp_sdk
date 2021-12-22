@@ -545,7 +545,7 @@ int Looper::addFd(int fd, int ident, int events, const sptr<LooperCallback>& cal
                     return -1;
                 }
             }
-            mRequests.insert_or_assign(requestIndex, fd, request);
+            mRequests[fd] = request;
         }
     } // release lock
     return 1;

@@ -134,6 +134,14 @@ AML_MP_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include \
 #######################################
 AML_MP_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 
+AML_MP_SYSTEM_CFLAGS_28 := \
+	-DHAVE_SUBTITLE \
+
+ifeq ($(HAVE_CAS_HAL), true)
+AML_MP_SYSTEM_CFLAGS_28 += \
+	-DHAVE_CAS_HAL
+endif
+
 AML_MP_SYSTEM_CFLAGS_29 := \
 	-DHAVE_SUBTITLE \
 	-DHAVE_CTC \
@@ -152,6 +160,14 @@ AML_MP_SYSTEM_CFLAGS_ge_30 := \
 
 ifeq ($(HAVE_CAS_HAL), true)
 AML_MP_SYSTEM_CFLAGS_ge_30 += \
+	-DHAVE_CAS_HAL
+endif
+
+AML_MP_VENDOR_CFLAGS_28 := \
+	-DHAVE_SUBTITLE \
+
+ifeq ($(HAVE_CAS_HAL), true)
+AML_MP_VENDOR_CFLAGS_28 += \
 	-DHAVE_CAS_HAL
 endif
 
@@ -188,6 +204,13 @@ AML_MP_SHARED_LIBS := \
 	libstagefright_foundation \
 	libvideotunnel
 
+AML_MP_SYSTEM_SHARED_LIBS_28 := \
+	libmediahal_tsplayer.system \
+	libSubtitleClient \
+	libgui \
+	libamgralloc_ext@2 \
+	libamdvr.product \
+
 AML_MP_SYSTEM_SHARED_LIBS_29 := \
 	libmediahal_tsplayer.system \
 	libSubtitleClient \
@@ -203,6 +226,12 @@ AML_MP_SYSTEM_SHARED_LIBS_ge_30 := \
 	libamgralloc_ext \
 	libamdvr.system \
 
+AML_MP_VENDOR_SHARED_LIBS_28 := \
+	libSubtitleClient \
+	libamdvr \
+	libmediahal_tsplayer \
+	libamgralloc_ext_vendor@2 \
+
 AML_MP_VENDOR_SHARED_LIBS_29 := \
 	libamdvr \
 	libmediahal_tsplayer \
@@ -217,6 +246,12 @@ AML_MP_VENDOR_SHARED_LIBS_ge_30 := \
 
 #######################################
 ifeq ($(HAVE_CAS_HAL), true)
+AML_MP_SYSTEM_STATIC_LIBS_28 := \
+	libam_cas_sys
+
+AML_MP_VENDOR_STATIC_LIBS_28 := \
+	libam_cas
+
 AML_MP_SYSTEM_STATIC_LIBS_29 := \
 	libam_cas
 
@@ -252,7 +287,7 @@ endif
 include $(BUILD_SHARED_LIBRARY)
 
 ###############################################################################
-ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 29))
+ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 28))
 include $(CLEAR_VARS)
 LOCAL_MODULE := libaml_mp_sdk.vendor
 LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 SPDX-license-identifier-FTL SPDX-license-identifier-GPL SPDX-license-identifier-GPL-2.0 SPDX-license-identifier-LGPL-2.1 SPDX-license-identifier-MIT legacy_by_exception_only legacy_notice

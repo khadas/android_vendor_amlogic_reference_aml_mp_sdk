@@ -74,7 +74,7 @@ private:
 
     int mDumpFd = -1;
 
-    std::atomic_bool mRequestQuit = false;
+    std::atomic_bool mRequestQuit {false};
     int64_t mLastBitRateMeasureTime = -1;
     int64_t mBitRateMeasureSize = 0;
 

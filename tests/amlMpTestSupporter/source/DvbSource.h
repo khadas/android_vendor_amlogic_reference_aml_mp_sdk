@@ -49,7 +49,7 @@ private:
 
 	int mFendFd = -1;
 
-    std::atomic_bool mRequestQuit = false;
+    std::atomic_bool mRequestQuit {false};
 
     DvbSource(const DvbSource&) = delete;
     DvbSource& operator= (const DvbSource&) = delete;

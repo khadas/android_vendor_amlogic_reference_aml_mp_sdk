@@ -565,7 +565,7 @@ void Parser::onPatParsed(const std::vector<PATSection>& results)
     mPidProgramMap.clear();
     for (auto& p : results) {
         programCount++;
-        mPidProgramMap.insert_or_assign(p.pmtPid, p.programNumber);
+        mPidProgramMap.emplace(p.pmtPid, p.programNumber);
         addSectionFilter(p.pmtPid, pmtCb);
 
         std::lock_guard<std::mutex> _l(mLock);

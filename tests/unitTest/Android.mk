@@ -20,17 +20,22 @@ LOCAL_SHARED_LIBRARIES := libutils \
     liblog \
 	libui \
 	libstagefright_foundation \
-	libjsoncpp
 
 LOCAL_STATIC_LIBRARIES := libamlMpTestSupporter libgtest
+
+ifeq (1, $(PLATFORM_SDK_VERSION) \>= 29)
+LOCAL_SHARED_LIBRARIES += libjsoncpp
+else
+LOCAL_STATIC_LIBRARIES += libjsoncpp
+endif
 
 LOCAL_SHARED_LIBRARIES += \
     libaml_mp_sdk \
 	libamdvr.system \
-    libgui \
+    libgui
 
 ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 30))
 LOCAL_SYSTEM_EXT_MODULE := true
 endif
-include $(BUILD_EXECUTABLE)
 
+include $(BUILD_EXECUTABLE)

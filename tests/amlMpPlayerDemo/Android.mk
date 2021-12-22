@@ -15,6 +15,11 @@ AML_MP_PLAYER_DEMO_SHARED_LIBS := \
 	libui \
 	libstagefright_foundation \
 
+AML_MP_PLAYER_DEMO_SHARED_LIBS_28 := \
+	libamdvr.product \
+	libaml_mp_sdk \
+	libgui \
+
 AML_MP_PLAYER_DEMO_SHARED_LIBS_29 := \
 	libamdvr.product \
 	libaml_mp_sdk \
@@ -24,6 +29,14 @@ AML_MP_PLAYER_DEMO_SHARED_LIBS_ge_30 := \
 	libamdvr.system \
     libaml_mp_sdk \
 	libgui \
+
+AML_MP_PLAYER_DEMO_VENDOR_SHARED_LIBS_28 := \
+	libamdvr \
+	libaml_mp_sdk.vendor \
+
+AML_MP_PLAYER_DEMO_VENDOR_SHARED_LIBS_29 := \
+	libamdvr \
+    libaml_mp_sdk.vendor \
 
 AML_MP_PLAYER_DEMO_VENDOR_SHARED_LIBS_ge_30 := \
 	libamdvr \
@@ -57,7 +70,6 @@ LOCAL_SYSTEM_EXT_MODULE := true
 endif
 include $(BUILD_EXECUTABLE)
 
-ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 30))
 ###############################################################################
 include $(CLEAR_VARS)
 LOCAL_MODULE := amlMpPlayerDemo.vendor
@@ -77,4 +89,3 @@ LOCAL_STATIC_LIBRARIES := $(AML_MP_PLAYER_DEMO_VENDOR_STATIC_LIBS)
 #LOCAL_LDFLAGS :=
 LOCAL_VENDOR_MODULE := true
 include $(BUILD_EXECUTABLE)
-endif
