@@ -68,6 +68,7 @@ public:
 
     AmlMpTestSupporter();
     ~AmlMpTestSupporter();
+    Aml_MP_PlayerWorkMode mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
     void registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
     int setDataSource(const std::string& url);
     int prepare(bool cryptoMode = false);
@@ -86,12 +87,18 @@ public:
     int setOsdBlank(int blank);
 
     sptr<TestModule> getPlayback() const;
+
 #ifdef ANDROID
     sptr<NativeUI> createNativeUI();
     sp<ANativeWindow> getSurfaceControl();
+    void setWindow(bool mSurface = true);
 #endif
     sptr<Source> getSource();
     sptr<ProgramInfo> getProgramInfo();
+    int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
+
+    Aml_MP_ChannelId mChannelId = AML_MP_CHANNEL_ID_MAIN;
+    Aml_MP_DemuxId mDemuxId = AML_MP_HW_DEMUX_ID_0;
 
 private:
     int startDVRPlayback();
@@ -125,6 +132,7 @@ private:
     bool mQuitPending = false;
 
     PlayMode mPlayMode = START_ALL_STOP_ALL;
+    AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
 
     DisplayParam mDisplayParam;
 #ifdef ANDROID

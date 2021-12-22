@@ -75,6 +75,17 @@ sp<ANativeWindow> AmlMpTestSupporter::getSurfaceControl()
     sp<ANativeWindow> window = mNativeUI->getNativeWindow();
     return window;
 }
+
+void AmlMpTestSupporter::setWindow(bool mSurface)
+{
+    if (mSurface) {
+        createNativeUI();
+        sp<ANativeWindow> window = getSurfaceControl();
+        mPlayback->setANativeWindow(window);
+    } else {
+        mPlayback->setANativeWindow(nullptr);
+    }
+}
 #endif
 
 int AmlMpTestSupporter::setDataSource(const std::string& url)
@@ -180,6 +191,15 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     return mProgramInfo;
 }
 
+int AmlMpTestSupporter::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
+{
+    int ret = 0;
+    if (mPlayback != nullptr) {
+        ret = mPlayback->setParameter(key, parameter);
+    }
+    return ret;
+}
+
 int AmlMpTestSupporter::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
 {
     AML_MP_TRACE(10);
@@ -223,8 +243,8 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     if (mIsDVRPlayback) {
         return startDVRPlayback();
     }
-
-    Aml_MP_DemuxId demuxId = mParser->getDemuxId();
+    Aml_MP_DemuxId demuxId = mDemuxId;
+    //Aml_MP_DemuxId demuxId = mParser->getDemuxId();
     Aml_MP_InputSourceType sourceType = AML_MP_INPUT_SOURCE_TS_MEMORY;
     Aml_MP_InputStreamType inputStreamType{AML_MP_INPUT_STREAM_NORMAL};
     AML_MP_CASSESSION casSession = AML_MP_INVALID_HANDLE;
@@ -260,6 +280,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
 
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
+if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
     if (!mDisplayParam.videoMode) {
         if (mDisplayParam.aNativeWindow) {
             mPlayback->setANativeWindow(mDisplayParam.aNativeWindow);
@@ -268,6 +289,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
             if (window == nullptr) {
                 MLOGE("create native window failed!");
                 return -1;
+            mPlayback->setANativeWindow(window);
             }
         mPlayback->setANativeWindow(window);
         }
@@ -277,6 +299,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
         mPlayback->setVideoWindow(mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
         MLOGI("x:%d y:%d width:%d height:%d\n", mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
     }
+}
 #else
     if (mDisplayParam.channelId < 0) {
         printf("Please specify the ui channel id by --id option!\n");
@@ -288,6 +311,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     if (mStart == true)
     {
         mPlayback->setAVSyncSource(mSyncSource);
+        mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_WORK_MODE, &mWorkMode);
         if (mSyncSource == AML_MP_AVSYNC_SOURCE_PCR && mPcrPid != AML_MP_INVALID_PID)
         {
             mPlayback->setPcrPid(mPcrPid);
@@ -341,36 +365,11 @@ int AmlMpTestSupporter::startDVRPlayback()
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
     createNativeUI();
-/*
-    mNativeUI = new NativeUI();
-    if (mDisplayParam.width < 0) {
-        mDisplayParam.width = mNativeUI->getDefaultSurfaceWidth();
-    }
-
-    if (mDisplayParam.height < 0) {
-        mDisplayParam.height = mNativeUI->getDefaultSurfaceHeight();
-    }
-*/
     sp<ANativeWindow> window = getSurfaceControl();
     if (window == nullptr) {
         MLOGE("create native window failed!");
         return -1;
     }
-
-/*
-    mNativeUI->controlSurface(
-            mDisplayParam.x,
-            mDisplayParam.y,
-            mDisplayParam.x + mDisplayParam.width,
-            mDisplayParam.y + mDisplayParam.height);
-    mNativeUI->controlSurface(mDisplayParam.zorder);
-    sp<ANativeWindow> window = mNativeUI->getNativeWindow();
-    if (window == nullptr) {
-        MLOGE("create native window failed!");
-        return -1;
-    }
-*/
-
     mDVRPlayback->setANativeWindow(window);
 #else
     if (mDisplayParam.channelId < 0) {
