@@ -13,6 +13,7 @@
 #include <getopt.h>
 #include "source/Source.h"
 #include <Aml_MP/Aml_MP.h>
+#include <Aml_MP/Dvr.h>
 #include <demux/AmlTsParser.h>
 #include <vector>
 #include "string.h"
@@ -37,16 +38,24 @@ static const int kWaitVideoChangedMs = 2 * 1000ll;
 static const int kWaitAudioChangedMs = 2 * 1000ll;
 static const int kSleepTimeMs = 0.05 * 1000ll;
 static const int kCheckFrameTimeOutMs = 50 * 1000ll;
-#define AML_MP_VIDEO_MODE 1
-#define AML_MP_VIDEO_WINDOW_ZORDER 1
+#define AML_MP_VIDEO_MODE_1 1
+#define AML_MP_VIDEO_MODE_0 0
+#define AML_MP_VIDEO_MODE_2 2
+#define AML_MP_VIDEO_WINDOW_ZORDER_1 1
+#define AML_MP_VIDEO_WINDOW_ZORDER_2 2
 #define AML_MP_VIDEO_WINDOW_X 200
 #define AML_MP_VIDEO_WINDOW_Y 200
 #define AML_MP_VIDEO_WINDOW_HEIGHT 600
 #define AML_MP_VIDEO_WINDOW_WIDTH 600
-#define AML_MP_MASTER_VOLUME 70
-#define AML_MP_SLAVE_VOLUME 30
+#define AML_MP_MASTER_VOLUME_70 70
+#define AML_MP_SLAVE_VOLUME_30 30
+#define AML_MP_MASTER_VOLUME_30 30
+#define AML_MP_SLAVE_VOLUME_70 70
+#define AML_MP_PID_CHANGED_DURATION 38 * 1000ll
+#define AML_MP_PID_CHANGED_EVENT 2 * 1000ll
+#define AML_MP_DATA_LOSS_EVENT 5 * 1000ll
 
-struct AmlMpPlayerBase: public testing::Test
+struct AmlMpBase: public testing::Test
 {
     void SetUp() override
     {
@@ -68,9 +77,13 @@ public:
     bool waitPlaying(int msec = kWaitPlayingErrorsMs);
     bool waitVideoChangedEvent(int timeoutMs);
     bool waitAudioChangedEvent(int timeoutMs);
+    bool waitAVSyncDoneEvent(int timeoutMs);
+    bool waitPidChangedEvent(int timeoutMs);
+    bool waitDvrRecorderStatusEvent(int timeoutMs);
     bool waitDataLossEvent(int timeoutMs);
     void eventCallback(Aml_MP_PlayerEventType event, int64_t param);
-    void createMpTestSupporter();
+    void dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param);
+    void createMpTestSupporter(bool isPlayer = true);
     void createMpTestSupporter2();
 
     std::string defaultFailureMessage(const std::string & url)
@@ -81,6 +94,7 @@ public:
         return ss.str();
     }
     AML_MP_PLAYER getPlayer();
+    AML_MP_DVRRECORDER getRecorder();
     Aml_MP_PlayerParameterKey key;
     Aml_MP_VideoDisplayMode parameter;
     Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
@@ -110,10 +124,11 @@ protected:
     bool mVideoChanged = false;
     bool mAudioChanged = false;
     bool mDataLoss = false;
+    bool mDvrRecorderStatus = false;
     AmlMpTestSupporter::PlayMode mPlayMode = AmlMpTestSupporter::START_ALL_STOP_ALL;
 };
 
-struct AmlMpPlayerTest: AmlMpPlayerBase
+struct AmlMpTest: AmlMpBase
 {
 
 public:

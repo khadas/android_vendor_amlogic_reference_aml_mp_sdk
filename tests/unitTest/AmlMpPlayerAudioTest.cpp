@@ -1,5 +1,5 @@
 #define LOG_TAG "AmlMpPlayerAudioTest"
-#include "AmlMpPlayerVideoTest.h"
+#include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include <gtest/gtest.h>
@@ -14,7 +14,7 @@
 
 using namespace aml_mp;
 
-bool AmlMpPlayerBase::waitAudioChangedEvent(int timeoutMs)
+bool AmlMpBase::waitAudioChangedEvent(int timeoutMs)
 {
 #ifdef ANDROID
     std::unique_lock <std::mutex> _l(mLock);
@@ -23,7 +23,7 @@ bool AmlMpPlayerBase::waitAudioChangedEvent(int timeoutMs)
 }
 
 template<typename T1, typename T2>
-void AmlMpPlayerBase::ParameterTest(const std::string & url, T1 key, T2 parameter)
+void AmlMpBase::ParameterTest(const std::string & url, T1 key, T2 parameter)
 {
     MLOGI("----------AudioTest START----------\n");
     startPlaying(url);
@@ -39,7 +39,7 @@ void AmlMpPlayerBase::ParameterTest(const std::string & url, T1 key, T2 paramete
     stopPlaying();
 }
 
-void AmlMpPlayerBase::setAudioVideoParam(const std::string & url)
+void AmlMpBase::setAudioVideoParam(const std::string & url)
 {
     createMpTestSupporter();
     mpTestSupporter->setDataSource(url);
@@ -73,7 +73,7 @@ void AmlMpPlayerBase::setAudioVideoParam(const std::string & url)
     EXPECT_FALSE(waitPlayingErrors());
 }
 
-void AmlMpPlayerBase::SetGetVolume(const std::string & url, float volume)
+void AmlMpBase::SetGetVolume(const std::string & url, float volume)
 {
     MLOGI("----------SetVolumeTest START----------\n");
     startPlaying(url);
@@ -92,7 +92,7 @@ void AmlMpPlayerBase::SetGetVolume(const std::string & url, float volume)
     stopPlaying();
 }
 
-TEST_F(AmlMpPlayerTest, SwitchAudioTrackTest)
+TEST_F(AmlMpTest, SwitchAudioTrackTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -125,7 +125,7 @@ TEST_F(AmlMpPlayerTest, SwitchAudioTrackTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, SetGetVolumeTest)
+TEST_F(AmlMpTest, SetGetVolumeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -137,7 +137,7 @@ TEST_F(AmlMpPlayerTest, SetGetVolumeTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioBalanceTest)
+TEST_F(AmlMpTest, AudioBalanceTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -151,7 +151,7 @@ TEST_F(AmlMpPlayerTest, AudioBalanceTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioOutputModeTest)
+TEST_F(AmlMpTest, AudioOutputModeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -165,7 +165,7 @@ TEST_F(AmlMpPlayerTest, AudioOutputModeTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioOutputDeviceTest)
+TEST_F(AmlMpTest, AudioOutputDeviceTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -179,7 +179,7 @@ TEST_F(AmlMpPlayerTest, AudioOutputDeviceTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioMuteTest)
+TEST_F(AmlMpTest, AudioMuteTest)
 {
     for (auto &url: mUrls)
     {
@@ -188,7 +188,7 @@ TEST_F(AmlMpPlayerTest, AudioMuteTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, ADdecodingTest)
+TEST_F(AmlMpTest, ADdecodingTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -203,7 +203,7 @@ TEST_F(AmlMpPlayerTest, ADdecodingTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, ADMix_master_Test)
+TEST_F(AmlMpTest, ADMix_master_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -211,14 +211,14 @@ TEST_F(AmlMpPlayerTest, ADMix_master_Test)
         MLOGI("----------ADMix_master_Test START----------\n");
         setAudioVideoParam(url);
         void *player = getPlayer();
-        Aml_MP_ADVolume adVolume = {AML_MP_MASTER_VOLUME, AML_MP_SLAVE_VOLUME};
+        Aml_MP_ADVolume adVolume = {AML_MP_MASTER_VOLUME_70, AML_MP_SLAVE_VOLUME_30};
         EXPECT_EQ(Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume), Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume));
         EXPECT_FALSE(waitPlayingErrors());
         stopPlaying();
     }
 }
 
-TEST_F(AmlMpPlayerTest, ADMix_slave_Test)
+TEST_F(AmlMpTest, ADMix_slave_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -226,9 +226,7 @@ TEST_F(AmlMpPlayerTest, ADMix_slave_Test)
         MLOGI("----------ADMix_slave_Test START----------\n");
         setAudioVideoParam(url);
         void *player = getPlayer();
-        #define AML_MP_MASTER_VOLUME 30
-        #define AML_MP_SLAVE_VOLUME 70
-        Aml_MP_ADVolume adVolume = {AML_MP_MASTER_VOLUME, AML_MP_SLAVE_VOLUME};
+        Aml_MP_ADVolume adVolume = {AML_MP_MASTER_VOLUME_30, AML_MP_SLAVE_VOLUME_70};
         EXPECT_EQ(Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume), Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume));
         EXPECT_FALSE(waitPlayingErrors());
         stopPlaying();

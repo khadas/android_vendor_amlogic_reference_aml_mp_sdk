@@ -7,7 +7,7 @@
  * Description:
  */
 #define LOG_TAG "AmlMpPlayerVideoTest"
-#include "AmlMpPlayerVideoTest.h"
+#include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include <gtest/gtest.h>
@@ -21,6 +21,7 @@
 #include "string.h"
 #include <unistd.h>
 #include <fcntl.h>
+#include <Aml_MP/Dvr.h>
 
 using namespace aml_mp;
 
@@ -94,16 +95,20 @@ void check_vfm_map(int timeoutMs)
     }
 }
 
-void AmlMpPlayerBase::createMpTestSupporter()
+void AmlMpBase::createMpTestSupporter(bool isPlayer)
 {
     if (mpTestSupporter == nullptr)
     {
         mpTestSupporter     = new AmlMpTestSupporter;
-        mpTestSupporter->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpPlayerBase * self = (AmlMpPlayerBase *) userData; return self->eventCallback(event, param); }, this);
+        if (isPlayer) {
+            mpTestSupporter->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->eventCallback(event, param); }, this);
+        } else {
+            mpTestSupporter->DVRRecorderRegisterEventCallback([] (void * userData, AML_MP_DVRRecorderEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->dvrRecorderEventCallback(event, param); }, this);
+        }
     }
 }
 
-void AmlMpPlayerBase::checkHasVideo(std::string url)
+void AmlMpBase::checkHasVideo(std::string url)
 {
     if (mpTestSupporter->hasVideo())
     {
@@ -113,7 +118,7 @@ void AmlMpPlayerBase::checkHasVideo(std::string url)
 }
 
 template<typename T1, typename T2>
-void AmlMpPlayerBase::ParameterTest(const std::string & url, T1 key, T2 parameter)
+void AmlMpBase::ParameterTest(const std::string & url, T1 key, T2 parameter)
 {
     MLOGI("ParameterTest START: %d \n", parameter);
     runTest(url, false);
@@ -127,7 +132,7 @@ void AmlMpPlayerBase::ParameterTest(const std::string & url, T1 key, T2 paramete
     stopPlaying();
 }
 
-void AmlMpPlayerBase::SetVideoWindow(const std::string & url, int32_t x, int32_t y, int32_t width, int32_t height)
+void AmlMpBase::SetVideoWindow(const std::string & url, int32_t x, int32_t y, int32_t width, int32_t height)
 {
     runTest(url, false);
     if (mRet == 0)
@@ -140,7 +145,7 @@ void AmlMpPlayerBase::SetVideoWindow(const std::string & url, int32_t x, int32_t
     stopPlaying();
 }
 
-void AmlMpPlayerBase::runTest(const std::string & url, bool isStop)
+void AmlMpBase::runTest(const std::string & url, bool isStop)
 {
     startPlaying(url);
     checkHasVideo(url);
@@ -150,7 +155,7 @@ void AmlMpPlayerBase::runTest(const std::string & url, bool isStop)
     }
 }
 
-void AmlMpPlayerBase::startPlaying(const std::string & url)
+void AmlMpBase::startPlaying(const std::string & url)
 {
     MLOGI("url:%s", url.c_str());
     mRet = 0;
@@ -170,7 +175,7 @@ void AmlMpPlayerBase::startPlaying(const std::string & url)
     }
 }
 
-void AmlMpPlayerBase::stopPlaying()
+void AmlMpBase::stopPlaying()
 {
     mpTestSupporter->stop();
     if (mpTestSupporter2 != nullptr) {
@@ -180,25 +185,43 @@ void AmlMpPlayerBase::stopPlaying()
     mPlayingHaveErrors = false;
 }
 
-bool AmlMpPlayerBase::waitFirstVFrameEvent(int timeoutMs)
+bool AmlMpBase::waitFirstVFrameEvent(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mFirstVFrameDisplayed; });
 }
 
-bool AmlMpPlayerBase::waitVideoChangedEvent(int timeoutMs)
+bool AmlMpBase::waitVideoChangedEvent(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mVideoChanged; });
 }
 
-bool AmlMpPlayerBase::waitDataLossEvent(int timeoutMs)
+bool AmlMpBase::waitDataLossEvent(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDataLoss; });
 }
 
-bool AmlMpPlayerBase::waitPlayingErrors(int timeoutMs)
+bool AmlMpBase::waitAVSyncDoneEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mAVSyncDone; });
+}
+
+bool AmlMpBase::waitPidChangedEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mPidChanged; });
+}
+
+bool AmlMpBase::waitDvrRecorderStatusEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderStatus; });
+}
+
+bool AmlMpBase::waitPlayingErrors(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
     std::thread checkvfmmap (check_vfm_map, timeoutMs);
@@ -208,13 +231,13 @@ bool AmlMpPlayerBase::waitPlayingErrors(int timeoutMs)
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mPlayingHaveErrors; });
 }
 
-bool AmlMpPlayerBase::waitPlaying(int timeoutMs)
+bool AmlMpBase::waitPlaying(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mPlayingHaveErrors; });
 }
 
-void AmlMpPlayerBase::eventCallback(Aml_MP_PlayerEventType event, int64_t param)
+void AmlMpBase::eventCallback(Aml_MP_PlayerEventType event, int64_t param)
 {
 std::unique_lock <std::mutex> _l(mLock);
     switch (event)
@@ -246,21 +269,50 @@ std::unique_lock <std::mutex> _l(mLock);
             mCond.notify_all();
             break;
         }
+        case AML_MP_PLAYER_EVENT_AV_SYNC_DONE:
+        {
+            mAVSyncDone = true;
+            MLOGI("av sync done-----");
+            mCond.notify_all();
+            break;
+        }
+        case AML_MP_PLAYER_EVENT_PID_CHANGED:
+        {
+            mPidChanged = true;
+            MLOGI("pid changed-----");
+            mCond.notify_all();
+            break;
+        }
         default:
             break;
     }
 }
 
-AML_MP_PLAYER AmlMpPlayerBase::getPlayer()
+AML_MP_PLAYER AmlMpBase::getPlayer()
 {
     sptr <TestModule> testModule = mpTestSupporter->getPlayback();
     AML_MP_PLAYER player = testModule->getCommandHandle();
     return player;
 }
 
+void AmlMpBase::dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    switch (event)
+    {
+        case AML_MP_DVRRECORDER_EVENT_STATUS:
+        {
+            mDvrRecorderStatus = true;
+            mCond.notify_all();
+            break;
+        }
+        default:
+            break;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST_F(AmlMpPlayerTest, startPlay_StartAll_StopAll_Test)
+TEST_F(AmlMpTest, startPlay_StartAll_StopAll_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -270,7 +322,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartAll_StopAll_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_StartAll_StopSeparately_Test)
+TEST_F(AmlMpTest, startPlay_StartAll_StopSeparately_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -280,7 +332,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartAll_StopSeparately_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_startSeparately_StopAll_Test)
+TEST_F(AmlMpTest, startPlay_startSeparately_StopAll_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -290,7 +342,7 @@ TEST_F(AmlMpPlayerTest, startPlay_startSeparately_StopAll_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_StartSeparately_StopSeparately_Test)
+TEST_F(AmlMpTest, startPlay_StartSeparately_StopSeparately_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -300,7 +352,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartSeparately_StopSeparately_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_StartSeparately_StopSeparately_V2_Test)
+TEST_F(AmlMpTest, startPlay_StartSeparately_StopSeparately_V2_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -310,7 +362,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartSeparately_StopSeparately_V2_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_StartAudio_Video_Test)
+TEST_F(AmlMpTest, startPlay_StartAudio_Video_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -320,7 +372,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartAudio_Video_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_StartVideo_AudioTest)
+TEST_F(AmlMpTest, startPlay_StartVideo_AudioTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -330,7 +382,7 @@ TEST_F(AmlMpPlayerTest, startPlay_StartVideo_AudioTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, startPlay_ModeMax_Test)
+TEST_F(AmlMpTest, startPlay_ModeMax_Test)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -340,7 +392,7 @@ TEST_F(AmlMpPlayerTest, startPlay_ModeMax_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, clearLastFrame)
+TEST_F(AmlMpTest, clearLastFrame)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -360,7 +412,7 @@ TEST_F(AmlMpPlayerTest, clearLastFrame)
     }
 }
 
-TEST_F(AmlMpPlayerTest, ZappingTest)
+TEST_F(AmlMpTest, ZappingTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -369,7 +421,7 @@ TEST_F(AmlMpPlayerTest, ZappingTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, showHideVideoTest)
+TEST_F(AmlMpTest, showHideVideoTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -390,7 +442,7 @@ TEST_F(AmlMpPlayerTest, showHideVideoTest)
 }
 
 #ifdef ANDROID
-TEST_F(AmlMpPlayerTest, setANativeWindowTest)
+TEST_F(AmlMpTest, setANativeWindowTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -412,19 +464,18 @@ TEST_F(AmlMpPlayerTest, setANativeWindowTest)
 }
 #endif
 
-TEST_F(AmlMpPlayerTest, surfaceControlTest)
+TEST_F(AmlMpTest, surfaceControlTest)
 {
     std::string url;
     createMpTestSupporter();
-    #define AML_MP_VIDEO_MODE 0
     //set surface
     AmlMpTestSupporter::DisplayParam displayParam;
     displayParam.x      = AML_MP_VIDEO_WINDOW_X;
     displayParam.y      = AML_MP_VIDEO_WINDOW_Y;
     displayParam.width  = AML_MP_VIDEO_WINDOW_WIDTH;
     displayParam.height = AML_MP_VIDEO_WINDOW_HEIGHT;
-    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER;
-    displayParam.videoMode = AML_MP_VIDEO_MODE;
+    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER_1;
+    displayParam.videoMode = AML_MP_VIDEO_MODE_0;
     mpTestSupporter->setDisplayParam(displayParam);
     for (auto &url: mUrls)
     {
@@ -434,7 +485,7 @@ TEST_F(AmlMpPlayerTest, surfaceControlTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, setVideoMode_1_Test)
+TEST_F(AmlMpTest, setVideoMode_1_Test)
 {
     std::string url;
     createMpTestSupporter();
@@ -443,8 +494,8 @@ TEST_F(AmlMpPlayerTest, setVideoMode_1_Test)
     displayParam.y = AML_MP_VIDEO_WINDOW_Y;
     displayParam.width = AML_MP_VIDEO_WINDOW_WIDTH;
     displayParam.height = AML_MP_VIDEO_WINDOW_HEIGHT;
-    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER;
-    displayParam.videoMode = AML_MP_VIDEO_MODE;
+    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER_1;
+    displayParam.videoMode = AML_MP_VIDEO_MODE_1;
     mpTestSupporter->setDisplayParam(displayParam);
     for (auto &url: mUrls)
     {
@@ -454,18 +505,17 @@ TEST_F(AmlMpPlayerTest, setVideoMode_1_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, setVideoMode_2_Test)
+TEST_F(AmlMpTest, setVideoMode_2_Test)
 {
     std::string url;
     createMpTestSupporter();
-    #define AML_MP_VIDEO_WINDOW_ZORDER 2
     AmlMpTestSupporter::DisplayParam displayParam;
     displayParam.x      = AML_MP_VIDEO_WINDOW_X;
     displayParam.y      = AML_MP_VIDEO_WINDOW_Y;
     displayParam.width  = AML_MP_VIDEO_WINDOW_WIDTH;
     displayParam.height = AML_MP_VIDEO_WINDOW_HEIGHT;
-    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER;
-    displayParam.videoMode = AML_MP_VIDEO_MODE;
+    displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER_2;
+    displayParam.videoMode = AML_MP_VIDEO_MODE_2;
     mpTestSupporter->setDisplayParam(displayParam);
     for (auto &url: mUrls)
     {
@@ -475,7 +525,7 @@ TEST_F(AmlMpPlayerTest, setVideoMode_2_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, videoTunnelID_Test)
+TEST_F(AmlMpTest, videoTunnelID_Test)
 {
     std::string url;
     createMpTestSupporter();
@@ -504,7 +554,7 @@ TEST_F(AmlMpPlayerTest, videoTunnelID_Test)
     }
 }
 
-TEST_F(AmlMpPlayerTest, displayModeTest)
+TEST_F(AmlMpTest, displayModeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -518,7 +568,7 @@ TEST_F(AmlMpPlayerTest, displayModeTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, videoDecodeModeTest)
+TEST_F(AmlMpTest, videoDecodeModeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -535,7 +585,7 @@ TEST_F(AmlMpPlayerTest, videoDecodeModeTest)
 ///////////////////////////////////////////////////////////////////////////////
 static void usage()
 {
-    printf("Usage: AmlMpPlayerTest <test_source_dir>\n"
+    printf("Usage: AmlMpTest <test_source_dir>\n"
     "   try --help for more details.\n");
 }
 

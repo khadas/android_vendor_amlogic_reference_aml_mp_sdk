@@ -11,7 +11,8 @@ LOCAL_SRC_FILES := \
     AmlMpPlayerVideoTest.cpp \
     AmlMpPlayerAudioTest.cpp \
     AmlMpPlayerSubtitleTest.cpp\
-    AmlMpPlayerTest.cpp
+    AmlMpPlayerTest.cpp \
+    AmlMpPlayerProbeTest.cpp
 
 LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 LOCAL_C_INCLUDES :=
@@ -33,3 +34,4 @@ LOCAL_SYSTEM_EXT_MODULE := true
 endif
 
 include $(BUILD_EXECUTABLE)
+
