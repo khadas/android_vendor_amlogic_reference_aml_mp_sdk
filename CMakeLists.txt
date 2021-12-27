@@ -48,6 +48,9 @@ SET(AML_MP_UTILS_SRC
     utils/AmlMpChunkFifo.cpp
     utils/Amlsysfsutils.cpp
     utils/AmlMpPlayerRoster.cpp
+    utils/json/lib_json/json_reader.cpp
+    utils/json/lib_json/json_value.cpp
+    utils/json/lib_json/json_writer.cpp
 )
 
 SET(AML_MP_DEMUX_SRC
@@ -58,6 +61,8 @@ SET(AML_MP_DEMUX_SRC
 )
 
 #OPTION SETTING START
+SET(AML_MP_DEFINITIONS JSON_USE_EXCEPTION=0 JSONCPP_NO_LOCALE_SUPPORT)
+
 IF(HAVE_VMXIPTV)
     LIST(APPEND AML_MP_CAS_SRC cas/vmx_iptvcas/AmlVMXIptvCas_V2.cpp)
     LIST(APPEND AML_MP_DEFINITIONS HAVE_VMXIPTV_CAS_V2)

@@ -111,7 +111,10 @@ AML_MP_UTILS_SRC := \
 	utils/AmlMpUtils.cpp \
 	utils/Amlsysfsutils.cpp \
 	utils/AmlMpChunkFifo.cpp \
-	utils/AmlMpPlayerRoster.cpp
+	utils/AmlMpPlayerRoster.cpp \
+	utils/json/lib_json/json_reader.cpp \
+	utils/json/lib_json/json_value.cpp \
+	utils/json/lib_json/json_writer.cpp
 
 AML_MP_SRCS := \
 	$(AML_MP_PLAYER_SRC) \
@@ -153,7 +156,9 @@ AML_MP_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include \
 	$(TOP)/vendor/amlogic/common/mediahal_sdk/include \
 
 #######################################
-AML_MP_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+AML_MP_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
+	-DJSON_USE_EXCEPTION=0 \
+	-DJSONCPP_NO_LOCALE_SUPPORT
 
 AML_MP_SYSTEM_CFLAGS_28 := \
 	-DHAVE_SUBTITLE \

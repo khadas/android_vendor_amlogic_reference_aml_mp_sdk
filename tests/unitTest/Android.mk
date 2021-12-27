@@ -23,12 +23,6 @@ LOCAL_SHARED_LIBRARIES := libutils \
 
 LOCAL_STATIC_LIBRARIES := libamlMpTestSupporter libgtest
 
-ifeq (1, $(PLATFORM_SDK_VERSION) \>= 29)
-LOCAL_SHARED_LIBRARIES += libjsoncpp
-else
-LOCAL_STATIC_LIBRARIES += libjsoncpp
-endif
-
 LOCAL_SHARED_LIBRARIES += \
     libaml_mp_sdk \
 	libamdvr.system \
