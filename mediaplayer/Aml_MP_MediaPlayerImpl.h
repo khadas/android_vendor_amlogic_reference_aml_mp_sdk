@@ -62,6 +62,7 @@ public:
     int release();
     int getCurrentPosition(int* msec);
     int getDuration(int* msec);
+    int setMute(bool mute);
     int setVolume(float volume);
     int getVolume(float* volume);
     int showVideo();
@@ -106,9 +107,10 @@ private:
     int resume_l();
     int stop_l();
     int reset_l();
-    int release_l();;
+    int release_l();
     int getCurrentPosition_l(int* msec);
     int getDuration_l(int* msec);
+    int setMute_l(bool mute);
     int setVolume_l(float volume);
     int getVolume_l(float* volume);
     int showVideo_l();
@@ -135,6 +137,7 @@ private:
     float mPlaybackRate = 1.0f;
     Aml_MP_VideoDecodeMode mVideoDecodeMode{AML_MP_VIDEO_DECODE_MODE_NONE};
     float mVolume = 1.0f;
+    bool mMute = 0;
 
     mutable std::mutex mLock;
     State mState{STATE_IDLE};

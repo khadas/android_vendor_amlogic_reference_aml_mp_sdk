@@ -449,6 +449,32 @@ int AmlMpMediaPlayerImpl::getDuration_l(int* msec)
     return mPlayer->getDuration(msec);
 }
 
+int AmlMpMediaPlayerImpl::setMute(bool mute)
+{
+    AML_MP_TRACE(10);
+    std::unique_lock<std::mutex> _l(mLock);
+    MLOG();
+
+    return setMute_l(mute);
+}
+
+int AmlMpMediaPlayerImpl::setMute_l(bool mute)
+{
+    int ret = 0;
+    if (mute < 0) {
+        MLOGI("mute is %d, set to 0", mute);
+        mute = 0;
+    }
+    mMute = mute;
+
+    if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
+        RETURN_IF(-1, mPlayer == nullptr);
+        ret = mPlayer->setMute(mute);
+    }
+
+    return ret;
+}
+
 int AmlMpMediaPlayerImpl::setVolume(float volume)
 {
     AML_MP_TRACE(10);

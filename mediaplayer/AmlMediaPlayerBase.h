@@ -28,7 +28,6 @@ typedef struct {
 //Aml_MediaPlayer.h
 typedef Aml_MP_AVSyncSource Aml_MP_MediaPlayerAVSyncSource;
 
-
 //Aml_MediaPlayer.h
 typedef enum {
     SEEK_PREVIOUS_SYNC,
@@ -81,6 +80,7 @@ public:
     virtual int release() = 0;
     virtual int getCurrentPosition(int* msec) = 0;
     virtual int getDuration(int* msec) = 0;
+    virtual int setMute(bool mute) = 0;
     virtual int setVolume(float volume) = 0;
     virtual int getVolume(float* volume) = 0;
     virtual int showVideo() = 0;

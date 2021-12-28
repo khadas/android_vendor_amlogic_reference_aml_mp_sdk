@@ -341,6 +341,23 @@ static struct TestModule::Command g_commandTable[] = {
         }
     },
 */
+
+    {
+        "sMute", 1, "set mute umute",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            bool mute;
+            if (args.size() != 2) {
+                printf("Input example: sMute mute/umute\n");
+                return -1;
+            }
+            printf("String input: %s\n", args[1].data());
+            mute = stof(args[1]);
+            int ret = Aml_MP_MediaPlayer_SetMute(player, mute);
+            printf("Set mute: %d, ret: %d\n", mute, ret);
+            return ret;
+        }
+    },
+
     {
         "gPos", 0, "get current position",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {

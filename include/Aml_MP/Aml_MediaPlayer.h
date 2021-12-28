@@ -285,6 +285,17 @@ int Aml_MP_MediaPlayer_GetCurrentPosition(AML_MP_MEDIAPLAYER handle, int* msec);
 int Aml_MP_MediaPlayer_GetDuration(AML_MP_MEDIAPLAYER handle, int* msec);
 
 /**
+ * \brief Aml_MP_MediaPlayer_SetMute
+ * Set mute
+ *
+ * \param [in]  player handle
+ * \param [in]  mute if
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_SetMute(AML_MP_MEDIAPLAYER handle, bool mute);
+
+/**
  * \brief Aml_MP_MediaPlayer_Invoke
  * Invoke a generic method on the player by using opaque parcels
  *

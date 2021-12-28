@@ -146,6 +146,14 @@ int Aml_MP_MediaPlayer_GetDuration(AML_MP_MEDIAPLAYER handle, int* msec)
     return player->getDuration(msec);
 }
 
+int Aml_MP_MediaPlayer_SetMute(AML_MP_MEDIAPLAYER handle, bool mute)
+{
+    sptr<AmlMpMediaPlayerImpl> player = aml_handle_cast<AmlMpMediaPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->setMute(mute);
+}
+
 int Aml_MP_MediaPlayer_SetVolume(AML_MP_MEDIAPLAYER handle, float volume)
 {
     sptr<AmlMpMediaPlayerImpl> player = aml_handle_cast<AmlMpMediaPlayerImpl>(handle);
