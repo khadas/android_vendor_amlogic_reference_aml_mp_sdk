@@ -12,6 +12,7 @@
 #include <utils/AmlMpLog.h>
 #include <Aml_MP/Aml_MP.h>
 #include <utils/AmlMpUtils.h>
+#include <utils/AmlMpCodecCapability.h>
 
 static const char* mName = LOG_TAG;
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,7 +62,12 @@ int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource* source)
     return ret;
 }
 
+int Aml_MP_GetCodecSupportInfo(Aml_MP_StreamType streamType, void* supportInfoJson) {
+    MLOG();
 
+    aml_mp::AmlMpCodecCapability* DecoderCapability = aml_mp::AmlMpCodecCapability::getCodecCapabilityHandle();
+    DecoderCapability->getCodecCapabilityStr(streamType, (char*)supportInfoJson);
 
-
+    return 0;
+}
 

@@ -835,6 +835,16 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "gDecCap", 0, "get decoder capability",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            char jsonInfo[1000]{0};
+            int ret  = Aml_MP_GetCodecSupportInfo(AML_MP_STREAM_TYPE_VIDEO, jsonInfo);
+            printf("Aml_MP_Initialize json: %s", jsonInfo);
+            return ret;
+        }
+    },
+
+    {
         "Destory", 0, "call destroy",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Destroy(player);

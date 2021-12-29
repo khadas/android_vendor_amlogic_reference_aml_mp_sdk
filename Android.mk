@@ -114,7 +114,8 @@ AML_MP_UTILS_SRC := \
 	utils/AmlMpPlayerRoster.cpp \
 	utils/json/lib_json/json_reader.cpp \
 	utils/json/lib_json/json_value.cpp \
-	utils/json/lib_json/json_writer.cpp
+	utils/json/lib_json/json_writer.cpp \
+	utils/AmlMpCodecCapability.cpp
 
 AML_MP_SRCS := \
 	$(AML_MP_PLAYER_SRC) \

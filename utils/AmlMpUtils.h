@@ -15,8 +15,9 @@
 #include <amports/vformat.h>
 #include <amports/aformat.h>
 #include <Aml_MP/Common.h>
-#ifdef HAVE_SUBTITLE
 #include <string>
+#include <vector>
+#ifdef HAVE_SUBTITLE
 #include <SubtitleNativeAPI.h>
 #endif
 #include "AmlMpConfig.h"
@@ -113,6 +114,41 @@ private:
     std::chrono::steady_clock::time_point mBeginTime;
 };
 
+const char codecMap[][20][30] = {
+    //Video codec
+    {
+        "Not defined codec",
+        "video/mpeg2",          //AML_MP_VIDEO_CODEC_MPEG12
+        "video/mp4v-es",        //AML_MP_VIDEO_CODEC_MPEG4
+        "video/avc",            //AML_MP_VIDEO_CODEC_H264
+        "video/vc1",            //AML_MP_VIDEO_CODEC_VC1
+        "video/avs",            //AML_MP_VIDEO_CODEC_AVS
+        "video/hevc",           //AML_MP_VIDEO_CODEC_HEVC
+        "video/x-vnd.on2.vp9",  //AML_MP_VIDEO_CODEC_VP9
+        "video/avs2",           //AML_MP_VIDEO_CODEC_AVS2
+        "video/x-motion-jpeg",  //AML_MP_VIDEO_CODEC_MJPEG
+        "video/av01",           //AML_MP_VIDEO_CODEC_AV1
+    },
+    //Audio codec
+    {
+        "Not defined codec",
+        "audio/mpeg-L2",    //AML_MP_AUDIO_CODEC_MP2
+        "audio/mpeg",       //AML_MP_AUDIO_CODEC_MP3
+        "audio/ac3",        //AML_MP_AUDIO_CODEC_AC3
+        "audio/eac3",       //AML_MP_AUDIO_CODEC_EAC3
+        "audio/dtshd",      //AML_MP_AUDIO_CODEC_DTS
+        "audio/mp4a-latm",  //AML_MP_AUDIO_CODEC_AAC
+        "audio/aac-latm",   //AML_MP_AUDIO_CODEC_LATM
+        "audio/raw",        //AML_MP_AUDIO_CODEC_PCM
+        "audio/ac4",        //AML_MP_AUDIO_CODEC_AC4
+        "audio/flac",       //AML_MP_AUDIO_CODEC_FLAC
+        "audio/vorbis",     //AML_MP_AUDIO_CODEC_VORBIS
+        "audio/opus",       //AML_MP_AUDIO_CODEC_OPUS
+    },
+};
+
+const char resolutionMap[][10] = {"1920*1080", "3840*2160", "7680*4320",};
+
 ///////////////////////////////////////////////////////////////////////////////
 const char* mpCodecId2Str(Aml_MP_CodecID codecId);
 const char* mpStreamType2Str(Aml_MP_StreamType streamType);
@@ -188,5 +224,12 @@ static inline pid_t gettid()
     return syscall(__NR_gettid);
 }
 
+const char* convertToMIMEString(Aml_MP_CodecID codecId);
+Aml_MP_CodecID convertToMpCodecId(std::string mimeStr);
+const char* convertToResolutionString(Aml_MP_Resolution resolution);
+Aml_MP_Resolution convertToMpResolution(std::string resolutionStr);
+
+void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters = " ");
+std::string trim(std::string& s, const std::string& chars = " \n");
 }
 #endif

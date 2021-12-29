@@ -133,6 +133,8 @@ typedef enum {
     AML_MP_VIDEO_CODEC_VP9,
     AML_MP_VIDEO_CODEC_AVS2,
     AML_MP_VIDEO_CODEC_MJPEG,
+    AML_MP_VIDEO_CODEC_AV1,
+    AML_MP_VIDEO_CODEC_MAX,
 
     AML_MP_AUDIO_CODEC_BASE = 1000,
     AML_MP_AUDIO_CODEC_MP2,                // MPEG audio
@@ -147,13 +149,22 @@ typedef enum {
     AML_MP_AUDIO_CODEC_FLAC,               // FLAC
     AML_MP_AUDIO_CODEC_VORBIS,             // VORBIS
     AML_MP_AUDIO_CODEC_OPUS,               // OPUS
+    AML_MP_AUDIO_CODEC_MAX,
 
     AML_MP_SUBTITLE_CODEC_BASE = 2000,
     AML_MP_SUBTITLE_CODEC_CC,
     AML_MP_SUBTITLE_CODEC_SCTE27,
     AML_MP_SUBTITLE_CODEC_DVB,
     AML_MP_SUBTITLE_CODEC_TELETEXT,
+    AML_MP_SUBTITLE_CODEC_MAX,
 } Aml_MP_CodecID;
+
+typedef enum {
+    AML_MP_RESOLUTION_1080P,
+    AML_MP_RESOLUTION_4K,
+    AML_MP_RESOLUTION_8K,
+    AML_MP_RESOLUTION_MAX,
+} Aml_MP_Resolution;
 
 typedef struct {
     uint16_t                pid;

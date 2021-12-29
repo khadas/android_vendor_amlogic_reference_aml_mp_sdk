@@ -1034,4 +1034,58 @@ int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, in
     #endif
     return ret;
 }
+
+const char* convertToMIMEString(Aml_MP_CodecID codecId) {
+    if (codecId > AML_MP_CODEC_UNKNOWN && codecId < AML_MP_SUBTITLE_CODEC_BASE) {
+        return codecMap[codecId / 1000][codecId % 1000];
+    }
+    return "Not defined codec";
+}
+
+Aml_MP_CodecID convertToMpCodecId(std::string mimeStr) {
+    if (mimeStr.find("video") != std::string::npos) {
+        for (int i = AML_MP_VIDEO_CODEC_BASE; i < AML_MP_VIDEO_CODEC_MAX; i++) {
+            if (mimeStr == codecMap[i / 1000][i % 1000]) {
+                return (Aml_MP_CodecID)i;
+            }
+        }
+    } else if (mimeStr.find("audio") != std::string::npos) {
+        for (int i = AML_MP_AUDIO_CODEC_BASE; i < AML_MP_AUDIO_CODEC_MAX; i++) {
+            if (mimeStr == codecMap[i / 1000][i % 1000]) {
+                return (Aml_MP_CodecID)i;
+            }
+        }
+    }
+
+    return AML_MP_CODEC_UNKNOWN;
+}
+
+const char* convertToResolutionString(Aml_MP_Resolution resolution) {
+    if (resolution < AML_MP_RESOLUTION_MAX) {
+        return resolutionMap[resolution];
+    }
+    return resolutionMap[AML_MP_RESOLUTION_1080P];
+}
+
+Aml_MP_Resolution convertToMpResolution(std::string resolutionStr) {
+
+    return AML_MP_RESOLUTION_1080P;
+}
+
+void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters) {
+    std::string::size_type lastPos = s.find_first_not_of(delimiters, 0);
+    std::string::size_type pos = s.find_first_of(delimiters, lastPos);
+    while (std::string::npos != pos || std::string::npos != lastPos) {
+        tokens.push_back(s.substr(lastPos, pos - lastPos));
+        lastPos = s.find_first_not_of(delimiters, pos);
+        pos = s.find_first_of(delimiters, lastPos);
+    }
+}
+
+std::string trim(std::string& s, const std::string& chars) {
+    s.erase(0, s.find_first_not_of(chars.c_str()));
+    s.erase(s.find_last_not_of(chars.c_str()) + 1);
+    return s;
+}
+
 }

@@ -63,6 +63,17 @@ int Aml_MP_SetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource source);
  */
 int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource *source);
 
+/**
+ * \brief Aml_MP_GetVideoSupportInfo
+ * Get video decoder support info form Aml MP
+ *
+ * \param [in]  stream type
+ * \param [out] string of video support info json
+ *
+ * \return 0 if success
+ */
+int Aml_MP_GetCodecSupportInfo(Aml_MP_StreamType streamType, void* supportInfoJson);
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Player                                   //
 ///////////////////////////////////////////////////////////////////////////////
