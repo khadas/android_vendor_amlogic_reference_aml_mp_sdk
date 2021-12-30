@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <Aml_MP/Dvr.h>
 
 static const char* mName = LOG_TAG;
 
@@ -38,7 +39,7 @@ AmlMpTestSupporter::~AmlMpTestSupporter()
     MLOGI("%s", __FUNCTION__);
 }
 
-void AmlMpTestSupporter::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData)
+void AmlMpTestSupporter::playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* userData)
 {
     mEventCallback = cb;
     mUserData = userData;
@@ -100,26 +101,25 @@ int AmlMpTestSupporter::setDataSource(const std::string& url)
     return 0;
 }
 
-sptr<Source> AmlMpTestSupporter::getSource()
+int AmlMpTestSupporter::getSource()
 {
     int ret = 0;
     mSource = Source::create(mUrl.c_str());
     if (mSource == nullptr) {
         MLOGE("create source failed!");
-        //return -1;
-        return nullptr;
+        return -1;
+        //return nullptr;
     }
 
     ret = mSource->initCheck();
     if (ret < 0) {
         MLOGE("source initCheck failed!");
-        //return -1;
-        return nullptr;
+        return -1;
+        //return nullptr;
     }
-    Aml_MP_DemuxId demuxId = mSource->getDemuxId();
+    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
     int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
-
     Aml_MP_Initialize();
 
     //set default demux source
@@ -136,17 +136,17 @@ sptr<Source> AmlMpTestSupporter::getSource()
     if (mSource->getFlags()&Source::kIsDVRSource) {
         mIsDVRPlayback = true;
         MLOGI("dvr playback");
-        //return 0;
-        return nullptr;
+        return 0;
+        //return nullptr;
     }
-    return mSource;
+    return 0;
 }
 
 sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
 {
     int ret = 0;
-    sptr<Source> mSource = getSource();
-    Aml_MP_DemuxId demuxId = mSource->getDemuxId();
+    getSource();
+    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
     int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
@@ -283,7 +283,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     }
 
     if (mEventCallback != nullptr) {
-        mPlayback->registerEventCallback(mEventCallback, mUserData);
+        mPlayback->playerRegisterEventCallback(mEventCallback, mUserData);
     }
     #ifdef ANDROID
     createNativeUI();
@@ -348,13 +348,22 @@ if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
     return 0;
 }
 
-int AmlMpTestSupporter::startRecord()
+int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift)
 {
+    int ret = 0;
     ALOGI("enter startRecord\n");
-    Aml_MP_DemuxId demuxId = mParser->getDemuxId();
-    mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo);
+    Aml_MP_DemuxId demuxId = mDemuxId; //mParser->getDemuxId();
+    mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo, isTimeShift);
     ALOGI("before mRecorder start\n");
-    int ret = mRecorder->start();
+
+    if (mDVRRecorderEventCallback != nullptr) {
+        mRecorder->DVRRecorderRegisterEventCallback(mDVRRecorderEventCallback, mUserData);
+    }
+
+    if (isSetStreams) {
+        ret = mRecorder->start(isSetStreams);
+    }
+
     if (ret < 0) {
         MLOGE("start recorder failed!");
         return -1;
@@ -364,13 +373,68 @@ int AmlMpTestSupporter::startRecord()
     return 0;
 }
 
-int AmlMpTestSupporter::startDVRPlayback()
+int AmlMpTestSupporter::setStreams()
+{
+    int ret = 0;
+    if (mRecorder == nullptr) return -1;
+
+    ret = mRecorder->setStreams();
+    if (ret < 0) {
+        MLOGE("setStreams failed!");
+        return -1;
+    }
+    return 0;
+}
+
+int AmlMpTestSupporter::startAftersetStreams()
+{
+    int ret = 0;
+    ret = mRecorder->start(false);
+    if (ret < 0) {
+        MLOGE("setStreams: start failed!");
+        return -1;
+    }
+    return 0;
+}
+
+void AmlMpTestSupporter::getmUrl(std::string url)
+{
+    mUrl = url;
+}
+
+std::string AmlMpTestSupporter::stripUrlIfNeeded(const std::string& url) const
+{
+    printf("url: %s \n", url.c_str());
+    std::string result = url;
+
+    auto suffix = result.rfind(".ts");
+    if (suffix != result.npos) {
+        auto hyphen = result.find_last_of('-', suffix);
+        if (hyphen != result.npos) {
+            result = result.substr(0, hyphen);
+        }
+    }
+    printf("result: %s \n", result.c_str());
+    result.erase(0, strlen("dvr://"));
+    //for (;;) {
+        //auto it = ++result.begin();
+        //if (*it != '/') {
+            //break;
+        //}
+        //result.erase(it);
+    //}
+
+    MLOGI("result str:%s", result.c_str());
+    return result;
+}
+
+int AmlMpTestSupporter::startDVRPlayback(bool isTimeShift)
 {
     MLOG();
     int ret = 0;
 
-    Aml_MP_DemuxId demuxId = mSource->getDemuxId();
-    mTestModule = mDVRPlayback = new DVRPlayback(mUrl, mCryptoMode, demuxId);
+    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
+    mTestModule = mDVRPlayback = new DVRPlayback(mUrl, mCryptoMode, demuxId, isTimeShift);
 
     if (mEventCallback != nullptr) {
         mDVRPlayback->registerEventCallback(mEventCallback, mUserData);

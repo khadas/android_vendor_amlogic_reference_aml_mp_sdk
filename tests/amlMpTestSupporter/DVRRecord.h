@@ -16,12 +16,14 @@ namespace aml_mp {
 class DVRRecord : public TestModule, public ISourceReceiver
 {
 public:
-    DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo);
+    DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift);
     ~DVRRecord();
 
-    int start();
+    int start(bool isSetStreams=true);
+    int setStreams();
     int stop();
     void signalQuit();
+    void DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEventCallback cb, void* userData);
 
 protected:
     virtual const Command* getCommandTable() const override;
@@ -32,12 +34,16 @@ private:
     int uninitDVREncryptRecord();
 
 private:
+    const std::string mUrl;
     const bool mCryptoMode;
     const Aml_MP_DemuxId mDemuxId;
     const sptr<ProgramInfo> mProgramInfo;
     AML_MP_DVRRECORDER mRecorder = AML_MP_INVALID_HANDLE;
-    Aml_MP_DVRRecorderEventCallback mEventCallback = nullptr;
+    Aml_MP_DVRRecorderEventCallback mDVRRecorderEventCallback = nullptr;
     void* mUserData = nullptr;
+
+    int maxSize = 20971520;
+    int maxTime = 3600000;
 
     AML_MP_CASSESSION mCasSession = nullptr;
     AML_MP_SECMEM mSecMem = nullptr;

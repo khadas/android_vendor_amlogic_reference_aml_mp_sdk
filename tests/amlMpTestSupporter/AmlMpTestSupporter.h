@@ -71,14 +71,21 @@ public:
     AmlMpTestSupporter();
     ~AmlMpTestSupporter();
     Aml_MP_PlayerWorkMode mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
-    void registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
+    void playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
     void DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEventCallback cb, void* userData);
     int setDataSource(const std::string& url);
     int prepare(bool cryptoMode = false);
     void setDisplayParam(const DisplayParam& displayParam);
     void addOptions(uint64_t options);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
-    int startRecord();
+    int startRecord(bool isSetStreams = true, bool isTimeShift = false);
+    int startDVRPlayback(bool isTimeShift=false);
+    int setStreams();
+    int startAftersetStreams();
+    std::string stripUrlIfNeeded(const std::string& url) const;
+    void getmUrl(std::string url);
+
+
     int startUIOnly();
     int stop();
     int setAVSyncSource(Aml_MP_AVSyncSource syncSource);
@@ -98,7 +105,7 @@ public:
     sp<ANativeWindow> getSurfaceControl();
     void setWindow(bool mSurface = true);
 #endif
-    sptr<Source> getSource();
+    int getSource();
     sptr<ProgramInfo> getProgramInfo();
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
 
@@ -106,7 +113,7 @@ public:
     Aml_MP_DemuxId mDemuxId = AML_MP_HW_DEMUX_ID_0;
 
 private:
-    int startDVRPlayback();
+    //int startDVRPlayback();
     bool processCommand(const std::vector<std::string>& args);
     void signalQuit();
 

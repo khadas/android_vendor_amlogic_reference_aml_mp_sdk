@@ -25,7 +25,9 @@ public:
 
     ~TestUrlList() = default;
     void initSourceDir(const std::string& source);
+    void initSourceUrl(const std::string& sourceUrl);
     bool getUrls(const std::string& testName, std::list<std::string>* results);
+    bool getUrl(const std::string& testName, std::string* url);
 
 private:
     TestUrlList();
@@ -34,6 +36,7 @@ private:
 
 
     std::string mSourceDir;
+    std::string mSourceUrl="";
     std::map<std::string, std::list<std::string>> mFileListCache;
 
 private:

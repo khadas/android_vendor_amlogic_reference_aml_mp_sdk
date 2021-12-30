@@ -17,7 +17,7 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
-DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo)
+DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift)
 : mCryptoMode(cryptoMode)
 , mDemuxId(demuxId)
 , mProgramInfo(programInfo)
@@ -27,7 +27,12 @@ DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<Program
     createParams.basicParams.demuxId = mDemuxId;
     snprintf(createParams.basicParams.location, AML_MP_MAX_PATH_SIZE, AML_MP_TEST_SUPPORTER_RECORD_FILE);
     createParams.basicParams.segmentSize = 100 * 1024 * 1024;
-    createParams.basicParams.isTimeShift = false;
+    createParams.basicParams.isTimeShift = isTimeShift;
+
+    if (isTimeShift) {
+        createParams.timeshiftParams.maxSize = maxSize;
+        createParams.timeshiftParams.maxTime = maxTime;
+    }
 
     MLOGI("mCryptoMode:%d", mCryptoMode);
     if (mCryptoMode) {
@@ -53,7 +58,13 @@ DVRRecord::~DVRRecord()
     MLOGI("dtor dvr record end!");
 }
 
-int DVRRecord::start()
+void DVRRecord::DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEventCallback cb, void* userData)
+{
+    mDVRRecorderEventCallback = cb;
+    mUserData = userData;
+}
+
+int DVRRecord::setStreams()
 {
     Aml_MP_DVRStreamArray streams;
     memset(&streams, 0, sizeof(streams));
@@ -81,8 +92,18 @@ int DVRRecord::start()
         MLOGE("set streams failed with %d", ret);
         return ret;
     }
+    return 0;
+}
 
-    ret = Aml_MP_DVRRecorder_Start(mRecorder);
+int DVRRecord::start(bool isSetStreams)
+{
+    if (isSetStreams) {
+        setStreams();
+    }
+
+    Aml_MP_DVRRecorder_RegisterEventCallback(mRecorder, mDVRRecorderEventCallback, mUserData);
+
+    int ret = Aml_MP_DVRRecorder_Start(mRecorder);
     if (ret < 0) {
         MLOGE("start recorder failed with %d", ret);
     }

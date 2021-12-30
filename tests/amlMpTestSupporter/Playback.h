@@ -68,7 +68,7 @@ public:
 #ifdef ANDROID
     void setANativeWindow(const android::sp<ANativeWindow>& window);
 #endif
-    void registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
+    void playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
     int start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casSession, PlayMode mode);
     int stop();
     void signalQuit();
@@ -102,11 +102,11 @@ private:
 
 private:
     void eventCallback(Aml_MP_PlayerEventType eventType, int64_t param);
-
     const Aml_MP_DemuxId mDemuxId;
     sptr<ProgramInfo> mProgramInfo;
     AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;
+    Aml_MP_DVRRecorderEventCallback mDVRRecorderEventCallback = nullptr;
     void* mUserData = nullptr;
     uint64_t mOptions = 0;
 

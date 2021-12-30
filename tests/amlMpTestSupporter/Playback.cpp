@@ -293,7 +293,7 @@ void Playback::setANativeWindow(const android::sp<ANativeWindow>& window)
 }
 #endif
 
-void Playback::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData)
+void Playback::playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* userData)
 {
     mEventCallback = cb;
     mUserData = userData;

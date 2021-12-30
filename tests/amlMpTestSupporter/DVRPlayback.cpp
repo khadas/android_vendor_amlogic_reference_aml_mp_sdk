@@ -14,7 +14,7 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
-DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId demuxId)
+DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId demuxId, bool isTimeShift)
 : mUrl(stripUrlIfNeeded(url))
 , mCryptoMode(cryptoMode)
 , mDemuxId(demuxId)
@@ -26,7 +26,7 @@ DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId
     createParams.basicParams.demuxId = mDemuxId;
     strncpy(createParams.basicParams.location, mUrl.c_str(), AML_MP_MAX_PATH_SIZE);
     createParams.basicParams.blockSize = 188 * 1024;
-    createParams.basicParams.isTimeShift = false;
+    createParams.basicParams.isTimeShift = isTimeShift;
     createParams.basicParams.drmMode = AML_MP_INPUT_STREAM_NORMAL;
 
     MLOGI("mCryptoMode:%d", mCryptoMode);
@@ -167,7 +167,6 @@ std::string DVRPlayback::stripUrlIfNeeded(const std::string& url) const
             result = result.substr(0, hyphen);
         }
     }
-
     result.erase(0, strlen("dvr://"));
     //for (;;) {
         //auto it = ++result.begin();

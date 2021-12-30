@@ -79,12 +79,19 @@ public:
     bool waitAudioChangedEvent(int timeoutMs);
     bool waitAVSyncDoneEvent(int timeoutMs);
     bool waitPidChangedEvent(int timeoutMs);
-    bool waitDvrRecorderStatusEvent(int timeoutMs);
     bool waitDataLossEvent(int timeoutMs);
-    void eventCallback(Aml_MP_PlayerEventType event, int64_t param);
+    bool waitDvrRecorderStatusEvent(int timeoutMs);
+    bool waitDvrRecorderErrorEvent(int timeoutMs);
+    bool waitDvrRecorderSyncEndEvent(int timeoutMs);
+    bool waitDvrRecorderCryptoStatusEvent(int timeoutMs);
+    bool waitDvrRecorderWriteErrorEvent(int timeoutMs);
+
+    void playereventCallback(Aml_MP_PlayerEventType event, int64_t param);
     void dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param);
     void createMpTestSupporter(bool isPlayer = true);
-    void createMpTestSupporter2();
+    void createMpTestSupporter2(bool isPlayer = true);
+    void DVRSegment(std::string url);
+
 
     std::string defaultFailureMessage(const std::string & url)
     const
@@ -125,6 +132,10 @@ protected:
     bool mAudioChanged = false;
     bool mDataLoss = false;
     bool mDvrRecorderStatus = false;
+    bool mDvrRecorderError = false;
+    bool mDvrRecorderSyncEnd = false;
+    bool mDvrRecorderCryptoStatus = false;
+    bool mDvrRecorderWriteError = false;
     AmlMpTestSupporter::PlayMode mPlayMode = AmlMpTestSupporter::START_ALL_STOP_ALL;
 };
 
@@ -132,27 +143,34 @@ struct AmlMpTest: AmlMpBase
 {
 
 public:
+
+    std::list <std::string> urls;
+    std::string url;
+    std::list <std::string> mUrls;
     void SetUp() override
     {
         MLOGI("SetUp 2");
         std::string name    = "AmlMpPlayerTest";
-        std::list <std::string> urls;
 
-        if (!TestUrlList::instance().getUrls(name, &urls))
+        if (!TestUrlList::instance().getUrl(name, &url))
         {
-            return;
+            if (!TestUrlList::instance().getUrls(name, &urls))
+            {
+                printf("haven't  get  urls------- \n");
+            } else {
+                mUrls = urls;
+            }
+        } else {
+            mUrls.push_back(url);
         }
-
-        mUrls = urls;
     }
 
     void TearDown() override
     {
     }
-    std::string url;
 
 protected:
-    std::list <std::string> mUrls;
+    //std::list <std::string> mUrls;
 };
 }
 

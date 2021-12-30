@@ -15,12 +15,16 @@
 
 using namespace aml_mp;
 
-void AmlMpBase::createMpTestSupporter2()
+void AmlMpBase::createMpTestSupporter2(bool isPlayer)
 {
-    if (mpTestSupporter2 == nullptr)
+	if (mpTestSupporter2 == nullptr)
     {
         mpTestSupporter2     = new AmlMpTestSupporter;
-        mpTestSupporter2->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->eventCallback(event, param); }, this);
+        if (isPlayer == true) {
+            mpTestSupporter2->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
+        } else {
+            mpTestSupporter2->DVRRecorderRegisterEventCallback([] (void * userData, AML_MP_DVRRecorderEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->dvrRecorderEventCallback(event, param); }, this);
+        }
     }
 }
 

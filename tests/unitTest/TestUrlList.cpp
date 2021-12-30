@@ -29,10 +29,21 @@ void TestUrlList::initSourceDir(const std::string& sourceDir)
     }
 }
 
+void TestUrlList::initSourceUrl(const std::string& sourceUrl)
+{
+    mSourceUrl = sourceUrl;
+}
+
+bool TestUrlList::getUrl(const std::string& testName, std::string* url)
+{
+    if (mSourceUrl == "") return false;
+    *url = mSourceUrl;
+    return true;
+}
+
 bool TestUrlList::getUrls(const std::string& testName, std::list<std::string>* results)
 {
     if (results == nullptr) return false;
-
     std::string subDir = mapToDirectoryName(testName);
     std::string dir = mSourceDir + subDir;
 

@@ -101,7 +101,7 @@ void AmlMpBase::createMpTestSupporter(bool isPlayer)
     {
         mpTestSupporter     = new AmlMpTestSupporter;
         if (isPlayer) {
-            mpTestSupporter->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->eventCallback(event, param); }, this);
+            mpTestSupporter->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
         } else {
             mpTestSupporter->DVRRecorderRegisterEventCallback([] (void * userData, AML_MP_DVRRecorderEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->dvrRecorderEventCallback(event, param); }, this);
         }
@@ -221,6 +221,30 @@ bool AmlMpBase::waitDvrRecorderStatusEvent(int timeoutMs)
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderStatus; });
 }
 
+bool AmlMpBase::waitDvrRecorderErrorEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderError; });
+}
+
+bool AmlMpBase::waitDvrRecorderSyncEndEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderSyncEnd; });
+}
+
+bool AmlMpBase::waitDvrRecorderCryptoStatusEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderCryptoStatus; });
+}
+
+bool AmlMpBase::waitDvrRecorderWriteErrorEvent(int timeoutMs)
+{
+    std::unique_lock <std::mutex> _l(mLock);
+    return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mDvrRecorderWriteError; });
+}
+
 bool AmlMpBase::waitPlayingErrors(int timeoutMs)
 {
     std::unique_lock <std::mutex> _l(mLock);
@@ -237,7 +261,7 @@ bool AmlMpBase::waitPlaying(int timeoutMs)
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mPlayingHaveErrors; });
 }
 
-void AmlMpBase::eventCallback(Aml_MP_PlayerEventType event, int64_t param)
+void AmlMpBase::playereventCallback(Aml_MP_PlayerEventType event, int64_t param)
 {
 std::unique_lock <std::mutex> _l(mLock);
     switch (event)
@@ -303,6 +327,34 @@ void AmlMpBase::dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int6
         case AML_MP_DVRRECORDER_EVENT_STATUS:
         {
             mDvrRecorderStatus = true;
+            MLOGI("dvr recorder event status triggered-----");
+            mCond.notify_all();
+            break;
+        }
+        case AML_MP_DVRRECORDER_EVENT_ERROR:
+        {
+            mDvrRecorderError = true;
+            MLOGI("dvr recorder event error triggered-----");
+            mCond.notify_all();
+            break;
+        }
+        case AML_MP_DVRRECORDER_EVENT_SYNC_END:
+        {
+            mDvrRecorderSyncEnd = true;
+            MLOGI("dvr recorder event sync end triggered-----");
+            mCond.notify_all();
+            break;
+        }
+        case AML_MP_DVRRECORDER_EVENT_CRYPTO_STATUS:
+        {
+            mDvrRecorderCryptoStatus = true;
+            mCond.notify_all();
+            break;
+        }
+        case AML_MP_DVRRECORDER_EVENT_WRITE_ERROR:
+        {
+            mDvrRecorderWriteError = true;
+            MLOGI("dvr recorder event write error triggered-----");
             mCond.notify_all();
             break;
         }
@@ -589,7 +641,7 @@ static void usage()
     "   try --help for more details.\n");
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char** argv)
 {
     if (argc == 1)
     {
@@ -597,9 +649,9 @@ int main(int argc, char * argv[])
         return 0;
     }
     std::string testpath;
-    for (size_t i = 1; i < argc;)
+    for (size_t i = 1; i < argc; i++)
     {
-        if (argv[i][0] != '-')
+        if (strcmp(argv[1], "--url"))
         {
             testpath = argv[i];
             for (int j = i; j < argc - 1; ++j)
@@ -610,14 +662,26 @@ int main(int argc, char * argv[])
         }
         else
         {
-            ++i;
+            testpath = argv[i+1];
+            for (int j = i; j < argc - 2; ++j)
+            {
+                argv[j] = argv[j + 2];
+            }
+            argc-=2;
         }
     }
     testing::InitGoogleTest(&argc, argv);
+
     if (!testpath.empty())
     {
-        printf("testpath:%s, argc:%d\n", testpath.c_str(), argc);
-        TestUrlList::instance().initSourceDir(testpath);
+        if (testpath.find("://") != std::string::npos) {
+            printf("url testpath:%s, argc:%d\n", testpath.c_str(), argc);
+            TestUrlList::instance().initSourceUrl(testpath);
+        } else {
+            printf("dir testpath2:%s, argc:%d\n", testpath.c_str(), argc);
+            TestUrlList::instance().initSourceDir(testpath);
+        }
     }
+
     return RUN_ALL_TESTS();
 }
