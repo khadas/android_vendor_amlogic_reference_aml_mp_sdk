@@ -79,19 +79,23 @@ int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
     mPlayPids.video.type = DVR_STREAM_TYPE_VIDEO;
     mPlayPids.video.pid = videoStream->pid;
     mPlayPids.video.format = convertToDVRVideoFormat(videoStream->codecId);
+    mVideoSecureLevel = videoStream->secureLevel;
 
     mPlayPids.audio.type = DVR_STREAM_TYPE_AUDIO;
     mPlayPids.audio.pid = audioStream->pid;
     mPlayPids.audio.format = convertToDVRAudioFormat(audioStream->codecId);
+    mAudioSecureLevel = audioStream->secureLevel;
 
     mPlayPids.ad.type = DVR_STREAM_TYPE_AD;
     mPlayPids.ad.pid = adStream->pid;
     mPlayPids.ad.format = convertToDVRAudioFormat(adStream->codecId);
+    mADSecureLevel = adStream->secureLevel;
 
     //If audio and AD pid is same, set invalid pid for AD
     if (mPlayPids.ad.pid == mPlayPids.audio.pid) {
         mPlayPids.ad.pid = AML_MP_INVALID_PID;
         mPlayPids.ad.format = (DVR_AudioFormat_t)(-1);
+        mADSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
     }
 
     if (mDVRPlayerHandle) {
@@ -218,7 +222,29 @@ int AmlDVRPlayer::start(bool initialPaused)
 
     if (mIsEncryptStream) {
         dvr_wrapper_set_playback_secure_buffer(mDVRPlayerHandle, mSecureBuffer, mSecureBufferSize);
+
+#if 0 // This commit only add interface. Next commit config the secure level 2.
+        // set sec level 2 for vmx stream
+        if (mVideoSecureLevel == AML_MP_DEMUX_MEM_SEC_NONE) {
+            mVideoSecureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
+            MLOGI("change video secure level to %d", mVideoSecureLevel);
+        }
+
+        if (mAudioSecureLevel == AML_MP_DEMUX_MEM_SEC_NONE) {
+            mAudioSecureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
+            MLOGI("change audio secure level to %d", mAudioSecureLevel);
+        }
+#endif
     }
+
+    if (mVideoSecureLevel != AML_MP_DEMUX_MEM_SEC_NONE) {
+        AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_VIDEO_SECLEVEL, (void*)&mVideoSecureLevel);
+    }
+
+    if (mAudioSecureLevel != AML_MP_DEMUX_MEM_SEC_NONE) {
+        AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_AUDIO_SECLEVEL, (void*)&mAudioSecureLevel);
+    }
+
     if (mRecStartTime > 0) {
         dvr_wrapper_setlimit_playback(mDVRPlayerHandle, mRecStartTime, mLimit);
     }

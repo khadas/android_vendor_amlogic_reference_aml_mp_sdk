@@ -63,6 +63,9 @@ private:
     DVR_WrapperPlaybackOpenParams_t mPlaybackOpenParams{};
     DVR_PlaybackPids_t mPlayPids{};
     int mVendorID{};
+    Aml_MP_DemuxMemSecLevel mVideoSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
+    Aml_MP_DemuxMemSecLevel mAudioSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
+    Aml_MP_DemuxMemSecLevel mADSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
 
     bool mIsEncryptStream;
     uint8_t* mSecureBuffer = nullptr;

@@ -79,6 +79,17 @@ typedef enum {
     AML_MP_DEMUX_SECSOURCE_DMA7  /**< DMA secure port 7.*/
 } Aml_MP_DemuxSource;
 
+typedef enum {
+    AML_MP_DEMUX_MEM_SEC_NONE       = 0,
+    AML_MP_DEMUX_MEM_SEC_LEVEL1     = (1 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL2     = (2 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL3     = (3 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL4     = (4 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL5     = (5 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL6     = (6 << 10),
+    AML_MP_DEMUX_MEM_SEC_LEVEL7     = (7 << 10),
+} Aml_MP_DemuxMemSecLevel;
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {
     AML_MP_INPUT_SOURCE_TS_DEMOD,
@@ -152,6 +163,7 @@ typedef struct {
     uint32_t                frameRate;
     uint8_t                 extraData[512];
     uint32_t                extraDataSize;
+    Aml_MP_DemuxMemSecLevel secureLevel;
 } Aml_MP_VideoParams;
 
 typedef struct {
@@ -161,7 +173,7 @@ typedef struct {
     uint32_t                nSampleRate;
     uint8_t                 extraData[512];
     uint32_t                extraDataSize;
-    int32_t                secureLevel;
+    Aml_MP_DemuxMemSecLevel secureLevel;
 } Aml_MP_AudioParams;
 
 ////////////////////////////////////////
@@ -610,6 +622,7 @@ typedef struct {
     Aml_MP_StreamType   type;
     int                 pid;
     Aml_MP_CodecID      codecId;
+    Aml_MP_DemuxMemSecLevel secureLevel;
 } Aml_MP_DVRStream;
 
 typedef struct {

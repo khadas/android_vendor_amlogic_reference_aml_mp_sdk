@@ -230,11 +230,18 @@ int AmlTsPlayer::setVideoParams(const Aml_MP_VideoParams* params) {
     }
     am_tsplayer_video_params video_params = {videoCodecConvert(params->videoCodec), params->pid};
 
-    MLOGI("amtsplayer handle:%#x, video codec:%d, pid: 0x%x", mPlayer, video_params.codectype, video_params.pid);
+    MLOGI("amtsplayer handle:%#x, video codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, video_params.codectype, video_params.pid, params->secureLevel);
     ret = AmTsPlayer_setVideoParams(mPlayer, &video_params);
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
+
+    Aml_MP_DemuxMemSecLevel secureLevel = params->secureLevel;
+    ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_VIDEO_SECLEVEL, (void*)&secureLevel);
+    if (ret != AM_TSPLAYER_OK) {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -248,15 +255,21 @@ int AmlTsPlayer::setAudioParams(const Aml_MP_AudioParams* params) {
         mAudioParaSeted = true;
     }
     #ifdef ANDROID
-    am_tsplayer_audio_params audio_params = {audioCodecConvert(params->audioCodec), params->pid, params->secureLevel};
+    am_tsplayer_audio_params audio_params = {audioCodecConvert(params->audioCodec), params->pid, (int32_t)params->secureLevel};
     #else
     am_tsplayer_audio_params audio_params = {audioCodecConvert(params->audioCodec), params->pid};
     #endif
 #ifdef HAVE_PACKETIZE_ESTOTS
     mApid = params->pid;
 #endif
-    MLOGI("amtsplayer handle:%#x, audio codec:%d, pid: 0x%x", mPlayer, audio_params.codectype, audio_params.pid);
+    MLOGI("amtsplayer handle:%#x, audio codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, audio_params.codectype, audio_params.pid, params->secureLevel);
     ret = AmTsPlayer_setAudioParams(mPlayer, &audio_params);
+    if (ret != AM_TSPLAYER_OK) {
+        return -1;
+    }
+
+    Aml_MP_DemuxMemSecLevel secureLevel = params->secureLevel;
+    ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_AUDIO_SECLEVEL, (void*)&secureLevel);
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
@@ -1063,7 +1076,7 @@ int AmlTsPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) {
 
     audioParams.pid = (int32_t)(params->pid);
     audioParams.codectype = audioCodecConvert(params->audioCodec);
-    audioParams.seclevel = params->secureLevel;
+    audioParams.seclevel = (int32_t)params->secureLevel;
 
     ret = AmTsPlayer_setADParams(mPlayer, &audioParams);
     if (enableMix) {
