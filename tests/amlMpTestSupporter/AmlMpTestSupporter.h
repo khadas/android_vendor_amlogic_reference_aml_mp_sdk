@@ -19,6 +19,8 @@
 #include <Aml_MP/Aml_MP.h>
 #include "TestUtils.h"
 #include <mutex>
+#include <Aml_MP/Dvr.h>
+
 
 #ifdef ANDROID
 struct ANativeWindow;
@@ -70,6 +72,7 @@ public:
     ~AmlMpTestSupporter();
     Aml_MP_PlayerWorkMode mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
     void registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
+    void DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEventCallback cb, void* userData);
     int setDataSource(const std::string& url);
     int prepare(bool cryptoMode = false);
     void setDisplayParam(const DisplayParam& displayParam);
@@ -88,6 +91,7 @@ public:
     int setOsdBlank(int blank);
 
     sptr<TestModule> getPlayback() const;
+    sptr<TestModule> getRecorder() const;
 
 #ifdef ANDROID
     sptr<NativeUI> createNativeUI();
@@ -119,6 +123,7 @@ private:
     sptr<DVRRecord> mRecorder;
     sptr<DVRPlayback> mDVRPlayback;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;
+    Aml_MP_DVRRecorderEventCallback mDVRRecorderEventCallback = nullptr;
     void* mUserData = nullptr;
 
     bool mIsDVRPlayback = false;
@@ -147,12 +152,5 @@ private:
     AmlMpTestSupporter& operator=(const AmlMpTestSupporter&) = delete;
 };
 
-
 }
-
-
-
-
-
-
 #endif

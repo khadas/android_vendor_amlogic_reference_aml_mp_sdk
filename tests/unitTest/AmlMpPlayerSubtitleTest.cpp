@@ -1,5 +1,5 @@
 #define LOG_TAG "AmlMpPlayerSubtitleTest"
-#include "AmlMpPlayerVideoTest.h"
+#include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include <gtest/gtest.h>
@@ -14,7 +14,7 @@
 
 using namespace aml_mp;
 
-void AmlMpPlayerBase::TeletextControlTest(const std::string & url, Aml_MP_PlayerParameterKey key, AML_MP_TeletextCtrlParam parameter)
+void AmlMpBase::TeletextControlTest(const std::string & url, Aml_MP_PlayerParameterKey key, AML_MP_TeletextCtrlParam parameter)
 {
     MLOGI("----------TeletextControlTest START----------\n");
     startPlaying(url);
@@ -30,7 +30,7 @@ void AmlMpPlayerBase::TeletextControlTest(const std::string & url, Aml_MP_Player
     stopPlaying();
 }
 
-TEST_F(AmlMpPlayerTest, SwitchSubtitleTest)
+TEST_F(AmlMpTest, SwitchSubtitleTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -63,7 +63,7 @@ TEST_F(AmlMpPlayerTest, SwitchSubtitleTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, SetSubtitleWindowTest)
+TEST_F(AmlMpTest, SetSubtitleWindowTest)
 {
     std::string url;
     createMpTestSupporter();
@@ -93,7 +93,7 @@ TEST_F(AmlMpPlayerTest, SetSubtitleWindowTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, ShowHideSubtitleTest)
+TEST_F(AmlMpTest, ShowHideSubtitleTest)
 {
     std::string url;
     for (auto &url: mUrls)

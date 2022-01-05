@@ -1,5 +1,5 @@
-#define LOG_TAG "AmlMpPlayerTest"
-#include "AmlMpPlayerVideoTest.h"
+#define LOG_TAG "AmlMpTest"
+#include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include <gtest/gtest.h>
@@ -15,16 +15,16 @@
 
 using namespace aml_mp;
 
-void AmlMpPlayerBase::createMpTestSupporter2()
+void AmlMpBase::createMpTestSupporter2()
 {
     if (mpTestSupporter2 == nullptr)
     {
         mpTestSupporter2     = new AmlMpTestSupporter;
-        mpTestSupporter2->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpPlayerBase * self = (AmlMpPlayerBase *) userData; return self->eventCallback(event, param); }, this);
+        mpTestSupporter2->registerEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->eventCallback(event, param); }, this);
     }
 }
 
-void AmlMpPlayerBase::videoDecoding(const std::string & url, bool mStart, bool mSourceReceiver)
+void AmlMpBase::videoDecoding(const std::string & url, bool mStart, bool mSourceReceiver)
 {
     MLOGI("----------VideoDecodingTest START----------\n");
     createMpTestSupporter();
@@ -47,19 +47,18 @@ void AmlMpPlayerBase::videoDecoding(const std::string & url, bool mStart, bool m
     //start decoding
     EXPECT_EQ(Aml_MP_Player_StartVideoDecoding(player), AML_MP_OK);
     if (!mSourceReceiver) {
-        EXPECT_FALSE(waitDataLossEvent(5 * 1000ll));
+        waitPlaying(1 * 1000ll);
     }else {
         EXPECT_FALSE(waitPlaying(1 * 1000ll));
         EXPECT_FALSE(waitPlayingErrors());
     }
     //stop decoding
     EXPECT_EQ(Aml_MP_Player_StopVideoDecoding(player), AML_MP_OK);
-    EXPECT_TRUE(waitPlayingErrors());
     stopPlaying();
     MLOGI("----------VideoDecodingTest END----------\n");
 }
 
-void AmlMpPlayerBase::audioDecoding(const std::string & url, bool mStart, bool mSourceReceiver)
+void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSourceReceiver)
 {
     MLOGI("----------AudioDecodingTest START----------\n");
     createMpTestSupporter();
@@ -82,19 +81,18 @@ void AmlMpPlayerBase::audioDecoding(const std::string & url, bool mStart, bool m
     //start decoding
     EXPECT_EQ(Aml_MP_Player_StartAudioDecoding(player), AML_MP_OK);
     if (!mSourceReceiver) {
-        EXPECT_FALSE(waitDataLossEvent(5 * 1000ll));
+        waitPlaying(1 * 1000ll);
     }else {
         EXPECT_FALSE(waitPlaying(1 * 1000ll));
         EXPECT_FALSE(waitPlayingErrors());
     }
     //stop decoding
     EXPECT_EQ(Aml_MP_Player_StopAudioDecoding(player), AML_MP_OK);
-    EXPECT_TRUE(waitPlayingErrors());
     stopPlaying();
     MLOGI("----------AudioDecodingTest END----------\n");
 }
 
-void AmlMpPlayerBase::FCCAndPIPTest(const std::string & url, bool mPIP)
+void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
 {
     MLOGI("----------FCCAndPIPTest START----------\n");
     createMpTestSupporter();
@@ -111,8 +109,8 @@ void AmlMpPlayerBase::FCCAndPIPTest(const std::string & url, bool mPIP)
         displayParam.y      = AML_MP_VIDEO_WINDOW_Y;
         displayParam.width  = AML_MP_VIDEO_WINDOW_WIDTH;
         displayParam.height = AML_MP_VIDEO_WINDOW_HEIGHT;
-        displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER;
-        displayParam.videoMode = AML_MP_VIDEO_MODE;
+        displayParam.zorder = AML_MP_VIDEO_WINDOW_ZORDER_1;
+        displayParam.videoMode = AML_MP_VIDEO_MODE_1;
         mpTestSupporter->setDisplayParam(displayParam);
     }
     mProgramInfo->videoPid = 640;
@@ -162,7 +160,7 @@ void AmlMpPlayerBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     MLOGI("----------FCCAndPIPTest END----------\n");
 }
 
-TEST_F(AmlMpPlayerTest, PlayerStartStopTest)
+TEST_F(AmlMpTest, PlayerStartStopTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -186,7 +184,7 @@ TEST_F(AmlMpPlayerTest, PlayerStartStopTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, VideoDecodingTest)
+TEST_F(AmlMpTest, VideoDecodingTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -195,7 +193,7 @@ TEST_F(AmlMpPlayerTest, VideoDecodingTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, VideoDecodingTest1)
+TEST_F(AmlMpTest, VideoDecodingTest1)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -204,7 +202,7 @@ TEST_F(AmlMpPlayerTest, VideoDecodingTest1)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioDecodingTest)
+TEST_F(AmlMpTest, AudioDecodingTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -213,7 +211,7 @@ TEST_F(AmlMpPlayerTest, AudioDecodingTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AudioDecodingTest1)
+TEST_F(AmlMpTest, AudioDecodingTest1)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -222,7 +220,7 @@ TEST_F(AmlMpPlayerTest, AudioDecodingTest1)
     }
 }
 
-TEST_F(AmlMpPlayerTest, SubtitleDecodingTest)
+TEST_F(AmlMpTest, SubtitleDecodingTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -260,7 +258,7 @@ TEST_F(AmlMpPlayerTest, SubtitleDecodingTest)
         EXPECT_EQ(Aml_MP_Player_SetSubtitleParams(player, &subtitleParams), AML_MP_OK);
         //start decoding
         EXPECT_EQ(Aml_MP_Player_StartSubtitleDecoding(player), AML_MP_OK);
-        EXPECT_FALSE(waitDataLossEvent(5 * 1000ll));
+        waitPlaying(1 * 1000ll);
         //stop decoding
         EXPECT_EQ(Aml_MP_Player_StopSubtitleDecoding(player), AML_MP_OK);
         stopPlaying();
@@ -268,7 +266,7 @@ TEST_F(AmlMpPlayerTest, SubtitleDecodingTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, PauseResumeTest)
+TEST_F(AmlMpTest, PauseResumeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -300,7 +298,7 @@ TEST_F(AmlMpPlayerTest, PauseResumeTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, FlushTest)
+TEST_F(AmlMpTest, FlushTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -323,7 +321,7 @@ TEST_F(AmlMpPlayerTest, FlushTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, PlaybackRateTest)
+TEST_F(AmlMpTest, PlaybackRateTest)
 {
     float rate[] = {-10.0, -2.0, 2.0, 5.0, 0.5, 0.9};
     std::string url;
@@ -348,7 +346,7 @@ TEST_F(AmlMpPlayerTest, PlaybackRateTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, PlaybackRateTest1)
+TEST_F(AmlMpTest, PlaybackRateTest1)
 {
     float rate[] = {-1.5, -1.0, -0.5};
     std::string url;
@@ -372,7 +370,7 @@ TEST_F(AmlMpPlayerTest, PlaybackRateTest1)
     }
 }
 
-TEST_F(AmlMpPlayerTest, PlaybackRateTest2)
+TEST_F(AmlMpTest, PlaybackRateTest2)
 {
     float rate = 0.0;
     std::string url;
@@ -397,7 +395,7 @@ TEST_F(AmlMpPlayerTest, PlaybackRateTest2)
     }
 }
 
-TEST_F(AmlMpPlayerTest, AVSyncModeTest)
+TEST_F(AmlMpTest, AVSyncModeTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -427,7 +425,7 @@ TEST_F(AmlMpPlayerTest, AVSyncModeTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, PIPTest)
+TEST_F(AmlMpTest, PIPTest)
 {
     std::string url;
     for (auto &url: mUrls)
@@ -436,7 +434,7 @@ TEST_F(AmlMpPlayerTest, PIPTest)
     }
 }
 
-TEST_F(AmlMpPlayerTest, FCCTest)
+TEST_F(AmlMpTest, FCCTest)
 {
 //FCC: normal,cache(no surface)->cache,normal
     std::string url;

@@ -44,6 +44,12 @@ void AmlMpTestSupporter::registerEventCallback(Aml_MP_PlayerEventCallback cb, vo
     mUserData = userData;
 }
 
+void AmlMpTestSupporter::DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEventCallback cb, void* userData)
+{
+    mDVRRecorderEventCallback = cb;
+    mUserData = userData;
+}
+
 #ifdef ANDROID
 sptr<NativeUI> AmlMpTestSupporter::createNativeUI()
 {
@@ -631,6 +637,12 @@ int AmlMpTestSupporter::setOsdBlank(int blank)
 sptr<TestModule> AmlMpTestSupporter::getPlayback() const
 {
     return mPlayback;
+}
+
+//getRecorder
+sptr<TestModule> AmlMpTestSupporter::getRecorder() const
+{
+    return mRecorder;
 }
 
 }
