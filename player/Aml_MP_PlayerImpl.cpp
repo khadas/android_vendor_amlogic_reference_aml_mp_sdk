@@ -139,7 +139,7 @@ int AmlMpPlayerImpl::setVideoParams(const Aml_MP_VideoParams* params)
 
     MLOGI("setVideoParams vpid: 0x%x, fmt: %s", params->pid, mpCodecId2Str(params->videoCodec));
 
-#if 0 // This commit only add interface. Next commit config the secure level 2.
+#if 1 // This commit commit config the secure level 2.
     if (mVideoParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
         mVideoParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
         MLOGI("change video secure level to %d", mVideoParams.secureLevel);
@@ -171,7 +171,7 @@ int AmlMpPlayerImpl::setAudioParams_l(const Aml_MP_AudioParams* params)
 
     MLOGI("setAudioParams apid: 0x%x, fmt: %s", params->pid, mpCodecId2Str(params->audioCodec));
 
-#if 0 // This commit only add interface. Next commit config the secure level 2.
+#if 1 // This commit config the secure level 2.
     if (mAudioParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
         mAudioParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
         MLOGI("change audio secure level to %d", mAudioParams.secureLevel);
@@ -219,7 +219,7 @@ int AmlMpPlayerImpl::setADParams(Aml_MP_AudioParams* params)
 
     MLOGI("setADParams apid: 0x%x, fmt:%s", params->pid, mpCodecId2Str(params->audioCodec));
 
-#if 0 // This commit only add interface. Next commit config the secure level 2.
+#if 1 // This commit config the secure level 2.
     if (mADParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
         mADParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
         MLOGI("change ad secure level to %d", mADParams.secureLevel);

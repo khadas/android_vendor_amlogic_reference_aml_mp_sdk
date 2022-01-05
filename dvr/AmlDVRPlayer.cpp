@@ -223,7 +223,7 @@ int AmlDVRPlayer::start(bool initialPaused)
     if (mIsEncryptStream) {
         dvr_wrapper_set_playback_secure_buffer(mDVRPlayerHandle, mSecureBuffer, mSecureBufferSize);
 
-#if 0 // This commit only add interface. Next commit config the secure level 2.
+#if 1 // This commit config the secure level 2.
         // set sec level 2 for vmx stream
         if (mVideoSecureLevel == AML_MP_DEMUX_MEM_SEC_NONE) {
             mVideoSecureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
