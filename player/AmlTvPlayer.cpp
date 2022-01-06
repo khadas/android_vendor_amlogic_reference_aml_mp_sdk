@@ -193,6 +193,11 @@ int AmlTvPlayer::setPlaybackRate(float rate) {
     return 0;
 }
 
+int AmlTvPlayer::getPlaybackRate(float* rate) {
+    MLOGI("getPlaybackRate not implemented");
+    return AML_MP_ERROR_INVALID_OPERATION;
+}
+
 int AmlTvPlayer::switchAudioTrack(const Aml_MP_AudioParams* params) {
     AML_MP_UNUSED(params);
     return 0;

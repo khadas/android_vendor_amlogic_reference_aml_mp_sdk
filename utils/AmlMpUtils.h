@@ -162,6 +162,7 @@ const char* mpInputSourceType2Str(Aml_MP_InputSourceType inputSourceType);
 const char* mpCASType2Str(Aml_MP_CASType casType);
 const char* mpVideoDecideMode2Str(Aml_MP_VideoDecodeMode decodeMode);
 const char* mpCASServiceType2Str(Aml_MP_CASServiceType servciceType);
+const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
 
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec);
 aformat_t convertToAForamt(Aml_MP_CodecID audioCodec);

@@ -239,6 +239,17 @@ int Aml_MP_Player_Flush(AML_MP_PLAYER handle);
 int Aml_MP_Player_SetPlaybackRate(AML_MP_PLAYER handle, float rate);
 
 /**
+ * \brief Aml_MP_Player_GetPlaybackRate
+ * Get playback rate
+ *
+ * \param [in]  player handle
+ * \param [out] play rate
+ *
+ * \return 0 if success
+ */
+int Aml_MP_Player_GetPlaybackRate(AML_MP_PLAYER handle, float* rate);
+
+/**
  * \brief Aml_MP_Player_SwitchAudioTrack
  * Switch audio track
  *
@@ -326,7 +337,6 @@ int Aml_MP_Player_SetANativeWindow(AML_MP_PLAYER handle, ANativeWindow* nativeWi
 /**
  * \brief Aml_MP_Player_SetVideoWindow
  * Set video window.
- * Conflict with Aml_MP_Player_GetBufferStat, if set nativeWindow, video window set will not effect.
  *
  * \param [in]  player handle
  * \param [in]  video location (x)
@@ -558,6 +568,18 @@ int Aml_MP_Player_StartADDecoding(AML_MP_PLAYER handle);
  * \return
  */
 int Aml_MP_Player_StopADDecoding(AML_MP_PLAYER handle);
+
+/**
+ * \brief Aml_MP_Player_GetDecodingState
+ * get decoding state
+ *
+ * \param [in]  player handle
+ * \param [in]  stream type
+ * \param [out] decoding state
+ *
+ * \return 0 if success
+ */
+int Aml_MP_Player_GetDecodingState(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, AML_MP_DecodingState* decodingState);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                  CAS                                      //

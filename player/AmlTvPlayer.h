@@ -43,6 +43,7 @@ public:
     int resume() override;
     int flush() override;
     int setPlaybackRate(float rate) override;
+    int getPlaybackRate(float* rate) override;
     int switchAudioTrack(const Aml_MP_AudioParams* params) override;
     int writeData(const uint8_t* buffer, size_t size) override;
     int writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts) override;

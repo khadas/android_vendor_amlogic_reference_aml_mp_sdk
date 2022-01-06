@@ -283,6 +283,15 @@ const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType)
     return TO_STR(AML_MP_CAS_SERVICE_TYPE_INVALID);
 }
 
+const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode) {
+    switch (errorRecoveryMode) {
+        ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_DROP);
+        ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_NONE);
+        default:
+            return "Unknown video error recovery mode";
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec)
@@ -655,7 +664,7 @@ void convertToMpVideoInfo(Aml_MP_VideoInfo* mpVideoInfo, am_tsplayer_video_info*
     mpVideoInfo->height     = tsVideoInfo->height;
     mpVideoInfo->frameRate  = tsVideoInfo->framerate;
     mpVideoInfo->bitrate    = tsVideoInfo->bitrate;
-    mpVideoInfo->ratio64    = tsVideoInfo->ratio64;
+    mpVideoInfo->ratio64    = (Aml_MP_VideoRatio)tsVideoInfo->ratio64;
 }
 
 am_tsplayer_audio_stereo_mode convertToTsPlayerAudioStereoMode(Aml_MP_AudioBalance audioBalance)

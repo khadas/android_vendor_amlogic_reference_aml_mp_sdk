@@ -169,6 +169,15 @@ int Aml_MP_Player_SetPlaybackRate(AML_MP_PLAYER handle, float rate)
     return player->setPlaybackRate(rate);
 }
 
+int Aml_MP_Player_GetPlaybackRate(AML_MP_PLAYER handle, float* rate)
+{
+    AML_MP_TRACE(10);
+    sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->getPlaybackRate(rate);
+}
+
 int Aml_MP_Player_SwitchAudioTrack(AML_MP_PLAYER handle, Aml_MP_AudioParams* params)
 {
     AML_MP_TRACE(10);
@@ -427,5 +436,14 @@ int Aml_MP_Player_StopADDecoding(AML_MP_PLAYER handle)
     RETURN_IF(-1, player == nullptr);
 
     return player->stopADDecoding();
+}
+
+int Aml_MP_Player_GetDecodingState(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, AML_MP_DecodingState* decodingState)
+{
+    AML_MP_TRACE(10);
+    sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->getDecodingState(streamType, decodingState);
 }
 

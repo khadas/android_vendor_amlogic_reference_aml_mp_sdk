@@ -351,6 +351,20 @@ int AmlTsPlayer::setPlaybackRate(float rate){
     return 0;
 }
 
+int AmlTsPlayer::getPlaybackRate(float* rate) {
+    am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+    //TODO: Now media_hal compile not correct, return playback rate in aml_mp,
+    //      need get rate info from decoder after compile correct
+#if 0
+    ret = AmTsPlayer_getFastRate(mPlayer, rate);
+#endif
+    if (ret != AM_TSPLAYER_OK) {
+        return AML_MP_ERROR;
+    }
+    MLOGI("getPlaybackRate, rate: %f", *rate);
+    return AML_MP_OK;
+}
+
 int AmlTsPlayer::switchAudioTrack(const Aml_MP_AudioParams* params){
     //switchAudioTrack need more info, will do in Aml_MP_PlayerImpl
     AML_MP_UNUSED(params);
@@ -858,6 +872,13 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         }
         break;
 
+        case AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE:
+        {
+            //TODO: tsplayer not have api now, need add api later
+            ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+        }
+        break;
+
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -920,16 +941,30 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             ret = AmTsPlayer_getSyncInstansNo(mPlayer, (int32_t*)parameter);
             break;
         #endif
+        case AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE:
+        {
+            //TODO: tsplayer not have api now, need add api later
+            ret = AM_TSPLAYER_ERROR_INVALID_OPERATION;
+        }
+        break;
 
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
 
     MLOGD("Call getParameter, key is %s, ret: %d", mpPlayerParameterKey2Str(key), ret);
-    if (ret != AM_TSPLAYER_OK) {
-        return -1;
+    switch (ret) {
+        case AM_TSPLAYER_OK:
+            return AML_MP_OK;
+
+        case AM_TSPLAYER_ERROR_INVALID_PARAMS:
+            return AML_MP_ERROR_BAD_VALUE;
+        case AM_TSPLAYER_ERROR_INVALID_OPERATION:
+            return AML_MP_ERROR_INVALID_OPERATION;
+        default:
+            return AML_MP_ERROR;
     }
-    return 0;
+
 }
 
 int AmlTsPlayer::setAVSyncSource(Aml_MP_AVSyncSource syncSource)

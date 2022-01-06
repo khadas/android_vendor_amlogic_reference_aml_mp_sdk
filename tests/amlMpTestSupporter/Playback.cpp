@@ -597,6 +597,16 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "gShowState", 0, "get show state",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            bool state;
+            int ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE, &state);
+            printf("now video show state: %s(%d)\n", state ? "show" : "hide", ret);
+            return ret;
+        }
+    },
+
+    {
         "flush", 0, "call flush",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Flush(player);
@@ -697,7 +707,7 @@ static struct TestModule::Command g_commandTable[] = {
     {
         "sFast", 0, "set Fast rate",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
-            float fastRate;
+            float fastRate, getRate;
             int ret;
             if (args.size() != 2) {
                 printf("Input example: sFast rate\n");
@@ -706,7 +716,32 @@ static struct TestModule::Command g_commandTable[] = {
             printf("String input: %s\n", args[1].data());
             fastRate = stof(args[1]);
             ret = Aml_MP_Player_SetPlaybackRate(player, fastRate);
-            printf("set rate: %f, ret: %d\n", fastRate, ret);
+            Aml_MP_Player_GetPlaybackRate(player, &getRate);
+            printf("set rate: %f(%f), ret: %d\n", fastRate, getRate, ret);
+            return ret;
+        }
+    },
+
+    {
+        "gFast", 0, "get Fast rate",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            float fastRate;
+            int ret;
+            ret = Aml_MP_Player_GetPlaybackRate(player, &fastRate);
+            printf("get rate: %f, ret: %d\n", fastRate, ret);
+            return ret;
+        }
+    },
+
+    {
+        "gDecodingState", 0, "get a/v decoding state",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret;
+            AML_MP_DecodingState decodingState;
+            ret = Aml_MP_Player_GetDecodingState(player, AML_MP_STREAM_TYPE_VIDEO, &decodingState);
+            printf("get video decoding state: %d, ret: %d\n", decodingState, ret);
+            ret = Aml_MP_Player_GetDecodingState(player, AML_MP_STREAM_TYPE_AUDIO, &decodingState);
+            printf("get audio decoding state: %d, ret: %d\n", decodingState, ret);
             return ret;
         }
     },
@@ -817,7 +852,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "Start", 0, "call start",
+        "start", 0, "call start",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Start(player);
             printf("call start ret: %d\n", ret);
@@ -826,7 +861,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "Stop", 0, "call stop",
+        "stop", 0, "call stop",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Stop(player);
             printf("call stop ret: %d\n", ret);
@@ -845,7 +880,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "Destory", 0, "call destroy",
+        "destory", 0, "call destroy",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Destroy(player);
             printf("call destroy ret: %d\n", ret);

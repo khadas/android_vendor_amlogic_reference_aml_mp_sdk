@@ -59,6 +59,7 @@ public:
     int resume();
     int flush();
     int setPlaybackRate(float rate);
+    int getPlaybackRate(float* rate);
     int switchAudioTrack(const Aml_MP_AudioParams* params);
     int switchSubtitleTrack(const Aml_MP_SubtitleParams* params);
     int writeData(const uint8_t* buffer, size_t size);
@@ -93,6 +94,8 @@ public:
 
     int setSubtitleWindow(int x, int y, int width, int height);
 
+    int getDecodingState(Aml_MP_StreamType streamType, AML_MP_DecodingState* streamState);
+
 private:
     enum State {
         STATE_IDLE,
@@ -103,11 +106,6 @@ private:
         STATE_STOPPED,
     };
 
-    enum StreamState {
-        STREAM_STATE_STOPPED            = 0,
-        STREAM_STATE_START_PENDING      = 1,
-        STREAM_STATE_STARTED            = 2,
-    };
     static const int kStreamStateBits = 2;
     static const int kStreamStateMask = 3;
 
@@ -130,10 +128,10 @@ private:
     };
 
     const char* stateString(State state);
-    std::string streamStateString(uint32_t streamState);
+    std::string decodingStateString(uint32_t streamState);
     void setState_l(State state);
-    void setStreamState_l(Aml_MP_StreamType streamType, int state);
-    StreamState getStreamState_l(Aml_MP_StreamType streamType);
+    void setDecodingState_l(Aml_MP_StreamType streamType, int state);
+    AML_MP_DecodingState getDecodingState_l(Aml_MP_StreamType streamType);
     int prepare_l();
     int finishPreparingIfNeeded_l();
     int resetIfNeeded_l(std::unique_lock<std::mutex>& lock);
@@ -187,6 +185,7 @@ private:
     mutable std::mutex mLock;
     State mState{STATE_IDLE};
     uint32_t mStreamState{0};
+    uint32_t mPauseBackupState{0};
     uint32_t mPrepareWaitingType{kPrepareWaitingNone};
     WaitingEcmMode mWaitingEcmMode = kWaitingEcmSynchronous;
     bool mFirstEcmWritten = false;
@@ -211,7 +210,7 @@ private:
     Aml_MP_AudioBalance mAudioBalance{AML_MP_AUDIO_BALANCE_STEREO};
     bool mAudioMute{false};
     int mNetworkJitter{0};
-    int mADMixLevel{-1};
+    Aml_MP_ADVolume mADMixLevel{-1, -1};
     Aml_MP_PlayerWorkMode mWorkMode;
 
     float mVolume = -1.0;
@@ -255,10 +254,13 @@ private:
 
     int64_t mLastBytesWritten = 0;
     int64_t mLastWrittenTimeUs = 0;
+    bool mVideoShowState = true;
 
 private:
     AmlMpPlayerImpl(const AmlMpPlayerImpl&) = delete;
     AmlMpPlayerImpl& operator= (const AmlMpPlayerImpl&) = delete;
+
+    Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode = AML_MP_VIDEO_ERROR_RECOVERY_DROP;
 };
 
 }

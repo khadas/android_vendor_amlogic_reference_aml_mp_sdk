@@ -48,6 +48,7 @@ public:
     virtual int resume() = 0;
     virtual int flush() = 0;
     virtual int setPlaybackRate(float rate) = 0;
+    virtual int getPlaybackRate(float* rate) = 0;
     virtual int switchAudioTrack(const Aml_MP_AudioParams* params) = 0;
     virtual int writeData(const uint8_t* buffer, size_t size) = 0;
     virtual int writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts);

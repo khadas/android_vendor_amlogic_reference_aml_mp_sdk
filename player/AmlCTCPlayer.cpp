@@ -308,6 +308,11 @@ int AmlCTCPlayer::setPlaybackRate(float rate) {
     return ret?0:-1;
 }
 
+int AmlCTCPlayer::getPlaybackRate(float* rate) {
+    MLOGI("%s:%d getPlaybackRate not implemented", __FUNCTION__, __LINE__);
+    return AML_MP_ERROR_INVALID_OPERATION;
+}
+
 int AmlCTCPlayer::switchAudioTrack(const Aml_MP_AudioParams* params){
     RETURN_IF(-1, params == nullptr);
     RETURN_IF(-1, mCtcPlayer == nullptr);

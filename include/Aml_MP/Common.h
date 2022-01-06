@@ -294,6 +294,13 @@ typedef enum {
     AML_MP_STREAM_TYPE_NB,
 } Aml_MP_StreamType;
 
+typedef enum  {
+    AML_MP_DECODING_STATE_STOPPED           = 0,
+    AML_MP_DECODING_STATE_START_PENDING     = 1,
+    AML_MP_DECODING_STATE_STARTED           = 2,
+    AML_MP_DECODING_STATE_PAUSED            = 3,
+} AML_MP_DecodingState;
+
 ////////////////////////////////////////
 typedef struct {
     int size;
@@ -339,7 +346,8 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID,          //setPresentationId(int*)
     AML_MP_PLAYER_PARAMETER_USE_TIF,                        //setUseTif(bool*)
     AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION,               //SetSPDIFProtection(int*)
-    AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                    //setVideoCrop(Aml_MP_Rect*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                     //setVideoCrop(Aml_MP_Rect*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorConcralment(Aml_MP_VideoErrorRecoveryMode*)
 
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,
@@ -353,6 +361,7 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_AD_DECODE_STAT,                 //getADDecodeStat(Aml_MP_AdecStat*)
     AML_MP_PLAYER_PARAMETER_INSTANCE_ID,                    //getInstanceId(uint32_t*)
     AML_MP_PLAYER_PARAMETER_SYNC_ID,                        //getSyncId(int32_t*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE                //getVideoShowState(bool*)
 } Aml_MP_PlayerParameterKey;
 
 ////////////////////////////////////////
@@ -423,13 +432,20 @@ typedef struct {
 } Aml_MP_ADVolume;
 
 ////////////////////////////////////////
+typedef enum {
+    AML_MP_RATIO_4_3,
+    AML_MP_RATIO_16_9,
+    AML_MP_RATIO_UNDEFINED = 255
+} Aml_MP_VideoRatio;
+
+////////////////////////////////////////
 //AML_MP_PLAYER_PARAMETER_VIDEO_INFO
 typedef struct {
     int width;
     int height;
     int frameRate;
     int bitrate;
-    int ratio64;
+    Aml_MP_VideoRatio ratio64;
 } Aml_MP_VideoInfo;
 
 ////////////////////////////////////////
@@ -594,6 +610,13 @@ typedef struct {
     int32_t right;
     int32_t bottom;
 } Aml_MP_Rect;
+
+////////////////////////////////////////
+//AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE
+typedef enum {
+    AML_MP_VIDEO_ERROR_RECOVERY_DROP,      //Drop frame if any error dected
+    AML_MP_VIDEO_ERROR_RECOVERY_NONE,      //Do nothing after decod error frame
+} Aml_MP_VideoErrorRecoveryMode;
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {
