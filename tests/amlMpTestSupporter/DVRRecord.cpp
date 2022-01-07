@@ -25,7 +25,7 @@ DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<Program
     Aml_MP_DVRRecorderCreateParams createParams;
     memset(&createParams, 0, sizeof(createParams));
     createParams.basicParams.demuxId = mDemuxId;
-    snprintf(createParams.basicParams.location, AML_MP_MAX_PATH_SIZE, AML_MP_TEST_SUPPORTER_RECORD_FILE);
+    snprintf(createParams.basicParams.location, AML_MP_MAX_PATH_SIZE, AML_MP_TEST_SUPPORTER_RECORD_TO_USB);
     createParams.basicParams.segmentSize = 100 * 1024 * 1024;
     createParams.basicParams.isTimeShift = isTimeShift;
 

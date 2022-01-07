@@ -13,7 +13,8 @@ LOCAL_SRC_FILES := \
     AmlMpPlayerSubtitleTest.cpp\
     AmlMpPlayerTest.cpp \
     AmlMpPlayerProbeTest.cpp \
-    AmlMpDvrRecorderTest.cpp
+    AmlMpDvrRecorderTest.cpp \
+    AmlMpDvrRecorderProbeTest.cpp
 
 LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 LOCAL_C_INCLUDES :=

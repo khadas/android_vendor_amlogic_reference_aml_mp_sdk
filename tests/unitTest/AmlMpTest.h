@@ -55,6 +55,7 @@ static const int kCheckFrameTimeOutMs = 50 * 1000ll;
 #define AML_MP_PID_CHANGED_EVENT 2 * 1000ll
 #define AML_MP_DATA_LOSS_EVENT 5 * 1000ll
 
+
 struct AmlMpBase: public testing::Test
 {
     void SetUp() override
@@ -91,7 +92,7 @@ public:
     void createMpTestSupporter(bool isPlayer = true);
     void createMpTestSupporter2(bool isPlayer = true);
     void DVRSegment(std::string url);
-
+    void getDVRSourceInfo(Aml_MP_DVRSourceInfo info);
 
     std::string defaultFailureMessage(const std::string & url)
     const
@@ -136,6 +137,9 @@ protected:
     bool mDvrRecorderSyncEnd = false;
     bool mDvrRecorderCryptoStatus = false;
     bool mDvrRecorderWriteError = false;
+    time_t time_temp = 0;
+    loff_t size_temp = 0;
+
     AmlMpTestSupporter::PlayMode mPlayMode = AmlMpTestSupporter::START_ALL_STOP_ALL;
 };
 

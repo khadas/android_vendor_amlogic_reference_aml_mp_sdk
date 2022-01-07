@@ -62,7 +62,7 @@ TEST_F(AmlMpTest, NormalRecorderTest)
 
 
         createMpTestSupporter2();
-        url = "dvr://data/amlMpRecordFile";
+        url = "dvr://storage/7F5D-3C01/amlMpRecordFile";
         mpTestSupporter2->getmUrl(url);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
 
@@ -88,7 +88,6 @@ TEST_F(AmlMpTest, TimeshiftRecordTest)
         {
             EXPECT_EQ(ret = mpTestSupporter->startRecord(true, true), AML_MP_OK);
             waitPlaying(20 * 1000ll);
-
         }
 
         createMpTestSupporter2();
