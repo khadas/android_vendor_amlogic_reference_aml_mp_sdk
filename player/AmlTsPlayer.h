@@ -91,7 +91,7 @@ private:
     unsigned mAudioContinuityCounter;
     int packetize(
             bool isAudio, const char *buffer_add,
-            int32_t buffer_size,
+            size_t buffer_size,
             sptr<AmlMpBuffer> *packets,
             uint32_t flags,
             const uint8_t *PES_private_data, size_t PES_private_data_len,

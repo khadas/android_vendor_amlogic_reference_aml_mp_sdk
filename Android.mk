@@ -158,6 +158,7 @@ AML_MP_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include \
 
 #######################################
 AML_MP_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
+	-Werror -Wsign-compare \
 	-DJSON_USE_EXCEPTION=0 \
 	-DJSONCPP_NO_LOCALE_SUPPORT
 

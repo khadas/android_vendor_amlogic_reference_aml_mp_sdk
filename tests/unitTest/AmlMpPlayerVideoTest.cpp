@@ -10,7 +10,6 @@
 #include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
-#include <gtest/gtest.h>
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>

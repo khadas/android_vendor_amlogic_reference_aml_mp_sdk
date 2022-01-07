@@ -51,7 +51,8 @@ int AmlVMXWebCas::startDescrambling(const Aml_MP_IptvCASParams* params)
     AmlCasBase::startDescrambling(params);
 
     int ret = 0;
-    drmseverinfo_t initParam = {0};
+    drmseverinfo_t initParam;
+    memset(&initParam, 0, sizeof(initParam));
     initParam.enablelog = 1;
     initParam.serveraddr = mIptvCasParam.serverAddress;
     snprintf(mServerPort, sizeof(mServerPort), "%d", mIptvCasParam.serverPort);
@@ -102,12 +103,20 @@ int AmlVMXWebCas::setPrivateData(const uint8_t* data, size_t size)
 
 int AmlVMXWebCas::processEcm(bool isSection, int ecmPid, const uint8_t* data, size_t size)
 {
+    AML_MP_UNUSED(isSection);
+    AML_MP_UNUSED(ecmPid);
+    AML_MP_UNUSED(data);
+    AML_MP_UNUSED(size);
+
     int ret = 0;
     return ret;
 }
 
 int AmlVMXWebCas::processEmm(const uint8_t* data, size_t size)
 {
+    AML_MP_UNUSED(data);
+    AML_MP_UNUSED(size);
+
     int ret = 0;
     return ret;
 }

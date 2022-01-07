@@ -2,7 +2,6 @@
 #include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
-#include <gtest/gtest.h>
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>
@@ -51,7 +50,7 @@ TEST_F(AmlMpTest, SwitchSubtitleTest)
         //subtitleParams
         Aml_MP_SubtitleParams subtitleParams{};
         memset(&subtitleParams, 0, sizeof(subtitleParams));
-        for (int i = 0; i < subtitleStreams.size(); i++)
+        for (size_t i = 0; i < subtitleStreams.size(); i++)
         {
             subtitleParams.subtitleCodec = subtitleStreams.at(i).codecId;
             subtitleParams.videoFormat = subtitleStreams.at(i).codecId;

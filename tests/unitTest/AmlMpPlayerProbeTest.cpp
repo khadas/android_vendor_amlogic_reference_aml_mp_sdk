@@ -2,7 +2,6 @@
 #include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
-#include <gtest/gtest.h>
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>
@@ -207,7 +206,7 @@ TEST_F(AmlMpTest, AVSyncDoneEventTest)
         mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
-        void *player = getPlayer();
+        //void *player = getPlayer();
         EXPECT_TRUE(waitAVSyncDoneEvent(2 * 1000ll));
         stopPlaying();
         MLOGI("----------AVSyncDoneEventTest END----------\n");

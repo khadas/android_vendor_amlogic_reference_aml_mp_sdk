@@ -23,7 +23,7 @@
 
 namespace aml_mp {
 
-const int convertToAmlMPErrorCode_V2(AmCasCode_t casResult) {
+int convertToAmlMPErrorCode_V2(AmCasCode_t casResult) {
     switch (casResult) {
         case AM_CAS_SUCCESS:
             return AML_MP_OK;
@@ -178,7 +178,7 @@ int AmlWVIptvCas_V2::setPrivateData(const uint8_t* data, size_t size)
 int AmlWVIptvCas_V2::checkEcmProcess(uint8_t* pBuffer, uint32_t vEcmPid, uint32_t aEcmPid,size_t * nSize)
 {
   int ret = 0;
-  int len = 0,pid = 0;
+  uint32_t pid = 0;
   unsigned int rem = *nSize;
 
   uint8_t * psync = pBuffer;
@@ -211,7 +211,7 @@ int AmlWVIptvCas_V2::checkEcmProcess(uint8_t* pBuffer, uint32_t vEcmPid, uint32_
                   MLOGI("checkEcmProcess, ecmDataStr.c_str()=%s", ecmDataStr.c_str());
                   if (pIptvCas)
                   {
-                      if (pid == mIptvCasParam.ecmPid[1])
+                      if (pid == (uint32_t)mIptvCasParam.ecmPid[1])
                          ret = pIptvCas->processEcm(0, 1, mIptvCasParam.ecmPid[1], mIptvCasParam.ecmPid[0], mEcmTsPacket, TS_PACKET_SIZE);
                       else
                          ret = pIptvCas->processEcm(0, 0, mIptvCasParam.ecmPid[1], mIptvCasParam.ecmPid[0], mEcmTsPacket, TS_PACKET_SIZE);

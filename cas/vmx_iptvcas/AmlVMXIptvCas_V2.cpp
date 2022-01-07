@@ -53,7 +53,9 @@ int AmlVMXIptvCas_V2::startDescrambling(const Aml_MP_IptvCASParams* params)
     AmlCasBase::startDescrambling(params);
 
     int ret = 0;
-    iptvseverinfo_t initParam = {0};
+    iptvseverinfo_t initParam;
+    memset(&initParam, 0, sizeof(initParam));
+
     initParam.enablelog = 1;
     initParam.serveraddr = (char*)params->serverAddress;
     snprintf(mServerPort, sizeof(mServerPort), "%d", params->serverPort);
@@ -110,7 +112,7 @@ int AmlVMXIptvCas_V2::setPrivateData(const uint8_t* data, size_t size)
 int AmlVMXIptvCas_V2::checkEcmProcess(uint8_t* pBuffer, uint32_t vEcmPid, uint32_t aEcmPid,size_t * nSize)
 {
   int ret = 0;
-  int len = 0,pid = 0;
+  uint32_t pid = 0;
   unsigned int rem = *nSize;
 
   uint8_t * psync = pBuffer;
@@ -143,7 +145,7 @@ int AmlVMXIptvCas_V2::checkEcmProcess(uint8_t* pBuffer, uint32_t vEcmPid, uint32
                   MLOGI("checkEcmProcess, ecmDataStr.c_str()=%s", ecmDataStr.c_str());
                   if (pIptvCas)
                   {
-                      if (pid == mIptvCasParam.ecmPid[1])
+                      if (pid == (uint32_t)mIptvCasParam.ecmPid[1])
                          ret = pIptvCas->processEcm(0, 1, mIptvCasParam.ecmPid[1], mIptvCasParam.ecmPid[0], mEcmTsPacket, TS_PACKET_SIZE);
                       else
                          ret = pIptvCas->processEcm(0, 0, mIptvCasParam.ecmPid[1], mIptvCasParam.ecmPid[0], mEcmTsPacket, TS_PACKET_SIZE);

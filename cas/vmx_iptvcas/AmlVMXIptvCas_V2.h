@@ -32,7 +32,7 @@ private:
     char mServerPort[10];
     sptr<AmCasLibWrapper<AML_MP_CAS_SERVICE_VERIMATRIX_IPTV>> pIptvCas;
     uint8_t sessionId[8]{};
-    int mInstanceId;
+    //int mInstanceId;
 
     int mDscFd = -1;
     int mFirstEcm = 0;

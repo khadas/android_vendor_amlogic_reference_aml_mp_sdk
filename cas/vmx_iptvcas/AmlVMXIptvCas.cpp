@@ -128,6 +128,7 @@ int AmlVMXIptvCas::setPrivateData(const uint8_t* data, size_t size)
 
 int AmlVMXIptvCas::processEcm(bool isSection, int ecmPid, const uint8_t* data, size_t size)
 {
+    AML_MP_UNUSED(ecmPid);
     RETURN_IF(-1, mCasHandle == nullptr);
     if (isSection) {
         MLOGE("processEcm failed, do not support section ecm");

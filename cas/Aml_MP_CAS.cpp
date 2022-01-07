@@ -37,7 +37,12 @@ static AM_CA_SECTION convertToCASection(Aml_MP_CASSectionType casSection)
 
     case AML_MP_CAS_SECTION_NIT:
         return AM_CA_SECTION_NIT;
+
+    default:
+        break;
     }
+
+    return AM_CA_SECTION_PMT;
 }
 
 static int convertToAmlMPErrorCode(AM_RESULT CasResult) {

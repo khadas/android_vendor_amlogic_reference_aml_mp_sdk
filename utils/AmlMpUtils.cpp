@@ -278,6 +278,7 @@ const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType)
     case AML_MP_CAS_SERVICE_VERIMATRIX_IPTV: return "verimatrix IPTV";
     case AML_MP_CAS_SERVICE_VERIMATRIX_WEB: return "verimatrix WEB";
     case AML_MP_CAS_SERVICE_WIDEVINE: return "widevine";
+    default: break;
     }
 
     return TO_STR(AML_MP_CAS_SERVICE_TYPE_INVALID);
@@ -643,7 +644,11 @@ am_tsplayer_video_trick_mode convertToTsplayerVideoTrickMode(Aml_MP_VideoDecodeM
         return AV_VIDEO_TRICK_MODE_NONE;
     case AML_MP_VIDEO_DECODE_MODE_IONLY:
         return AV_VIDEO_TRICK_MODE_IONLY;
+    default:
+        break;
     }
+
+    return AV_VIDEO_TRICK_MODE_NONE;
 }
 
 am_tsplayer_audio_out_mode convertToTsPlayerAudioOutMode(Aml_MP_AudioOutputMode audioOutputMode)
@@ -684,7 +689,11 @@ am_tsplayer_audio_stereo_mode convertToTsPlayerAudioStereoMode(Aml_MP_AudioBalan
 
     case AML_MP_AUDIO_BALANCE_LRMIX:
         return AV_AUDIO_LRMIX;
+    default:
+        break;
     }
+
+    return AV_AUDIO_STEREO;
 }
 
 void convertToMpPlayerEventAudioFormat(Aml_MP_PlayerEventAudioFormat* dest, am_tsplayer_audio_format_t* source) {
@@ -692,136 +701,55 @@ void convertToMpPlayerEventAudioFormat(Aml_MP_PlayerEventAudioFormat* dest, am_t
     dest->channels = source->channels;
 }
 
+static struct DemuxSourceConvertMap {
+    DVB_DemuxSource_t dvbDemuxSource;
+    Aml_MP_DemuxSource mpDemuxSource;
+}sDemuxSourceConvertMap[] = {
+    {DVB_DEMUX_SOURCE_TS0, AML_MP_DEMUX_SOURCE_TS0},
+    {DVB_DEMUX_SOURCE_TS1, AML_MP_DEMUX_SOURCE_TS1},
+    {DVB_DEMUX_SOURCE_TS2, AML_MP_DEMUX_SOURCE_TS2},
+    {DVB_DEMUX_SOURCE_TS3, AML_MP_DEMUX_SOURCE_TS3},
+    {DVB_DEMUX_SOURCE_TS4, AML_MP_DEMUX_SOURCE_TS4},
+    {DVB_DEMUX_SOURCE_TS5, AML_MP_DEMUX_SOURCE_TS5},
+    {DVB_DEMUX_SOURCE_TS6, AML_MP_DEMUX_SOURCE_TS6},
+    {DVB_DEMUX_SOURCE_TS7, AML_MP_DEMUX_SOURCE_TS7},
+    {DVB_DEMUX_SOURCE_DMA0, AML_MP_DEMUX_SOURCE_DMA0},
+    {DVB_DEMUX_SOURCE_DMA1, AML_MP_DEMUX_SOURCE_DMA1},
+    {DVB_DEMUX_SOURCE_DMA2, AML_MP_DEMUX_SOURCE_DMA2},
+    {DVB_DEMUX_SOURCE_DMA3, AML_MP_DEMUX_SOURCE_DMA3},
+    {DVB_DEMUX_SOURCE_DMA4, AML_MP_DEMUX_SOURCE_DMA4},
+    {DVB_DEMUX_SOURCE_DMA5, AML_MP_DEMUX_SOURCE_DMA5},
+    {DVB_DEMUX_SOURCE_DMA6, AML_MP_DEMUX_SOURCE_DMA6},
+    {DVB_DEMUX_SOURCE_DMA7, AML_MP_DEMUX_SOURCE_DMA7},
+    {DVB_DEMUX_SECSOURCE_DMA0, AML_MP_DEMUX_SECSOURCE_DMA0},
+    {DVB_DEMUX_SECSOURCE_DMA1, AML_MP_DEMUX_SECSOURCE_DMA1},
+    {DVB_DEMUX_SECSOURCE_DMA2, AML_MP_DEMUX_SECSOURCE_DMA2},
+    {DVB_DEMUX_SECSOURCE_DMA3, AML_MP_DEMUX_SECSOURCE_DMA3},
+    {DVB_DEMUX_SECSOURCE_DMA4, AML_MP_DEMUX_SECSOURCE_DMA4},
+    {DVB_DEMUX_SECSOURCE_DMA5, AML_MP_DEMUX_SECSOURCE_DMA5},
+    {DVB_DEMUX_SECSOURCE_DMA6, AML_MP_DEMUX_SECSOURCE_DMA6},
+    {DVB_DEMUX_SECSOURCE_DMA7, AML_MP_DEMUX_SECSOURCE_DMA7},
+};
 
 DVB_DemuxSource_t convertToDVBDemuxSource(Aml_MP_DemuxSource source)
 {
-    switch (source) {
-    case AML_MP_DEMUX_SOURCE_TS0:
-       return DVB_DEMUX_SOURCE_TS0;
-
-    case AML_MP_DEMUX_SOURCE_TS1:
-       return DVB_DEMUX_SOURCE_TS1;
-
-    case AML_MP_DEMUX_SOURCE_TS2:
-       return DVB_DEMUX_SOURCE_TS2;
-
-    case AML_MP_DEMUX_SOURCE_TS3:
-       return DVB_DEMUX_SOURCE_TS3;
-
-    case AML_MP_DEMUX_SOURCE_TS4:
-       return DVB_DEMUX_SOURCE_TS4;
-
-    case AML_MP_DEMUX_SOURCE_TS5:
-       return DVB_DEMUX_SOURCE_TS5;
-
-    case AML_MP_DEMUX_SOURCE_TS6:
-       return DVB_DEMUX_SOURCE_TS6;
-
-    case AML_MP_DEMUX_SOURCE_TS7:
-       return DVB_DEMUX_SOURCE_TS7;
-
-    case AML_MP_DEMUX_SOURCE_DMA0:
-       return DVB_DEMUX_SOURCE_DMA0;
-
-    case AML_MP_DEMUX_SOURCE_DMA1:
-       return DVB_DEMUX_SOURCE_DMA1;
-
-    case AML_MP_DEMUX_SOURCE_DMA2:
-       return DVB_DEMUX_SOURCE_DMA2;
-
-    case AML_MP_DEMUX_SOURCE_DMA3:
-       return DVB_DEMUX_SOURCE_DMA3;
-
-    case AML_MP_DEMUX_SOURCE_DMA4:
-       return DVB_DEMUX_SOURCE_DMA4;
-
-    case AML_MP_DEMUX_SOURCE_DMA5:
-       return DVB_DEMUX_SOURCE_DMA5;
-
-    case AML_MP_DEMUX_SOURCE_DMA6:
-       return DVB_DEMUX_SOURCE_DMA6;
-
-    case AML_MP_DEMUX_SOURCE_DMA7:
-       return DVB_DEMUX_SOURCE_DMA7;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA0:
-       return DVB_DEMUX_SECSOURCE_DMA0;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA1:
-       return DVB_DEMUX_SECSOURCE_DMA1;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA2:
-       return DVB_DEMUX_SECSOURCE_DMA2;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA3:
-       return DVB_DEMUX_SECSOURCE_DMA3;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA4:
-       return DVB_DEMUX_SECSOURCE_DMA4;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA5:
-       return DVB_DEMUX_SECSOURCE_DMA5;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA6:
-       return DVB_DEMUX_SECSOURCE_DMA6;
-
-    case AML_MP_DEMUX_SECSOURCE_DMA7:
-       return DVB_DEMUX_SECSOURCE_DMA7;
-
+    for (size_t i = 0; i < sizeof(sDemuxSourceConvertMap)/sizeof(sDemuxSourceConvertMap[0]); ++i) {
+        if (source == sDemuxSourceConvertMap[i].mpDemuxSource) {
+            return sDemuxSourceConvertMap[i].dvbDemuxSource;
+        }
     }
+
+    return DVB_DEMUX_SOURCE_TS0;
 }
 
 Aml_MP_DemuxSource convertToMpDemuxSource(DVB_DemuxSource_t source)
 {
-    switch (source) {
-    case DVB_DEMUX_SOURCE_TS0:
-        return AML_MP_DEMUX_SOURCE_TS0;
-
-    case DVB_DEMUX_SOURCE_TS1:
-        return AML_MP_DEMUX_SOURCE_TS1;
-
-    case DVB_DEMUX_SOURCE_TS2:
-        return AML_MP_DEMUX_SOURCE_TS2;
-
-    case DVB_DEMUX_SOURCE_TS3:
-        return AML_MP_DEMUX_SOURCE_TS3;
-
-    case DVB_DEMUX_SOURCE_TS4:
-        return AML_MP_DEMUX_SOURCE_TS4;
-
-    case DVB_DEMUX_SOURCE_TS5:
-        return AML_MP_DEMUX_SOURCE_TS5;
-
-    case DVB_DEMUX_SOURCE_TS6:
-        return AML_MP_DEMUX_SOURCE_TS6;
-
-    case DVB_DEMUX_SOURCE_TS7:
-        return AML_MP_DEMUX_SOURCE_TS7;
-
-    case DVB_DEMUX_SOURCE_DMA0:
-        return AML_MP_DEMUX_SOURCE_DMA0;
-
-    case DVB_DEMUX_SOURCE_DMA1:
-        return AML_MP_DEMUX_SOURCE_DMA1;
-
-    case DVB_DEMUX_SOURCE_DMA2:
-        return AML_MP_DEMUX_SOURCE_DMA2;
-
-    case DVB_DEMUX_SOURCE_DMA3:
-        return AML_MP_DEMUX_SOURCE_DMA3;
-
-    case DVB_DEMUX_SOURCE_DMA4:
-        return AML_MP_DEMUX_SOURCE_DMA4;
-
-    case DVB_DEMUX_SOURCE_DMA5:
-        return AML_MP_DEMUX_SOURCE_DMA5;
-
-    case DVB_DEMUX_SOURCE_DMA6:
-        return AML_MP_DEMUX_SOURCE_DMA6;
-
-    case DVB_DEMUX_SOURCE_DMA7:
-        return AML_MP_DEMUX_SOURCE_DMA7;
+    for (size_t i = 0; i < sizeof(sDemuxSourceConvertMap)/sizeof(sDemuxSourceConvertMap[0]); ++i) {
+        if (source == sDemuxSourceConvertMap[i].dvbDemuxSource) {
+            return sDemuxSourceConvertMap[i].mpDemuxSource;
+        }
     }
+
     return AML_MP_DEMUX_SOURCE_TS0;
 }
 
@@ -1074,11 +1002,6 @@ const char* convertToResolutionString(Aml_MP_Resolution resolution) {
         return resolutionMap[resolution];
     }
     return resolutionMap[AML_MP_RESOLUTION_1080P];
-}
-
-Aml_MP_Resolution convertToMpResolution(std::string resolutionStr) {
-
-    return AML_MP_RESOLUTION_1080P;
 }
 
 void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters) {

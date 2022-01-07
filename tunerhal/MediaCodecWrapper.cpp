@@ -14,8 +14,8 @@ static const char *MEDIA_MIMETYPE_VIDEO_AVC = "video/avc";
 static const char *MEDIA_MIMETYPE_VIDEO_AVS = "video/avs";
 static const char *MEDIA_MIMETYPE_VIDEO_HEVC = "video/hevc";
 static const char *MEDIA_MIMETYPE_VIDEO_VP9 = "video/x-vnd.on2.vp9";
-static const char *MEDIA_MIMETYPE_VIDEO_DOLBY_VISION = "video/dolby-vision";
-static const char *MEDIA_MIMETYPE_VIDEO_MPEG = "video/mpeg";
+//static const char *MEDIA_MIMETYPE_VIDEO_DOLBY_VISION = "video/dolby-vision";
+//static const char *MEDIA_MIMETYPE_VIDEO_MPEG = "video/mpeg";
 static const char *MEDIA_MIMETYPE_VIDEO_MPEG2 = "video/mpeg2";
 static const char *MEDIA_MIMETYPE_VIDEO_MPEG4 = "video/mp4v-es";
 static const char *MEDIA_MIMETYPE_VIDEO_MJPEG = "video/mjpeg";
@@ -55,7 +55,7 @@ void MediaCodecWrapper::configure(MediaCodecParams mediaCodecParams) {
     mMediaCodecParams = mediaCodecParams;
     // find mediacodec list, prefer the omx.amlogic decoder
     Vector<AString> matchingCodecs;
-    int index = 0;
+    size_t index = 0;
     const char* mime = convertCodecIdToMimeType(mediaCodecParams.codecId);
     MediaCodecList::findMatchingCodecs(mime, false, MediaCodecList::Flags::kHardwareCodecsOnly, &matchingCodecs);
     for (index = 0; index < matchingCodecs.size(); index++) {
@@ -86,6 +86,7 @@ void MediaCodecWrapper::start() {
 }
 
 size_t MediaCodecWrapper::writeData(const uint8_t *data, size_t size) {
+    AML_MP_UNUSED(data);
     // for passthrough writeData is not necessary
     return size;
 }

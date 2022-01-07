@@ -20,7 +20,6 @@
 #include <condition_variable>
 
 #ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
 #ifndef __ANDROID_VNDK__
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>

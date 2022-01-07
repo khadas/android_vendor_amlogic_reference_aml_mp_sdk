@@ -34,9 +34,6 @@
 #include "AmlMpUtils.h"
 
 //#include <media/stagefright/foundation/hexdump.h>
-#ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
-#endif
 
 static const char* mName = LOG_TAG;
 
@@ -526,6 +523,7 @@ sptr<AmlMpMessage> AmlMpMessage::dup() const {
     return msg;
 }
 
+#if 0
 static void appendIndent(std::string *s, int32_t indent) {
     static const char kWhitespace[] =
         "                                        "
@@ -542,8 +540,9 @@ static bool isFourcc(uint32_t what) {
         && isprint((what >> 16) & 0xff)
         && isprint((what >> 24) & 0xff);
 }
+#endif
 
-std::string AmlMpMessage::debugString(int32_t indent) const {
+std::string AmlMpMessage::debugString(int32_t indent __unused) const {
     std::string s = "AmlMpMessage(what = ";
 #if 0
     std::string tmp;

@@ -38,10 +38,9 @@ namespace aml_mp {
 AmlMpEventLooperRoster gLooperRoster;
 
 struct AmlMpEventLooper::LooperThread : public AmlMpThread {
-    LooperThread(AmlMpEventLooper *looper, bool canCallJava)
+    LooperThread(AmlMpEventLooper *looper, bool canCallJava __unused)
         : AmlMpThread(),
-          mLooper(looper),
-          mThreadId(NULL) {
+          mLooper(looper) {
     }
 
     virtual int readyToRun() {
@@ -101,7 +100,7 @@ void AmlMpEventLooper::unregisterHandler(handler_id handlerID) {
 }
 
 int AmlMpEventLooper::start(
-        bool runOnCallingThread, bool canCallJava, int32_t priority) {
+        bool runOnCallingThread, bool canCallJava, int32_t priority __unused) {
     if (runOnCallingThread) {
         {
             std::lock_guard<std::mutex> autoLock(mLock);

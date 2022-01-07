@@ -18,7 +18,6 @@
 
 #define AML_MP_EVENT_LOOPER_H_
 
-//#include <media/stagefright/foundation/ABase.h>
 #include <string>
 //#include <utils/Errors.h>
 #include <vector>

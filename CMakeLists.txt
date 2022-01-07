@@ -122,7 +122,8 @@ TARGET_INCLUDE_DIRECTORIES(${TARGET} PUBLIC
     ${libamcas_INCLUDE_DIRS}
 )
 
-TARGET_COMPILE_OPTIONS(${TARGET} PUBLIC -std=c++14 -fpermissive)
+TARGET_COMPILE_OPTIONS(${TARGET} PUBLIC -std=c++14 -fpermissive -Werror -Wsign-compare
+    -Wno-unused-result -Wno-multichar -Wno-deprecated-declarations -Wno-psabi)
 
 TARGET_COMPILE_DEFINITIONS(${TARGET} PUBLIC __unused= )
 TARGET_COMPILE_DEFINITIONS(${TARGET} PUBLIC ${AML_MP_DEFINITIONS})

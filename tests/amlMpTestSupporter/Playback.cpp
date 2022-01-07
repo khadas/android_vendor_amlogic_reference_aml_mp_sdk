@@ -75,7 +75,7 @@ int CasPlugin::startDVBDescrambling()
     }
 
 
-    Aml_MP_CAS_RegisterEventCallback(mCasSession, [](AML_MP_CASSESSION session, const char* json) {
+    Aml_MP_CAS_RegisterEventCallback(mCasSession, [](AML_MP_CASSESSION session __unused, const char* json) {
         MLOGI("ca_cb:%s", json);
         return 0;
     }, this);
@@ -251,7 +251,7 @@ int Playback::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     std::unique_lock<std::mutex> _l(mLock);
 
     mSyncSource = syncSource;
-    MLOGI("mSyncSource is", mSyncSource);
+    MLOGI("mSyncSource is %d", mSyncSource);
 
     return 0;
 }
@@ -530,7 +530,7 @@ void Playback::printStreamsInfo()
         return;
     }
 
-    for (int i = 0; i < mProgramInfo->videoStreams.size(); i++) {
+    for (size_t i = 0; i < mProgramInfo->videoStreams.size(); i++) {
         if (i == 0) {
             printf("Video Streams:\n");
         }
@@ -538,14 +538,14 @@ void Playback::printStreamsInfo()
         printf("\tVideo[%d] pid: %d, codec: %d\n", i, mProgramInfo->videoStreams.at(i).pid, mProgramInfo->videoStreams.at(i).codecId);
     }
 
-    for (int i = 0; i < mProgramInfo->audioStreams.size(); i++) {
+    for (size_t i = 0; i < mProgramInfo->audioStreams.size(); i++) {
         if (i == 0) {
             printf("Audio streams:\n");
         }
         printf("\tAudio[%d] pid: %d, codec: %d\n", i, mProgramInfo->audioStreams.at(i).pid, mProgramInfo->audioStreams.at(i).codecId);
     }
 
-    for (int i = 0; i < mProgramInfo->subtitleStreams.size(); i++) {
+    for (size_t i = 0; i < mProgramInfo->subtitleStreams.size(); i++) {
         if (i == 0) {
             printf("Subtitle streams:\n");
         }
@@ -871,7 +871,7 @@ static struct TestModule::Command g_commandTable[] = {
 
     {
         "gDecCap", 0, "get decoder capability",
-        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+        [](AML_MP_PLAYER player __unused, const std::vector<std::string>& args __unused) -> int {
             char jsonInfo[1000]{0};
             int ret  = Aml_MP_GetCodecSupportInfo(AML_MP_STREAM_TYPE_VIDEO, jsonInfo);
             printf("Aml_MP_Initialize json: %s", jsonInfo);

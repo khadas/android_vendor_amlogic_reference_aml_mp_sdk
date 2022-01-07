@@ -60,11 +60,11 @@ AmlPlayerBase::AmlPlayerBase(Aml_MP_PlayerCreateParams* createParams, int instan
 :mInstanceId(instanceId)
 , mEventCb(nullptr)
 , mUserData(nullptr)
-,mCreateParams(createParams)
-#ifdef HAVE_SUBTITLE
 , mSubtitleParams{}
-#endif
+,mCreateParams(createParams)
 {
+    AML_MP_UNUSED(mCreateParams);
+
     snprintf(mName, sizeof(mName), "%s_%d", LOG_TAG, mInstanceId);
 
 #ifdef HAVE_SUBTITLE
@@ -140,6 +140,8 @@ int AmlPlayerBase::switchSubtitleTrack(const Aml_MP_SubtitleParams* params)
     stopSubtitleDecoding();
     setSubtitleParams(params);
     startSubtitleDecoding();
+#else
+    AML_MP_UNUSED(params);
 #endif
     return 0;
 }
@@ -332,12 +334,19 @@ int AmlPlayerBase::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) 
     if (ret != SUB_STAT_OK) {
         return -1;
     }
+#else
+    AML_MP_UNUSED(key);
+    AML_MP_UNUSED(parameter);
 #endif
     return 0;
 }
 
 int AmlPlayerBase::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts)
 {
+    AML_MP_UNUSED(type);
+    AML_MP_UNUSED(buffer);
+    AML_MP_UNUSED(size);
+    AML_MP_UNUSED(pts);
     //MLOGI("TODO!!! %s, type:%d, buffer:%p, size:%d, pts:%lld", __FUNCTION__, type, buffer, size, pts);
 
     return size;

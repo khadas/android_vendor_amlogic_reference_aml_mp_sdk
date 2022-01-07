@@ -293,7 +293,7 @@ void UdpSource::readThreadLoop()
                     }
                 }
 
-                if (mFifo.put(pBuf, ret) != ret) {
+                if (mFifo.put(pBuf, ret) != (size_t)ret) {
                     MLOGW("fifo full, reset!");
                     mFifo.reset();
                 } else {

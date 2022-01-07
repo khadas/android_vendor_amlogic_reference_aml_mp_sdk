@@ -149,7 +149,7 @@ private:
     bool mQuitPending = false;
 
     PlayMode mPlayMode = START_ALL_STOP_ALL;
-    AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
+    //AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
 
     DisplayParam mDisplayParam;
 #ifdef ANDROID

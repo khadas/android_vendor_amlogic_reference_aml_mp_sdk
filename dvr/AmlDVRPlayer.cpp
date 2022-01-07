@@ -820,7 +820,12 @@ Aml_MP_DVRPlayerState convertToMpDVRPlayerState(DVR_PlaybackPlayState_t state)
     case DVR_PLAYBACK_STATE_FB:
         return AML_MP_DVRPLAYER_STATE_FB;
         break;
+
+    default:
+        break;
     }
+
+    return AML_MP_DVRPLAYER_STATE_START;
 }
 
 Aml_MP_DVRPlayerSegmentFlag convertToMpDVRSegmentFlag(DVR_PlaybackSegmentFlag_t flag)
@@ -837,7 +842,12 @@ Aml_MP_DVRPlayerSegmentFlag convertToMpDVRSegmentFlag(DVR_PlaybackSegmentFlag_t 
     case DVR_PLAYBACK_SEGMENT_CONTINUOUS:
         return AML_MP_DVRPLAYER_SEGMENT_CONTINUOUS;
         break;
+
+    default:
+        break;
     }
+
+    return AML_MP_DVRPLAYER_SEGMENT_DISPLAYABLE;
 }
 
 static void convertToMpDVRPlayerStatus(Aml_MP_DVRPlayerStatus* mpStatus, DVR_WrapperPlaybackStatus_t* dvrStatus)

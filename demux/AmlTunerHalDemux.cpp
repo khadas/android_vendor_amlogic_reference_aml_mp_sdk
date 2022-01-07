@@ -10,6 +10,7 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "AmlTunerHalDemux"
 #include <utils/AmlMpLog.h>
+#include <utils/AmlMpUtils.h>
 #include <Aml_MP/Aml_MP.h>
 #include "AmlTunerHalDemux.h"
 #include <utils/AmlMpHandle.h>
@@ -37,6 +38,9 @@ AmlTunerHalDemux::~AmlTunerHalDemux() {
 }
 
 int AmlTunerHalDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer) {
+    AML_MP_UNUSED(isHardwareSource);
+    AML_MP_UNUSED(demuxId);
+    AML_MP_UNUSED(isSecureBuffer);
     MLOGI("AmlTunerHalDemux::open");
     if (mTsParser == nullptr) {
         mTsParser = new TunerHalTsParser([this](int pid, const sptr<AmlMpBuffer>& data, int version) {
@@ -132,7 +136,7 @@ void AmlTunerHalDemux::notifyDataWrapper(int pid, const sptr<AmlMpBuffer>& data,
 void SectionFilterCallback::onFilterEvent(const DemuxFilterEvent& filterEvent) {
     MLOGI("SectionFilterCallback::onFilterEvent enter");
     std::vector<DemuxFilterEvent::Event> events = filterEvent.events;
-    for (int i = 0; i < events.size(); i++) {
+    for (size_t i = 0; i < events.size(); i++) {
         DemuxFilterEvent::Event event = events[i];
         DemuxFilterSectionEvent sectionEvent = event.section();
         size_t dataLength = sectionEvent.dataLength;
@@ -146,6 +150,7 @@ void SectionFilterCallback::onFilterEvent(const DemuxFilterEvent& filterEvent) {
 }
 
 void SectionFilterCallback::onFilterStatus(const DemuxFilterStatus filterEvent) {
+    AML_MP_UNUSED(filterEvent);
 }
 
 /**
@@ -161,6 +166,7 @@ TunerHalTsParser::~TunerHalTsParser() {
 }
 
 int TunerHalTsParser::feedTs(const uint8_t* buffer, size_t size) {
+    AML_MP_UNUSED(buffer);
     return size;
 }
 
@@ -169,14 +175,18 @@ void TunerHalTsParser::reset() {
 }
 
 int TunerHalTsParser::addPSISection(int pid, bool checkCRC) {
+    AML_MP_UNUSED(pid);
+    AML_MP_UNUSED(checkCRC);
     return 0;
 }
 
 int TunerHalTsParser::getPSISectionData(int pid) {
+    AML_MP_UNUSED(pid);
     return 0;
 }
 
 void TunerHalTsParser::removePSISection(int pid) {
+    AML_MP_UNUSED(pid);
 
 }
 

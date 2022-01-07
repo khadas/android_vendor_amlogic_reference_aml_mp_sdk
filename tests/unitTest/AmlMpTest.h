@@ -1,11 +1,25 @@
+/*
+ * Copyright (c) 2020 Amlogic, Inc. All rights reserved.
+ *
+ * This source code is subject to the terms and conditions defined in the
+ * file 'LICENSE' which is part of this source code package.
+ *
+ * Description:
+ */
 #ifndef _AML_MP_PLAYER_VIDEO_TEST_H_
 #define _AML_MP_PLAYER_VIDEO_TEST_H_
 
-#define LOG_TAG "AmlMpTest"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include "../amlMpTestSupporter/Playback.h"
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-compare"
+#endif
 #include <gtest/gtest.h>
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>

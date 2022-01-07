@@ -22,7 +22,6 @@
 
 #include "AmlMpEventLooperRoster.h"
 
-//#include "ADebug.h"
 #include "AmlMpEventHandler.h"
 #include "AmlMpMessage.h"
 
@@ -103,6 +102,7 @@ void AmlMpEventLooperRoster::unregisterStaleHandlers() {
     }
 }
 
+#if 0
 static void makeFourCC(uint32_t fourcc, char *s, size_t bufsz) {
     s[0] = (fourcc >> 24) & 0xff;
     if (s[0]) {
@@ -114,6 +114,7 @@ static void makeFourCC(uint32_t fourcc, char *s, size_t bufsz) {
         snprintf(s, bufsz, "%u", fourcc);
     }
 }
+#endif
 
 void AmlMpEventLooperRoster::dump(int fd, const std::vector<std::string>& args) {
     bool clear = false;
@@ -148,7 +149,7 @@ void AmlMpEventLooperRoster::dump(int fd, const std::vector<std::string>& args) 
                 //s.appendFormat(": %u messages processed", handler->mMessageCounter);
                 if (verboseStats) {
                     for (size_t j = 0; j < handler->mMessages.size(); j++) {
-                        char fourcc[15];
+                        //char fourcc[15];
                         //makeFourCC(handler->mMessages.keyAt(j), fourcc, sizeof(fourcc));
                         //s.appendFormat("\n    %s: %u",
                                 //fourcc,

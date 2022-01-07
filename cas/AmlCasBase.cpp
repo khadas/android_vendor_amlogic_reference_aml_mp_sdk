@@ -182,6 +182,7 @@ int AmlCasBase::stopDVRReplay()
 
 int AmlCasBase::dvrReplay(Aml_MP_CASCryptoParams* cryptoParams)
 {
+    AML_MP_UNUSED(cryptoParams);
     return 0;
 }
 

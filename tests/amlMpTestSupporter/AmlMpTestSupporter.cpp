@@ -123,7 +123,7 @@ int AmlMpTestSupporter::getSource()
         //return nullptr;
     }
     Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
-    int programNumber = mSource->getProgramNumber();
+    //int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     Aml_MP_Initialize();
 
@@ -153,7 +153,7 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     getSource();
     Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
     int programNumber = mSource->getProgramNumber();
-    Aml_MP_DemuxSource sourceId = mSource->getSourceId();
+    //Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
     if (mOptions & AML_MP_OPTION_PREFER_TUNER_HAL) {
         demuxType = AML_MP_TUNERHAL_DEMUX;
@@ -226,7 +226,6 @@ int AmlMpTestSupporter::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     std::unique_lock<std::mutex> _l(mLock);
 #endif
     mSyncSource = syncSource;
-    MLOGI("mSyncSource is", mSyncSource);
 
     return 0;
 }
@@ -500,6 +499,7 @@ int AmlMpTestSupporter::startDVRPlayback(bool isSetStreams, bool isTimeShift)
 
 int AmlMpTestSupporter::startUIOnly()
 {
+    int ret = 0;
 #ifdef ANDROID
     mNativeUI = new NativeUI();
     if (mDisplayParam.width < 0) {
@@ -523,12 +523,12 @@ int AmlMpTestSupporter::startUIOnly()
     }
 
     int videoTunnelId = -1;
-    int ret = mNativeWindowHelper.setSidebandNonTunnelMode(window.get(), videoTunnelId);
-    printf("created ui channel id:%d\n", ret, videoTunnelId);
+    ret = mNativeWindowHelper.setSidebandNonTunnelMode(window.get(), videoTunnelId);
+    printf("created ui channel id:%d\n", videoTunnelId);
 
 #endif
 
-    return 0;
+    return ret;
 }
 
 int AmlMpTestSupporter::stop()

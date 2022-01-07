@@ -194,6 +194,7 @@ int AmlTvPlayer::setPlaybackRate(float rate) {
 }
 
 int AmlTvPlayer::getPlaybackRate(float* rate) {
+    AML_MP_UNUSED(rate);
     MLOGI("getPlaybackRate not implemented");
     return AML_MP_ERROR_INVALID_OPERATION;
 }
@@ -204,14 +205,21 @@ int AmlTvPlayer::switchAudioTrack(const Aml_MP_AudioParams* params) {
 }
 
 int AmlTvPlayer::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts) {
+    AML_MP_UNUSED(type);
+    AML_MP_UNUSED(buffer);
+    AML_MP_UNUSED(size);
+    AML_MP_UNUSED(pts);
     return size;
 }
 
 int AmlTvPlayer::getCurrentPts(Aml_MP_StreamType type, int64_t* pts) {
+    AML_MP_UNUSED(type);
+    AML_MP_UNUSED(pts);
     return 0;
 }
 
 int AmlTvPlayer::getBufferStat(Aml_MP_BufferStat* bufferStat) {
+    AML_MP_UNUSED(bufferStat);
     return 0;
 }
 
@@ -226,7 +234,9 @@ int AmlTvPlayer::setVolume(float volume) {
 }
 
 int AmlTvPlayer::getVolume(float* volume) {
-    MLOGI("getVolume volume: %f", volume);
+    if (volume) {
+        MLOGI("getVolume volume: %f", *volume);
+    }
     return 0;
 }
 
@@ -239,11 +249,13 @@ int AmlTvPlayer::hideVideo() {
 }
 
 int AmlTvPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
+    AML_MP_UNUSED(parameter);
     MLOGI("Call setParameter, key is %s", mpPlayerParameterKey2Str(key));
     return 0;
 }
 
 int AmlTvPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
+    AML_MP_UNUSED(parameter);
     MLOGD("Call getParameter, key is %s", mpPlayerParameterKey2Str(key));
     return 0;
 }
@@ -254,6 +266,7 @@ int AmlTvPlayer::setAVSyncSource(Aml_MP_AVSyncSource syncSource) {
 }
 
 int AmlTvPlayer::setPcrPid(int pid) {
+    AML_MP_UNUSED(pid);
     return 0;
 }
 
@@ -282,6 +295,8 @@ int AmlTvPlayer::stopADDecoding() {
 }
 
 int AmlTvPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) {
+    AML_MP_UNUSED(params);
+    AML_MP_UNUSED(enableMix);
     return 0;
 }
 

@@ -20,7 +20,8 @@ LOCAL_SRC_FILES := \
     AmlMpDvrPlayerVideoTest.cpp \
     AmlMpDvrPlayerAudioTest.cpp
 
-LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
+	-Werror -Wsign-compare
 LOCAL_C_INCLUDES :=
 LOCAL_SHARED_LIBRARIES := libutils \
     libcutils \

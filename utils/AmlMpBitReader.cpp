@@ -16,9 +16,6 @@
 
 #include "AmlMpBitReader.h"
 
-#ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
-#endif
 namespace aml_mp {
 
 AmlMpBitReader::AmlMpBitReader(const uint8_t *data, size_t size)

@@ -6,12 +6,11 @@
  *
  * Description:
  */
+#define LOG_TAG "AmlMpCodecCapability"
 #include "AmlMpUtils.h"
 #include "AmlMpCodecCapability.h"
 #include "Amlsysfsutils.h"
 #include "AmlMpLog.h"
-
-#define LOG_TAG "AmlMpCodecCapability"
 
 typedef struct {
     Aml_MP_CodecID decoderName;
@@ -56,8 +55,8 @@ AmlMpCodecCapability::AmlMpCodecCapability()
     Json::Value json;
     getCodecCapabilityJson(AML_MP_STREAM_TYPE_VIDEO, &json);
 
-    Json::FastWriter writer;
-    mVideoCabilityJsonStr = writer.write(json);
+    Json::StreamWriterBuilder builder;
+    mVideoCabilityJsonStr = Json::writeString(builder, json);
 }
 
 AmlMpCodecCapability::~AmlMpCodecCapability()
@@ -153,12 +152,17 @@ void AmlMpCodecCapability::getCodecCapabilityJson(Aml_MP_StreamType streamType, 
 }
 
 void AmlMpCodecCapability::getCodecCapabilityStr(Aml_MP_StreamType streamType, char* str) {
+    *str = '\0';
+
     switch (streamType) {
         case AML_MP_STREAM_TYPE_VIDEO:
         {
             memcpy(str, mVideoCabilityJsonStr.c_str(), mVideoCabilityJsonStr.length()+1);
             break;
         }
+
+        default:
+            break;
     }
 }
 

@@ -11,9 +11,6 @@
 #define LOG_TAG "AmlMpPlayerDemo_Parser"
 #include <utils/Log.h>
 #include "AmlTsParser.h"
-#ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
-#endif
 #include <vector>
 #include <utils/AmlMpUtils.h>
 
@@ -101,10 +98,10 @@ void ProgramInfo::debugLog() const
 
 ///////////////////////////////////////////////////////////////////////////////
 Parser::Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, Aml_MP_DemuxType demuxType, bool isSecureBuffer)
-: mDemuxId(demuxId)
-, mIsHardwareSource(isHardwareSource)
+: mIsHardwareSource(isHardwareSource)
 , mDemuxType(demuxType)
 , mIsSecureBuffer(isSecureBuffer)
+, mDemuxId(demuxId)
 , mProgramInfo(new ProgramInfo)
 {
 
@@ -236,6 +233,7 @@ int Parser::writeData(const uint8_t* buffer, size_t size)
 
 int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
 {
+    AML_MP_UNUSED(pid);
     Parser* parser = (Parser*)userData;
 
     MLOGI("pat cb, size:%d", size);
@@ -664,7 +662,7 @@ void Parser::onPmtParsed(const PMTSection& results)
         PMTStream* stream = &it;
         typeInfo = getStreamTypeInfo(stream->streamType);
         if (typeInfo == nullptr) {
-            for (size_t j = 0; j < stream->descriptorCount; ++j) {
+            for (int j = 0; j < stream->descriptorCount; ++j) {
                 typeInfo = getStreamTypeInfo(stream->descriptorTags[j], g_descTypes);
                 if (typeInfo != nullptr) {
                     MLOGI("stream pid:%d, found tag:%#x", stream->streamPid, stream->descriptorTags[j]);
@@ -932,7 +930,6 @@ size_t findEcmPacket(const uint8_t* buffer, size_t size, const std::vector<int>&
 {
     size_t offset = 0;
     int pid = -1;
-    bool found = false;
 
     for (; offset <= size-TS_PACKET_SIZE; ++offset) {
         if (buffer[offset] != 0x47) {

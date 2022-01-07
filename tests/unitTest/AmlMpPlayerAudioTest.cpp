@@ -2,7 +2,6 @@
 #include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
-#include <gtest/gtest.h>
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>
@@ -111,7 +110,7 @@ TEST_F(AmlMpTest, SwitchAudioTrackTest)
         //audioParams
         Aml_MP_AudioParams audioParams{};
         memset(&audioParams, 0, sizeof(audioParams));
-        for (int i = 0; i < audioStreams.size(); i++)
+        for (size_t i = 0; i < audioStreams.size(); i++)
         {
             audioParams.audioCodec = audioStreams.at(i).codecId;
             audioParams.pid = audioStreams.at(i).pid;

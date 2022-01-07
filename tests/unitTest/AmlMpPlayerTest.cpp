@@ -2,7 +2,6 @@
 #include "AmlMpTest.h"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
-#include <gtest/gtest.h>
 #include "TestUrlList.h"
 #include "../amlMpTestSupporter/TestModule.h"
 #include <AmlMpTestSupporter.h>
@@ -113,7 +112,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     mpTestSupporter->mChannelId = AML_MP_CHANNEL_ID_MAIN;
     mpTestSupporter->mDemuxId = AML_MP_HW_DEMUX_ID_1;
     mpTestSupporter->startPlay();
-    void *player = getPlayer();
+    //void *player = getPlayer();
     if (mPIP) {
         EXPECT_FALSE(waitPlayingErrors());
     }
@@ -334,7 +333,7 @@ TEST_F(AmlMpTest, PlaybackRateTest)
             checkHasVideo(url);
             EXPECT_FALSE(waitPlayingErrors(5 * 1000ll));
             void *player = getPlayer();
-            for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
+            for (size_t i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
             {
                 EXPECT_EQ(Aml_MP_Player_SetPlaybackRate(player, rate[i]), AML_MP_OK);
                 EXPECT_TRUE(waitVideoChangedEvent(kWaitVideoChangedMs));
@@ -359,7 +358,7 @@ TEST_F(AmlMpTest, PlaybackRateTest1)
             checkHasVideo(url);
             EXPECT_FALSE(waitPlayingErrors(5 * 1000ll));
             void *player = getPlayer();
-            for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
+            for (size_t i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
             {
                 EXPECT_EQ(Aml_MP_Player_SetPlaybackRate(player, rate[i]), AML_MP_ERROR_BAD_VALUE);
                 EXPECT_FALSE(waitPlayingErrors());

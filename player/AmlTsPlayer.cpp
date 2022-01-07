@@ -422,7 +422,7 @@ int AmlTsPlayer::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size
 int AmlTsPlayer::packetize(
         bool isAudio,
         const char *buffer_add,
-        int32_t buffer_size,
+        size_t buffer_size,
         sptr<AmlMpBuffer> *packets,
         uint32_t flags,
         const uint8_t *PES_private_data, size_t PES_private_data_len,
@@ -433,6 +433,7 @@ int AmlTsPlayer::packetize(
 #define AUDIO_STREAM_ID 0xc0
 #define TS_PACKET_HEADER_SIZE 4
 #define PES_PACKET_LENGTH_MAX 65536
+    AML_MP_UNUSED(flags);
 
     int32_t stream_pid = RANDOM_VALID_AUDIO_STREAM_PID;
     int32_t stream_id = 0x00;
@@ -627,7 +628,7 @@ int AmlTsPlayer::packetize(
 
 int AmlTsPlayer::incrementContinuityCounter(int isAudio)
 {
-    unsigned prevCounter;
+    unsigned prevCounter = 0;
     if (isAudio) {
         prevCounter = mAudioContinuityCounter;
         if (++mAudioContinuityCounter == 16) {
@@ -861,8 +862,8 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             if (para != -1) {
                 ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, parameter);
             }
-            break;
 #endif
+            break;
         }
 
         case AML_MP_PLAYER_PARAMETER_VIDEO_CROP:

@@ -46,7 +46,8 @@ AmCasLibWrapper<ServiceType>::~AmCasLibWrapper()
 {
     MLOG();
     if (mCasObj) {
-        delete mCasObj;
+        //CHECK: hasn't call destructor;
+        free(mCasObj);
         MLOGI("delete mCasObj");
     }
 }

@@ -15,9 +15,6 @@
 #include <utils/AmlMpEventLooper.h>
 #include <utils/AmlMpBuffer.h>
 #include <utils/AmlMpMessage.h>
-#ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
-#endif
 #include <utils/AmlMpEventHandlerReflector.h>
 #include <utils/AmlMpBitReader.h>
 #include <inttypes.h>
@@ -30,7 +27,7 @@ namespace aml_mp {
 #define ERROR_SIZE (-1)
 #define ERROR_CRC  (-2)
 #define MY_LOGV(x, y) \
-    do { unsigned tmp = y; MLOGV(x, tmp); } while (0)
+    do { unsigned tmp = y; (void)tmp; MLOGV(x, tmp); } while (0)
 
 const size_t kTSPacketSize = 188;
 
@@ -101,7 +98,7 @@ private:
     sptr<AmlMpBuffer> mBuffer;
     int mPid = 0x1FFF;
     SwTsParser* mTsParser = nullptr;
-    int32_t mExpectedContinuityCounter = -1;
+    //int32_t mExpectedContinuityCounter = -1;
     bool mPayloadStarted = false;
 
     mutable bool mGuessed = false;
@@ -150,6 +147,9 @@ AmlSwDemux::~AmlSwDemux()
 
 int AmlSwDemux::open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer)
 {
+    AML_MP_UNUSED(demuxId);
+    AML_MP_UNUSED(isSecureBuffer);
+
     if (isHardwareSource) {
         MLOGE("swdemux don't support hw source!!!");
         return -1;
@@ -353,8 +353,8 @@ void AmlSwDemux::onFeedData(const sptr<AmlMpBuffer>& entry)
         if (*entry->data() != 0x47) {
             MLOGV("mOutBufferCount:%lld, entry start bytes:%#x, offset:%d, size:%d",
                   mOutBufferCount.load(), *entry->data(), entry->offset(), entry->size());
-            const uint8_t* p = entry->data();
-            MLOGV("entry bytes: %#x %#x %#x %#x %#x", p[0], p[1], p[2], p[3], p[4]);
+            //const uint8_t* p = entry->data();
+            //MLOGV("entry bytes: %#x %#x %#x %#x %#x", p[0], p[1], p[2], p[3], p[4]);
 
             err = resync(entry);
             if (err < 0) {
@@ -503,6 +503,7 @@ uint32_t SwTsParser::crc32(const uint8_t *p_start, size_t length)
 
 int SwTsParser::feedTs(const uint8_t* buffer, size_t size)
 {
+    AML_MP_UNUSED(size);
     //CHECK_EQ(size, kTSPacketSize);
 
     AmlMpBitReader br(buffer, kTSPacketSize);
@@ -525,6 +526,8 @@ void SwTsParser::reset()
 
 int SwTsParser::addPSISection(int pid, bool checkCRC)
 {
+    AML_MP_UNUSED(checkCRC);
+
     if (pid == 0x1FFF)
         return -1;
 
@@ -579,6 +582,7 @@ void SwTsParser::parseAdaptationField(AmlMpBitReader *br, unsigned PID)
 
             br->skipBits(6);
             unsigned PCR_ext = br->getBits(9);
+            (void)PCR_ext;
 
             // The number of bytes from the start of the current
             // MPEG2 transport stream packet up and including
@@ -586,10 +590,10 @@ void SwTsParser::parseAdaptationField(AmlMpBitReader *br, unsigned PID)
             //size_t byteOffsetFromStartOfTSPacket =
                 //(188 - br->numBitsLeft() / 8);
 
-            int64_t PCR = PCR_base * 300 + PCR_ext;
+            //int64_t PCR = PCR_base * 300 + PCR_ext;
 
-            MLOGV("PID 0x%04x: PCR = 0x%016" PRIx64 " (%.2f)",
-                  PID, PCR, PCR / 27E6);
+            //MLOGV("PID 0x%04x: PCR = 0x%016" PRIx64 " (%.2f)",
+                  //PID, PCR, PCR / 27E6);
 
             // The number of bytes received by this parser up to and
             // including the final byte of this PCR_ext field.
@@ -667,7 +671,7 @@ void SwTsParser::parseProgramAssociationTable(AmlMpBitReader *br)
         return ;
     }
     unsigned section_syntax_indictor = br->getBits(1);
-    MLOGV("  section_syntax_indictor = %u", section_syntax_indictor);
+    MY_LOGV("  section_syntax_indictor = %u", section_syntax_indictor);
     //CHECK_EQ(section_syntax_indictor, 1u);
 
     //CHECK_EQ(br->getBits(1), 0u);
@@ -1037,10 +1041,10 @@ bool SwTsParser::PSISection::parse(int PID, unsigned continuity_counter,
 int SwTsParser::PSISection::parseSection(AmlMpBitReader* br)
 {
     unsigned table_id = br->getBits(8);
-    MLOGV("  table_id = %u", table_id);
+    MY_LOGV("  table_id = %u", table_id);
 
     unsigned section_syntax_indicator = br->getBits(1);
-    MLOGV("  section_syntax_indicator = %u", section_syntax_indicator);
+    MY_LOGV("  section_syntax_indicator = %u", section_syntax_indicator);
 
     unsigned private_indicator =  br->getBits(1);
 

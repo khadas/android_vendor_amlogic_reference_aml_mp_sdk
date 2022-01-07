@@ -35,11 +35,14 @@ struct list_head {
 #include <sys/syscall.h>
 #include <unistd.h>
 #ifdef ANDROID
+#include <media/stagefright/foundation/ADebug.h>
 namespace android {
 class NativeHandle;
 }
+#else
+#include <assert.h>
+#define CHECK(condition)  assert(condition)
 #endif
-
 
 namespace aml_mp {
 #ifndef LOG_ALWAYS_FATAL
@@ -50,11 +53,6 @@ namespace aml_mp {
 #define LITERAL_TO_STRING(x) LITERAL_TO_STRING_INTERNAL(x)
 
 #define AML_MP_UNUSED(x) (void)(x)
-
-#ifndef CHECK
-#define CHECK(condition)  condition
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 #define RETURN_IF(error, cond)                                                       \
@@ -228,7 +226,6 @@ static inline pid_t gettid()
 const char* convertToMIMEString(Aml_MP_CodecID codecId);
 Aml_MP_CodecID convertToMpCodecId(std::string mimeStr);
 const char* convertToResolutionString(Aml_MP_Resolution resolution);
-Aml_MP_Resolution convertToMpResolution(std::string resolutionStr);
 
 void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters = " ");
 std::string trim(std::string& s, const std::string& chars = " \n");

@@ -32,7 +32,7 @@ void AmlMpChunkFifo::init(size_t maxSize, size_t chunkSize)
 
     mChunkTable = new char*[mChunkCount]{};
 
-    for (int i = 0; i < mChunkCount; ++i) {
+    for (size_t i = 0; i < mChunkCount; ++i) {
         if (mChunkTable[i] != nullptr) {
             MLOGE("ERROR! mChunkTable pointer:%p, i:%d", mChunkTable[i], i);
         }

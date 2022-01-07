@@ -28,7 +28,7 @@ TunerService& TunerService::instance() {
 
 void TunerService::checkAvailable() {
     Result res;
-    mTuner->getDemuxCaps([&](Result r, DemuxCapabilities caps) {
+    mTuner->getDemuxCaps([&](Result r, DemuxCapabilities caps __unused) {
         res = r;
     });
     if (res != Result::SUCCESS) {

@@ -265,7 +265,6 @@ private:
     int mVPid = AML_MP_INVALID_PID;
     int mAPid = AML_MP_INVALID_PID;
 
-    int mProgramMapPid = -1;
     bool mIsHardwareSource = false;
     Aml_MP_DemuxType mDemuxType = AML_MP_HARDWARE_DEMUX;
     bool mIsSecureBuffer = false;

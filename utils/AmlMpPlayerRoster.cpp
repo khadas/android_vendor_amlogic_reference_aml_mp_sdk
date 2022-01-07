@@ -17,7 +17,7 @@ AmlMpPlayerRoster* AmlMpPlayerRoster::sAmlPlayerRoster = nullptr;
 AmlMpPlayerRoster::AmlMpPlayerRoster()
 : mPlayers{nullptr}
 {
-
+    MLOG();
 }
 
 AmlMpPlayerRoster::~AmlMpPlayerRoster()

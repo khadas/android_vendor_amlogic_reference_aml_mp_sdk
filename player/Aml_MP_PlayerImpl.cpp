@@ -20,7 +20,6 @@
 #include "AmlPlayerBase.h"
 
 #ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
 #ifndef __ANDROID_VNDK__
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>
@@ -353,10 +352,13 @@ int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock)
             mPlayer->stop();
             lock.lock();
 
-            Aml_MP_AudioParams dummyAudioParam{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN};
+            Aml_MP_AudioParams dummyAudioParam;
+            memset(&dummyAudioParam, 0, sizeof(dummyAudioParam));
+            dummyAudioParam.pid = AML_MP_INVALID_PID;
+            dummyAudioParam.audioCodec = AML_MP_CODEC_UNKNOWN;
             mPlayer->setAudioParams(&dummyAudioParam);
 
-            Aml_MP_AudioParams dummyADParam{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN};
+            Aml_MP_AudioParams &dummyADParam = dummyAudioParam;
             mPlayer->setADParams(&dummyADParam, false);
         }
     }
@@ -1102,12 +1104,15 @@ int AmlMpPlayerImpl::getParameter(Aml_MP_PlayerParameterKey key, void* parameter
 
     if (ret == AML_MP_ERROR_INVALID_OPERATION) {
         switch (key) {
-            case AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE:
-            {
-                *static_cast<bool*>(parameter) = mVideoShowState;
-                ret = AML_MP_OK;
-                break;
-            }
+        case AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE:
+        {
+            *static_cast<bool*>(parameter) = mVideoShowState;
+            ret = AML_MP_OK;
+            break;
+        }
+
+        default:
+            break;
         }
 
     }
@@ -1125,7 +1130,6 @@ int AmlMpPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     std::unique_lock<std::mutex> _l(mLock);
 
     mSyncSource = syncSource;
-    MLOGI("mSyncSource is", mSyncSource);
 
     return 0;
 }
@@ -1281,7 +1285,10 @@ int AmlMpPlayerImpl::stopAudioDecoding_l(std::unique_lock<std::mutex>& lock)
         if (mPlayer) {
             mPlayer->stopAudioDecoding();
 
-            Aml_MP_AudioParams dummyAudioParam{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN};
+            Aml_MP_AudioParams dummyAudioParam;
+            memset(&dummyAudioParam, 0, sizeof(dummyAudioParam));
+            dummyAudioParam.pid = AML_MP_INVALID_PID;
+            dummyAudioParam.audioCodec = AML_MP_CODEC_UNKNOWN;
             mPlayer->setAudioParams(&dummyAudioParam);
         }
 
@@ -1364,7 +1371,10 @@ int AmlMpPlayerImpl::stopADDecoding_l(std::unique_lock<std::mutex>& lock)
         if (mPlayer) {
             mPlayer->stopADDecoding();
 
-            Aml_MP_AudioParams dummyADParam{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN};
+            Aml_MP_AudioParams dummyADParam;
+            memset(&dummyADParam, 0, sizeof(dummyADParam));
+            dummyADParam.pid = AML_MP_INVALID_PID;
+            dummyADParam.audioCodec = AML_MP_CODEC_UNKNOWN;
             mPlayer->setADParams(&dummyADParam, false);
         }
 
@@ -1518,7 +1528,10 @@ const char* AmlMpPlayerImpl::stateString(State state)
         return "STATE_PAUSED";
     case STATE_STOPPED:
         return "STATE_STOPPED";
+    default:
+        break;
     }
+    return "STATE_IDLE";
 }
 
 std::string AmlMpPlayerImpl::decodingStateString(uint32_t streamState)
@@ -1567,7 +1580,7 @@ void AmlMpPlayerImpl::setState_l(State state)
 
 void AmlMpPlayerImpl::setDecodingState_l(Aml_MP_StreamType streamType, int state)
 {
-    int offset = streamType * kStreamStateBits;
+    unsigned int offset = streamType * kStreamStateBits;
 
     if (offset > sizeof(mStreamState)*8) {
         MLOGE("streamType(%s) is overflow!", mpStreamType2Str(streamType));

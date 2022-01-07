@@ -125,14 +125,14 @@ int AmlDVRRecorder::setStreams(Aml_MP_DVRStreamArray* streams)
         DVR_WrapperUpdatePidsParams_t updatePidParams;
         updatePidParams.nb_pids = count;
         memcpy(updatePidParams.pids, pids, sizeof(updatePidParams.pids));
-        for (int i = 0; i < updatePidParams.nb_pids; ++i) {
+        for (size_t i = 0; i < updatePidParams.nb_pids; ++i) {
             updatePidParams.pid_action[i] = DVR_RECORD_PID_CREATE;
         }
 
-        for (int i = 0; i < mRecordPids.nb_pids; ++i) {
+        for (size_t i = 0; i < mRecordPids.nb_pids; ++i) {
             bool found = false;
 
-            for (int j = 0; j < updatePidParams.nb_pids; ++j) {
+            for (size_t j = 0; j < updatePidParams.nb_pids; ++j) {
                 if (updatePidParams.pids[j].pid == mRecordPids.pids[i].pid) {
                     found = true;
                     updatePidParams.pid_action[j] = DVR_RECORD_PID_KEEP;

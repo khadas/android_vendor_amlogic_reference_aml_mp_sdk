@@ -9,12 +9,10 @@
 
 #define LOG_TAG "AmlMpPlayerDemo_TestUtils"
 #include <utils/AmlMpLog.h>
+#include <utils/AmlMpUtils.h>
 #include "TestUtils.h"
 #include <signal.h>
 #include <thread>
-#ifdef ANDROID
-#include <media/stagefright/foundation/ADebug.h>
-#endif
 #include <poll.h>
 #include <unistd.h>
 
@@ -128,6 +126,8 @@ void NativeUI::controlSurface(int zorder)
     transcation.setLayer(mSurfaceControlUi, zorder);
 
     transcation.apply();
+#else
+    AML_MP_UNUSED(zorder);
 #endif
 }
 
@@ -152,6 +152,11 @@ void NativeUI::controlSurface(int left, int top, int right, int bottom)
     }
 
     transcation.apply();
+#else
+    AML_MP_UNUSED(left);
+    AML_MP_UNUSED(top);
+    AML_MP_UNUSED(right);
+    AML_MP_UNUSED(bottom);
 #endif
 }
 

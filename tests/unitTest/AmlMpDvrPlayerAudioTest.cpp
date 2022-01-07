@@ -16,7 +16,7 @@
 
 using namespace aml_mp;
 
-void AmlMpBase::DVRPlayback_SetGetVolume(std::string url, float volume)
+void AmlMpBase::DVRPlayback_SetGetVolume(std::string url __unused, float volume)
 {
     void* dvrplayer = getDVRPlayer();
     float volume2;

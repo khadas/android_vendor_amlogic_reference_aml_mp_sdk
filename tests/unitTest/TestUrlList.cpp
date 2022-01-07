@@ -19,6 +19,7 @@ static const char* mName = LOG_TAG;
 namespace aml_mp {
 TestUrlList::TestUrlList()
 {
+    MLOG();
 }
 
 void TestUrlList::initSourceDir(const std::string& sourceDir)
@@ -34,7 +35,7 @@ void TestUrlList::initSourceUrl(const std::string& sourceUrl)
     mSourceUrl = sourceUrl;
 }
 
-bool TestUrlList::getUrl(const std::string& testName, std::string* url)
+bool TestUrlList::getUrl(const std::string& testName __unused, std::string* url)
 {
     if (mSourceUrl == "") return false;
     *url = mSourceUrl;

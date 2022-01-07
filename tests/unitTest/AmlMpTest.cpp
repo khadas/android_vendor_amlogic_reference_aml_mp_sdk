@@ -58,7 +58,7 @@ std::string get_frame_count_checkpoint()
     return std::string(buf);
 }
 
-void check_frame_count(int timeoutMs)
+void check_frame_count(int timeoutMs __unused)
 {
     std::string frame = "1";
     std::string frame_temp = "1";
@@ -265,7 +265,7 @@ bool AmlMpBase::waitPlaying(int timeoutMs)
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mPlayingHaveErrors; });
 }
 
-void AmlMpBase::playereventCallback(Aml_MP_PlayerEventType event, int64_t param)
+void AmlMpBase::playereventCallback(Aml_MP_PlayerEventType event, int64_t param __unused)
 {
     std::unique_lock <std::mutex> _l(mLock);
     switch (event)
@@ -323,7 +323,7 @@ AML_MP_PLAYER AmlMpBase::getPlayer()
     return player;
 }
 
-void AmlMpBase::dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param)
+void AmlMpBase::dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param __unused)
 {
     std::unique_lock <std::mutex> _l(mLock);
     switch (event)

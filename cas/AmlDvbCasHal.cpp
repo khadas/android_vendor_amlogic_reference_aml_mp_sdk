@@ -31,6 +31,8 @@ static CA_SERVICE_TYPE_t convertToCAServiceType(Aml_MP_CASServiceType casService
 
     case AML_MP_CAS_SERVICE_PVR_RECORDING:
         return SERVICE_PVR_RECORDING;
+    default:
+        break;
     }
 
     return SERVICE_TYPE_INVALID;
@@ -44,7 +46,12 @@ static CA_SERVICE_MODE_t convertToCAServiceMode(Aml_MP_CASServiceMode serviceMod
 
     case AML_MP_CAS_SERVICE_IPTV:
         return SERVICE_IPTV;
+
+    default:
+        break;
     }
+
+    return SERVICE_DVB;
 }
 
 static void convertToCAServiceInfo(AM_CA_ServiceInfo_t* caServiceInfo, Aml_MP_CASServiceInfo* mpServiceInfo)
@@ -258,6 +265,8 @@ int AmlDvbCasHal::dvrReplay(Aml_MP_CASCryptoParams* cryptoParams)
 #ifdef HAVE_CAS_HAL
     AM_CA_CryptoPara_t* amCryptoParams = reinterpret_cast<AM_CA_CryptoPara_t*>(cryptoParams);
     ret = convertToAmlMPErrorCode(AM_CA_DVRReplay(mCasSession, amCryptoParams));
+#else
+    AML_MP_UNUSED(cryptoParams);
 #endif
 
     return ret;
