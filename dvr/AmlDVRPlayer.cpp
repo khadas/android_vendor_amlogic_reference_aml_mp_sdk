@@ -498,7 +498,7 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         case AML_MP_PLAYER_PARAMETER_VIDEO_CROP:
         {
             Aml_MP_Rect videoCrop = *(Aml_MP_Rect*)parameter;
-            ret = AmTsPlayer_setVideoWindow(mPlayer, videoCrop.left, videoCrop.top, videoCrop.right, videoCrop.bottom);
+            ret = AmTsPlayer_setVideoCrop(mPlayer, videoCrop.left, videoCrop.top, videoCrop.right, videoCrop.bottom);
         }
         break;
 
