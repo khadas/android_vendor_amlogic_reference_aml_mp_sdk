@@ -371,7 +371,7 @@ int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift)
     return 0;
 }
 
-int AmlMpTestSupporter::setStreams()
+int AmlMpTestSupporter::DVRRecorder_setStreams()
 {
     int ret = 0;
     if (mRecorder == nullptr) return -1;
@@ -384,12 +384,36 @@ int AmlMpTestSupporter::setStreams()
     return 0;
 }
 
-int AmlMpTestSupporter::startAftersetStreams()
+int AmlMpTestSupporter::DVRPlayback_setStreams()
+{
+    int ret = 0;
+    if (mDVRPlayback == nullptr) return -1;
+
+    ret = mDVRPlayback->setStreams();
+    if (ret < 0) {
+        MLOGE("setStreams failed!");
+        return -1;
+    }
+    return 0;
+}
+
+int AmlMpTestSupporter::startDVRRecorderAfterSetStreams()
 {
     int ret = 0;
     ret = mRecorder->start(false);
     if (ret < 0) {
-        MLOGE("setStreams: start failed!");
+        MLOGE("DVRRecorder setStreams: start failed!");
+        return -1;
+    }
+    return 0;
+}
+
+int AmlMpTestSupporter::startDVRPlaybackAfterSetStreams()
+{
+    int ret = 0;
+    ret = mDVRPlayback->start(false);
+    if (ret < 0) {
+        MLOGE("DVRPlayback setStreams: start failed!");
         return -1;
     }
     return 0;
@@ -426,7 +450,7 @@ std::string AmlMpTestSupporter::stripUrlIfNeeded(const std::string& url) const
     return result;
 }
 
-int AmlMpTestSupporter::startDVRPlayback(bool isTimeShift)
+int AmlMpTestSupporter::startDVRPlayback(bool isSetStreams, bool isTimeShift)
 {
     MLOG();
     int ret = 0;
@@ -456,7 +480,9 @@ int AmlMpTestSupporter::startDVRPlayback(bool isTimeShift)
 #endif
 #endif
 
-    ret = mDVRPlayback->start();
+    if (isSetStreams) {
+        ret = mDVRPlayback->start();
+    }
     if (ret < 0) {
         MLOGE("DVR playback start failed!");
         return -1;
@@ -707,4 +733,9 @@ sptr<TestModule> AmlMpTestSupporter::getRecorder() const
     return mRecorder;
 }
 
+//getDVRPlayer
+sptr<TestModule> AmlMpTestSupporter::getDVRPlayer() const
+{
+    return mDVRPlayback;
+}
 }

@@ -79,9 +79,11 @@ public:
     void addOptions(uint64_t options);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
     int startRecord(bool isSetStreams = true, bool isTimeShift = false);
-    int startDVRPlayback(bool isTimeShift=false);
-    int setStreams();
-    int startAftersetStreams();
+    int startDVRPlayback(bool isSetStreams=true, bool isTimeShift=false);
+    int DVRRecorder_setStreams();
+    int DVRPlayback_setStreams();
+    int startDVRRecorderAfterSetStreams();
+    int startDVRPlaybackAfterSetStreams();
     std::string stripUrlIfNeeded(const std::string& url) const;
     void getmUrl(std::string url);
 
@@ -99,6 +101,7 @@ public:
 
     sptr<TestModule> getPlayback() const;
     sptr<TestModule> getRecorder() const;
+    sptr<TestModule> getDVRPlayer() const;
 
 #ifdef ANDROID
     sptr<NativeUI> createNativeUI();

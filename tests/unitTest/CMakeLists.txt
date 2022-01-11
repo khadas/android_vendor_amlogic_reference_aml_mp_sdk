@@ -1,8 +1,16 @@
 project(amlMpUnitTest)
 
 SET(AML_MP_UNITTEST_SRC
+    AmlMpTest.cpp
     AmlMpPlayerVideoTest.cpp
     TestUrlList.cpp
+    AmlMpPlayerAudioTest.cpp
+    AmlMpPlayerSubtitleTest.cpp
+    AmlMpPlayerTest.cpp
+    AmlMpPlayerProbeTest.cpp
+    AmlMpDvrRecorderTest.cpp
+    AmlMpDvrRecorderProbeTest.cpp
+    AmlMpDvrPlayerTest.cpp
 )
 
 SET(TARGET amlMpUnitTest)

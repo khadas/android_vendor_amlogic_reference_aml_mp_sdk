@@ -28,10 +28,11 @@ public:
     void setANativeWindow(const android::sp<ANativeWindow>& window);
     #endif
     void registerEventCallback(Aml_MP_PlayerEventCallback cb, void* userData);
-    int start();
+    int start(bool isSetStream = true);
     int stop();
     void signalQuit();
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
+    int setStreams();
 
 protected:
     virtual const Command* getCommandTable() const override;

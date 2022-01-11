@@ -77,8 +77,63 @@ void DVRPlayback::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* use
     mUserData = userData;
 }
 
-int DVRPlayback::start()
+int DVRPlayback::setStreams()
 {
+
+    uint32_t segments;
+    uint64_t* pSegmentIds = nullptr;
+    int segmentIndex = 0;
+    Aml_MP_DVRSegmentInfo segmentInfo;
+    int ret = Aml_MP_DVRRecorder_GetSegmentList(mUrl.c_str(), &segments, &pSegmentIds);
+    if (ret < 0) {
+        MLOGE("getSegmentList for %s failed with %d", mUrl.c_str(), ret);
+        return -1;
+    }
+
+    ret = Aml_MP_DVRRecorder_GetSegmentInfo(mUrl.c_str(), pSegmentIds[segmentIndex], &segmentInfo);
+    if (ret < 0) {
+        MLOGE("getSegmentInfo failed with %d", ret);
+        goto exit;
+    }
+
+    Aml_MP_DVRStreamArray streams;
+    memset(&streams, 0, sizeof(streams));
+    for (int i = 0; i < segmentInfo.streams.nbStreams; ++i) {
+        switch (segmentInfo.streams.streams[i].type) {
+        case AML_MP_STREAM_TYPE_VIDEO:
+            streams.streams[AML_MP_DVR_VIDEO_INDEX].type = AML_MP_STREAM_TYPE_VIDEO;
+            streams.streams[AML_MP_DVR_VIDEO_INDEX].codecId = segmentInfo.streams.streams[i].codecId;
+            streams.streams[AML_MP_DVR_VIDEO_INDEX].pid = segmentInfo.streams.streams[i].pid;
+            break;
+
+        case AML_MP_STREAM_TYPE_AUDIO:
+            streams.streams[AML_MP_DVR_AUDIO_INDEX].type = AML_MP_STREAM_TYPE_AUDIO;
+            streams.streams[AML_MP_DVR_AUDIO_INDEX].codecId = segmentInfo.streams.streams[i].codecId;
+            streams.streams[AML_MP_DVR_AUDIO_INDEX].pid = segmentInfo.streams.streams[i].pid;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    ret = Aml_MP_DVRPlayer_SetStreams(mPlayer, &streams);
+    if (ret < 0) {
+        MLOGE("dvr player set streams failed with %d", ret);
+        goto exit;
+    }
+
+    exit:
+        if (pSegmentIds) {
+            ::free(pSegmentIds);
+            pSegmentIds = nullptr;
+        }
+    return 0;
+}
+
+int DVRPlayback::start(bool isSetStream)
+{
+#if 0
     bool useTif = false;
     Aml_MP_DVRPlayer_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_USE_TIF, &useTif);
     Aml_MP_DVRPlayer_RegisterEventCallback(mPlayer, mEventCallback, mUserData);
@@ -125,18 +180,30 @@ int DVRPlayback::start()
         MLOGE("dvr player set streams failed with %d", ret);
         goto exit;
     }
+#endif
 
-    ret = Aml_MP_DVRPlayer_Start(mPlayer, false);
-    if (ret < 0) {
-        MLOGE("dvr player start failed with %d", ret);
-        goto exit;
+    bool useTif = false;
+    Aml_MP_DVRPlayer_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_USE_TIF, &useTif);
+    Aml_MP_DVRPlayer_RegisterEventCallback(mPlayer, mEventCallback, mUserData);
+    if (isSetStream) {
+        setStreams();
     }
 
+    int ret = Aml_MP_DVRPlayer_Start(mPlayer, false);
+    if (ret < 0) {
+        MLOGE("dvr player start failed with %d", ret);
+        //goto exit;
+        return -1;
+    }
+
+#if 0
 exit:
     if (pSegmentIds) {
         ::free(pSegmentIds);
         pSegmentIds = nullptr;
     }
+#endif
+
     return 0;
 }
 
@@ -272,7 +339,8 @@ const TestModule::Command* DVRPlayback::getCommandTable() const
 
 void* DVRPlayback::getCommandHandle() const
 {
-    return nullptr;
+    //return nullptr;
+    return mPlayer;
 }
 
 

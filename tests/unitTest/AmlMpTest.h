@@ -1,7 +1,7 @@
 #ifndef _AML_MP_PLAYER_VIDEO_TEST_H_
 #define _AML_MP_PLAYER_VIDEO_TEST_H_
 
-#define LOG_TAG "AmlMpPlayerVideoTest"
+#define LOG_TAG "AmlMpTest"
 #include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include "../amlMpTestSupporter/Playback.h"
@@ -54,6 +54,8 @@ static const int kCheckFrameTimeOutMs = 50 * 1000ll;
 #define AML_MP_PID_CHANGED_DURATION 38 * 1000ll
 #define AML_MP_PID_CHANGED_EVENT 2 * 1000ll
 #define AML_MP_DATA_LOSS_EVENT 5 * 1000ll
+#define AML_MP_RECORD_PATH "dvr://storage/7F5D-3C01/amlMpRecordFile"
+
 
 
 struct AmlMpBase: public testing::Test
@@ -91,7 +93,7 @@ public:
     void dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param);
     void createMpTestSupporter(bool isPlayer = true);
     void createMpTestSupporter2(bool isPlayer = true);
-    void DVRSegment(std::string url);
+    void DVRSegment(std::string url, bool isDelete = false);
     void getDVRSourceInfo(Aml_MP_DVRSourceInfo info);
 
     std::string defaultFailureMessage(const std::string & url)
@@ -103,6 +105,7 @@ public:
     }
     AML_MP_PLAYER getPlayer();
     AML_MP_DVRRECORDER getRecorder();
+    AML_MP_DVRPLAYER getDVRPlayer();
     Aml_MP_PlayerParameterKey key;
     Aml_MP_VideoDisplayMode parameter;
     Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;

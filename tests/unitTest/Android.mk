@@ -8,13 +8,15 @@ LOCAL_NOTICE_FILE := $(LOCAL_PATH)/../../LICENSE
 LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := \
     TestUrlList.cpp \
+    AmlMpTest.cpp \
     AmlMpPlayerVideoTest.cpp \
     AmlMpPlayerAudioTest.cpp \
     AmlMpPlayerSubtitleTest.cpp\
     AmlMpPlayerTest.cpp \
     AmlMpPlayerProbeTest.cpp \
     AmlMpDvrRecorderTest.cpp \
-    AmlMpDvrRecorderProbeTest.cpp
+    AmlMpDvrRecorderProbeTest.cpp \
+    AmlMpDvrPlayerTest.cpp
 
 LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 LOCAL_C_INCLUDES :=

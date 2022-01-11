@@ -16,9 +16,7 @@ using namespace aml_mp;
 
 bool AmlMpBase::waitAudioChangedEvent(int timeoutMs)
 {
-#ifdef ANDROID
     std::unique_lock <std::mutex> _l(mLock);
-#endif
     return mCond.wait_for(_l, std::chrono::milliseconds(timeoutMs), [this] () { return mAudioChanged; });
 }
 

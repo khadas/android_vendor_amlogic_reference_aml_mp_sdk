@@ -15,19 +15,6 @@
 
 using namespace aml_mp;
 
-void AmlMpBase::createMpTestSupporter2(bool isPlayer)
-{
-    if (mpTestSupporter2 == nullptr)
-    {
-        mpTestSupporter2     = new AmlMpTestSupporter;
-        if (isPlayer) {
-            mpTestSupporter2->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
-        } else {
-            mpTestSupporter2->DVRRecorderRegisterEventCallback([] (void * userData, AML_MP_DVRRecorderEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->dvrRecorderEventCallback(event, param); }, this);
-        }
-    }
-}
-
 void AmlMpBase::videoDecoding(const std::string & url, bool mStart, bool mSourceReceiver)
 {
     MLOGI("----------VideoDecodingTest START----------\n");
@@ -96,6 +83,7 @@ void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSource
     MLOGI("----------AudioDecodingTest END----------\n");
 }
 
+#ifdef ANDROID
 void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
 {
     MLOGI("----------FCCAndPIPTest START----------\n");
@@ -163,6 +151,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     stopPlaying();
     MLOGI("----------FCCAndPIPTest END----------\n");
 }
+#endif
 
 TEST_F(AmlMpTest, PlayerStartStopTest)
 {
@@ -429,6 +418,7 @@ TEST_F(AmlMpTest, AVSyncModeTest)
     }
 }
 
+#ifdef ANDROID
 TEST_F(AmlMpTest, PIPTest)
 {
     std::string url;
@@ -447,4 +437,5 @@ TEST_F(AmlMpTest, FCCTest)
         FCCAndPIPTest(url, false);
     }
 }
+#endif
 

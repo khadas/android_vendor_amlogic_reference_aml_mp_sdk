@@ -17,6 +17,7 @@
 
 using namespace aml_mp;
 
+# if 0
 AML_MP_DVRRECORDER AmlMpBase::getRecorder()
 {
     sptr <TestModule> testModule = mpTestSupporter->getRecorder();
@@ -35,6 +36,7 @@ void AmlMpBase::DVRSegment(std::string url)
     EXPECT_EQ(Aml_MP_DVRRecorder_GetSegmentInfo(url.c_str(), segmentIds[segmentIndex], &segmentInfo), AML_MP_OK);
     EXPECT_EQ(Aml_MP_DVRRecorder_DeleteSegment(url.c_str(), segmentIds[segmentIndex]), AML_MP_OK);
 }
+#endif
 
 TEST_F(AmlMpTest, NormalRecorderTest)
 {
@@ -59,18 +61,17 @@ TEST_F(AmlMpTest, NormalRecorderTest)
         waitPlaying(5 * 1000ll);
         Aml_MP_DVRRecorderStatus status;
         EXPECT_EQ(Aml_MP_DVRRecorder_GetStatus(recorder, &status), AML_MP_OK);
-
+        stopPlaying();
 
         createMpTestSupporter2();
-        url = "dvr://storage/7F5D-3C01/amlMpRecordFile";
-        mpTestSupporter2->getmUrl(url);
+        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
 
         mpTestSupporter2->startDVRPlayback();
-        waitPlaying(20 * 1000ll);
-        DVRSegment(url);
+        waitPlaying(5 * 1000ll);
+        DVRSegment(AML_MP_RECORD_PATH, true);
         stopPlaying();
-        MLOGI("----------NormalRecorderTest END----------\n");
+        printf("----------NormalRecorderTest END----------\n");
     }
 }
 
@@ -91,12 +92,11 @@ TEST_F(AmlMpTest, TimeshiftRecordTest)
         }
 
         createMpTestSupporter2();
-        url = "dvr://data/amlMpRecordFile";
-        mpTestSupporter2->getmUrl(url);
+        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(true), AML_MP_OK);
+        EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(true, true), AML_MP_OK);
         waitPlaying(20 * 1000ll);
-        DVRSegment(url);
+        DVRSegment(AML_MP_RECORD_PATH, true);
         stopPlaying();
         MLOGI("----------TimeshiftRecordTest END----------\n");
     }
@@ -115,28 +115,27 @@ TEST_F(AmlMpTest, DynamicSetStreamTest)
 
         if (mProgramInfo != nullptr)
         {
-            mProgramInfo->videoPid = 220;
+            mProgramInfo->videoPid = 220; //220;
             mProgramInfo->audioPid = 131;
             EXPECT_EQ(ret = mpTestSupporter->startRecord(false, false), AML_MP_OK);
-            EXPECT_EQ(ret = mpTestSupporter->setStreams(), AML_MP_OK);
-            EXPECT_EQ(ret = mpTestSupporter->startAftersetStreams(), AML_MP_OK);
+            EXPECT_EQ(ret = mpTestSupporter->DVRRecorder_setStreams(), AML_MP_OK);
+            EXPECT_EQ(ret = mpTestSupporter->startDVRRecorderAfterSetStreams(), AML_MP_OK);
             waitPlaying(20 * 1000ll);
 
-            mProgramInfo->videoPid = 320;
-            mProgramInfo->audioPid = 132;
-            EXPECT_EQ(ret = mpTestSupporter->setStreams(), AML_MP_OK);
+            mProgramInfo->videoPid = 320; //320;
+            mProgramInfo->audioPid = 132; //132;
+            EXPECT_EQ(ret = mpTestSupporter->DVRRecorder_setStreams(), AML_MP_OK);
             waitPlaying(20 * 1000ll);
         }
         stopPlaying();
 
         createMpTestSupporter2();
-        url = "dvr://data/amlMpRecordFile";
-        mpTestSupporter2->getmUrl(url);
+        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
         EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(), AML_MP_OK);
         waitPlaying(40 * 1000ll);
         //get segment list/info/delete
-        //DVRSegment(url);
+        DVRSegment(AML_MP_RECORD_PATH, true);
 
         stopPlaying();
         MLOGI("----------DynamicSetStreamTest END----------\n");

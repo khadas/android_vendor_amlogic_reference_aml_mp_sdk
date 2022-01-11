@@ -86,7 +86,8 @@ int DVRRecord::setStreams()
     }
 
     streams.nbStreams = index;
-
+    //printf("videoPid: %d", mProgramInfo->videoPid, "codecId: %d", mProgramInfo->videoCodec, "audioPid: %d", mProgramInfo->audioPid, "audioCodecId: %d", mProgramInfo->audioCodec);
+    //printf("nbstreams: %d", streams.nbStreams);
     int ret = Aml_MP_DVRRecorder_SetStreams(mRecorder, &streams);
     if (ret < 0) {
         MLOGE("set streams failed with %d", ret);
