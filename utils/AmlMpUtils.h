@@ -92,7 +92,7 @@ public:
     ~FunctionLogger()
     {
         auto endTime = std::chrono::steady_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - mBeginTime).count();
+        int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - mBeginTime).count();
 
         if (mVerbose) {
             ALOG(LOG_DEBUG, "Aml_MP", "%s %s() << end %" PRId64 " ms", m_tag, m_func, duration);
