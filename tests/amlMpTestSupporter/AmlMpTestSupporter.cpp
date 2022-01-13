@@ -291,8 +291,7 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     ret = mPlayback->setSubtitleDisplayWindow(mDisplayParam.width, 0, mDisplayParam.width, mDisplayParam.height);
     #endif
 
-#ifdef ANDROID
-#ifndef __ANDROID_VNDK__
+#if defined(ANDROID) && !defined(__ANDROID_VNDK__)
 if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
     if (!mDisplayParam.videoMode) {
         if (mDisplayParam.aNativeWindow) {
@@ -319,7 +318,6 @@ if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
         return -1;
     }
     mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
-#endif
 #endif
     if (mStart == true)
     {
