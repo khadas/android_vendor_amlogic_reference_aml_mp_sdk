@@ -95,6 +95,8 @@ public:
     void createMpTestSupporter2(bool isPlayer = true);
     void DVRSegment(std::string url, bool isDelete = false);
     void getDVRSourceInfo(Aml_MP_DVRSourceInfo info);
+    void DVRPlayback_SetGetVolume(std::string url, float volume);
+
 
     std::string defaultFailureMessage(const std::string & url)
     const
