@@ -42,6 +42,7 @@ AmlDVRPlayer::AmlDVRPlayer(Aml_MP_DVRPlayerBasicParams* basicParams, Aml_MP_DVRP
     mRecStartTime = 0;
     mLimit = 0;
     mIsEncryptStream = basicParams->drmMode != AML_MP_INPUT_STREAM_NORMAL;
+    mAmTsBufType = inputStreamTypeConvert(basicParams->drmMode);
 
     if (decryptParams != nullptr) {
         setDecryptParams(decryptParams);
@@ -645,11 +646,10 @@ int AmlDVRPlayer::createTsPlayerIfNeeded()
     am_tsplayer_init_params tsPlayerInitParam{};
 
     tsPlayerInitParam.source = TS_MEMORY;
-    tsPlayerInitParam.drmmode = (am_tsplayer_input_buffer_type)mIsEncryptStream;
+    tsPlayerInitParam.drmmode = mAmTsBufType;
     MLOGI("drmMode: %d", tsPlayerInitParam.drmmode);
     tsPlayerInitParam.dmx_dev_id = mPlaybackOpenParams.dmx_dev_id;
     tsPlayerInitParam.event_mask = 0;
-
 
     am_tsplayer_handle tsPlayerHandle;
     am_tsplayer_result ret = AmTsPlayer_create(tsPlayerInitParam, &tsPlayerHandle);

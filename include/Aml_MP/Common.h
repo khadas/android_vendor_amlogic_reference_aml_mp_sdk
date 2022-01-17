@@ -203,6 +203,8 @@ typedef enum {
     AML_MP_CAS_SERVICE_LIVE_PLAY,       /**< Live playing.*/
     AML_MP_CAS_SERVICE_PVR_RECORDING,   /**< PVR recording.*/
     AML_MP_CAS_SERVICE_PVR_PLAY,        /**< PVR playback.*/
+    AML_MP_CAS_SERVICE_PVR_TIMESHIFT_RECORDING,   /**< PVR recording for timeshift.*/
+    AML_MP_CAS_SERVICE_PVR_TIMESHIFT_PLAY,        /**< PVR play for timeshift.*/
 
     AML_MP_CAS_SERVICE_TYPE_IPTV = 0x80,
     AML_MP_CAS_SERVICE_VERIMATRIX_IPTV, /**< Verimatrix IPTV*/

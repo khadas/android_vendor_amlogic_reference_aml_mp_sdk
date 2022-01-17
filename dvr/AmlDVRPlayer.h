@@ -68,6 +68,7 @@ private:
     Aml_MP_DemuxMemSecLevel mADSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
 
     bool mIsEncryptStream;
+    am_tsplayer_input_buffer_type mAmTsBufType;
     uint8_t* mSecureBuffer = nullptr;
     size_t mSecureBufferSize = 0;
 

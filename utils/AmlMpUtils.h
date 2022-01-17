@@ -188,6 +188,7 @@ DVB_DemuxSource_t convertToDVBDemuxSource(Aml_MP_DemuxSource source);
 Aml_MP_DemuxSource convertToMpDemuxSource(DVB_DemuxSource_t source);
 am_tsplayer_stream_type convertToTsplayerStreamType(Aml_MP_StreamType streamType);
 Aml_MP_StreamType convertToAmlMPStreamType(am_tsplayer_stream_type streamType);
+am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType streamType);
 
 int convertToCodecRecoveryMode(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
 Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryMode);

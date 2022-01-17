@@ -31,6 +31,12 @@ static CA_SERVICE_TYPE_t convertToCAServiceType(Aml_MP_CASServiceType casService
 
     case AML_MP_CAS_SERVICE_PVR_RECORDING:
         return SERVICE_PVR_RECORDING;
+
+    case AML_MP_CAS_SERVICE_PVR_TIMESHIFT_PLAY:
+        return SERVICE_PVR_TIMESHIFT_PLAY;
+
+    case AML_MP_CAS_SERVICE_PVR_TIMESHIFT_RECORDING:
+        return SERVICE_PVR_TIMESHIFT_RECORDING;
     default:
         break;
     }

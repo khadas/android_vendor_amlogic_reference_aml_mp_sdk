@@ -277,6 +277,8 @@ const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType)
     case AML_MP_CAS_SERVICE_LIVE_PLAY: return "live play";
     case AML_MP_CAS_SERVICE_PVR_RECORDING: return "pvr recording";
     case AML_MP_CAS_SERVICE_PVR_PLAY: return "pvr playback";
+    case AML_MP_CAS_SERVICE_PVR_TIMESHIFT_RECORDING: return "pvr recording for timeshift";
+    case AML_MP_CAS_SERVICE_PVR_TIMESHIFT_PLAY: return "pvr playback for timeshift";
     case AML_MP_CAS_SERVICE_VERIMATRIX_IPTV: return "verimatrix IPTV";
     case AML_MP_CAS_SERVICE_VERIMATRIX_WEB: return "verimatrix WEB";
     case AML_MP_CAS_SERVICE_WIDEVINE: return "widevine";
@@ -811,6 +813,21 @@ Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryM
         default:
             return AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT;
     }
+}
+
+am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType streamType) {
+    switch (streamType) {
+    case AML_MP_INPUT_STREAM_NORMAL:
+        return TS_INPUT_BUFFER_TYPE_NORMAL;
+
+    case AML_MP_INPUT_STREAM_ENCRYPTED:
+        return TS_INPUT_BUFFER_TYPE_TVP;
+
+    case AML_MP_INPUT_STREAM_SECURE_MEMORY:
+        return TS_INPUT_BUFFER_TYPE_SECURE;
+    }
+
+    return TS_INPUT_BUFFER_TYPE_NORMAL;
 }
 
 #ifdef HAVE_SUBTITLE

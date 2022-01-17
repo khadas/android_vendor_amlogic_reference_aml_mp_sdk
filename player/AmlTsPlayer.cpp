@@ -92,21 +92,6 @@ am_tsplayer_input_source_type sourceTypeConvert(Aml_MP_InputSourceType sourceTyp
     }
 }
 
-am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType streamType) {
-    switch (streamType) {
-    case AML_MP_INPUT_STREAM_NORMAL:
-        return TS_INPUT_BUFFER_TYPE_NORMAL;
-
-    case AML_MP_INPUT_STREAM_ENCRYPTED:
-        return TS_INPUT_BUFFER_TYPE_TVP;
-
-    case AML_MP_INPUT_STREAM_SECURE_MEMORY:
-        return TS_INPUT_BUFFER_TYPE_SECURE;
-    }
-
-    return TS_INPUT_BUFFER_TYPE_NORMAL;
-}
-
 am_tsplayer_avsync_mode AVSyncSourceTypeConvert(Aml_MP_AVSyncSource avSyncSource) {
     switch (avSyncSource) {
         case AML_MP_AVSYNC_SOURCE_VIDEO:

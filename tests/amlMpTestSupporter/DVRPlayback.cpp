@@ -33,7 +33,7 @@ DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId
     if (mCryptoMode) {
         if (initDVRDecryptPlayback(createParams.decryptParams) >= 0) {
             createParams.basicParams.blockSize = 256 * 1024;
-            createParams.basicParams.drmMode = AML_MP_INPUT_STREAM_ENCRYPTED;
+            createParams.basicParams.drmMode = AML_MP_INPUT_STREAM_SECURE_MEMORY;
         }
     }
 
