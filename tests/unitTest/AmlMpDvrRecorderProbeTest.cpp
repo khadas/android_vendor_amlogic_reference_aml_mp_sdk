@@ -37,12 +37,7 @@ TEST_F(AmlMpTest, RecorderStatusTest)
         MLOGI("----------RecorderStatusTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(15 * 1000ll);
@@ -67,12 +62,7 @@ TEST_F(AmlMpTest, RecorderStatusEventTest)
         MLOGI("----------RecorderStatusEventTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         EXPECT_EQ(Aml_MP_DVRRecorder_Pause(recorder), AML_MP_OK);
@@ -94,12 +84,7 @@ TEST_F(AmlMpTest, RecorderSyncEventTest)
         MLOGI("----------RecorderSyncEventTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         waitPlaying(5 * 1000ll);
         EXPECT_TRUE(waitAVSyncDoneEvent(5 * 1000ll));

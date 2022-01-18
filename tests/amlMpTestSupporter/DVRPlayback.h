@@ -45,7 +45,7 @@ private:
 
 private:
     const std::string mUrl;
-    const bool mCryptoMode;
+    bool mCryptoMode;
     Aml_MP_DemuxId mDemuxId;
     AML_MP_DVRPLAYER mPlayer = AML_MP_INVALID_HANDLE;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;

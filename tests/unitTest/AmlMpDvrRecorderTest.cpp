@@ -47,18 +47,13 @@ TEST_F(AmlMpTest, NormalRecorderTest)
         MLOGI("----------NormalRecorderTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         EXPECT_EQ(Aml_MP_DVRRecorder_Pause(recorder), AML_MP_OK);
         waitPlaying(5 * 1000ll);
         EXPECT_EQ(Aml_MP_DVRRecorder_Resume(recorder), AML_MP_OK);
-        waitPlaying(5 * 1000ll);
+        waitPlaying(15 * 1000ll);
         Aml_MP_DVRRecorderStatus status;
         EXPECT_EQ(Aml_MP_DVRRecorder_GetStatus(recorder, &status), AML_MP_OK);
         stopPlaying();
@@ -66,9 +61,9 @@ TEST_F(AmlMpTest, NormalRecorderTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
-        waitPlaying(5 * 1000ll);
+        waitPlaying(15 * 1000ll);
         DVRSegment(AML_MP_RECORD_PATH, true);
         stopPlaying();
         printf("----------NormalRecorderTest END----------\n");
@@ -84,16 +79,14 @@ TEST_F(AmlMpTest, TimeshiftRecordTest)
         MLOGI("----------TimeshiftRecordTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo != nullptr)
-        {
-            EXPECT_EQ(ret = mpTestSupporter->startRecord(true, true), AML_MP_OK);
-            waitPlaying(20 * 1000ll);
-        }
+        mpTestSupporter->prepare(CryptoMode);
+        EXPECT_EQ(ret = mpTestSupporter->startRecord(true, true), AML_MP_OK);
+        waitPlaying(20 * 1000ll);
 
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
+        mpTestSupporter2->setCrypto(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(true, true), AML_MP_OK);
         waitPlaying(20 * 1000ll);
         DVRSegment(AML_MP_RECORD_PATH, true);
@@ -112,6 +105,7 @@ TEST_F(AmlMpTest, DynamicSetStreamTest)
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
+        mpTestSupporter->prepare(CryptoMode);
 
         if (mProgramInfo != nullptr)
         {
@@ -132,6 +126,7 @@ TEST_F(AmlMpTest, DynamicSetStreamTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
+        mpTestSupporter2->setCrypto(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(), AML_MP_OK);
         waitPlaying(40 * 1000ll);
         //get segment list/info/delete

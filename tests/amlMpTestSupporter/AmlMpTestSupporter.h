@@ -86,7 +86,7 @@ public:
     int startDVRPlaybackAfterSetStreams();
     std::string stripUrlIfNeeded(const std::string& url) const;
     void getmUrl(std::string url);
-
+    void setCrypto(bool crypto);
 
     int startUIOnly();
     int stop();

@@ -159,7 +159,13 @@ void AmlMpBase::startPlaying(const std::string & url)
     mRet = 0;
     createMpTestSupporter();
     mpTestSupporter->setDataSource(url);
-    mRet = mpTestSupporter->prepare();
+    if (CryptoMode)
+    {
+        mRet = mpTestSupporter->prepare(CryptoMode);
+    } else {
+        mRet = mpTestSupporter->prepare();
+    }
+
     if (mRet != 0)
     {
         return;

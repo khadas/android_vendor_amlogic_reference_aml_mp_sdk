@@ -33,12 +33,7 @@ TEST_F(AmlMpTest, DVRPlayback_SetStreams_Test)
         MLOGI("----------DVRPlayback_SetStreams_Test START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
@@ -46,7 +41,7 @@ TEST_F(AmlMpTest, DVRPlayback_SetStreams_Test)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         Aml_MP_DVRPlayerStatus status;
@@ -87,12 +82,7 @@ TEST_F(AmlMpTest, DVRPlaybackPauseResumeTest)
         MLOGI("----------DVRPlaybackPauseResumeTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
@@ -100,7 +90,7 @@ TEST_F(AmlMpTest, DVRPlaybackPauseResumeTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         waitPlaying(5 * 1000ll);
@@ -129,12 +119,7 @@ TEST_F(AmlMpTest, DVRPlaybackSeekTest)
         MLOGI("----------DVRPlaybackSeekTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
@@ -142,7 +127,7 @@ TEST_F(AmlMpTest, DVRPlaybackSeekTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         waitPlaying(5 * 1000ll);
@@ -165,12 +150,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_Normal_Test)
         MLOGI("----------DVRPlaybackRate_Normal_Test START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
@@ -178,7 +158,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_Normal_Test)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate), AML_MP_OK);
@@ -198,12 +178,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_MicroSpeed_Test)
         MLOGI("----------DVRPlaybackRate_MicroSpeed_Test START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(30 * 1000ll);
@@ -211,7 +186,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_MicroSpeed_Test)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
@@ -234,12 +209,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
         MLOGI("----------DVRPlaybackRate_FastForward_Test START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(130 * 1000ll);
@@ -247,7 +217,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
@@ -270,12 +240,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastBackward_Test)
         MLOGI("----------DVRPlaybackRate_FastBackward_Test START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
-        if (mProgramInfo == nullptr)
-        {
-            printf("Format for this stream is not ts.");
-            continue;
-        }
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(100 * 1000ll);
@@ -283,7 +248,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastBackward_Test)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)

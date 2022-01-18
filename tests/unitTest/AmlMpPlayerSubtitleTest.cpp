@@ -45,6 +45,7 @@ TEST_F(AmlMpTest, SwitchSubtitleTest)
             continue;
         }
         std::vector<StreamInfo> subtitleStreams = mProgramInfo->subtitleStreams;
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         //subtitleParams

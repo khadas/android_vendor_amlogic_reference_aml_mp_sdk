@@ -104,6 +104,7 @@ TEST_F(AmlMpTest, SwitchAudioTrackTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         std::vector<StreamInfo> audioStreams = mProgramInfo->audioStreams;
         mpTestSupporter->startPlay();
         void *player = getPlayer();

@@ -31,6 +31,7 @@ void check_frame_count(int timeoutMs);
 const std::string VCOM_MAP = "vcom-map-0 { video_composer.0(1) video_render.0}";
 
 namespace aml_mp {
+extern bool CryptoMode;
 static const char * mName = LOG_TAG;
 static const int kWaitFirstVfameTimeOutMs = 2 * 1000ll;
 static int kWaitPlayingErrorsMs = 15 * 1000ll;
@@ -57,12 +58,12 @@ static const int kCheckFrameTimeOutMs = 50 * 1000ll;
 #define AML_MP_RECORD_PATH "dvr://storage/7F5D-3C01/amlMpRecordFile"
 
 
-
 struct AmlMpBase: public testing::Test
 {
     void SetUp() override
     {
         MLOGI("SetUp");
+        printf("Crypto %d \n", CryptoMode);
     }
     void TearDown() override
     {
@@ -74,6 +75,7 @@ struct AmlMpBase: public testing::Test
 public:
     void runTest(const std::string & url, bool isStop = true);
     void startPlaying(const std::string & url);
+    //bool getCrypto();
     void stopPlaying();
     bool waitFirstVFrameEvent(int timeoutMs = kWaitFirstVfameTimeOutMs);
     bool waitPlayingErrors(int msec = kWaitPlayingErrorsMs);
@@ -156,11 +158,11 @@ public:
     std::list <std::string> urls;
     std::string url;
     std::list <std::string> mUrls;
+
     void SetUp() override
     {
         MLOGI("SetUp 2");
-        std::string name    = "AmlMpPlayerTest";
-
+        std::string name    = "AmlMpTest";
         if (!TestUrlList::instance().getUrl(name, &url))
         {
             if (!TestUrlList::instance().getUrls(name, &urls))

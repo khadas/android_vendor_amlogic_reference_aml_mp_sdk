@@ -26,6 +26,7 @@ void AmlMpBase::videoDecoding(const std::string & url, bool mStart, bool mSource
         printf("Format for this stream is not ts.");
         return;
     }
+    mProgramInfo->scrambled=true;
     mPlayMode = AmlMpTestSupporter::START_VIDEO_START_AUDIO;
     mpTestSupporter->startPlay(mPlayMode, mStart, mSourceReceiver);
     void *player = getPlayer();
@@ -60,6 +61,7 @@ void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSource
         printf("Format for this stream is not ts.");
         return;
     }
+    mProgramInfo->scrambled=true;
     mPlayMode = AmlMpTestSupporter::START_AUDIO_START_VIDEO;
     mpTestSupporter->startPlay(mPlayMode, mStart, mSourceReceiver);
     void *player = getPlayer();
@@ -95,6 +97,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
         printf("Format for this stream is not ts.");
         return;
     }
+    mProgramInfo->scrambled=true;
     if (mPIP) {
         AmlMpTestSupporter::DisplayParam displayParam;
         displayParam.x      = AML_MP_VIDEO_WINDOW_X;
@@ -167,6 +170,7 @@ TEST_F(AmlMpTest, PlayerStartStopTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         EXPECT_EQ(Aml_MP_Player_Start(player), -2);
@@ -227,6 +231,7 @@ TEST_F(AmlMpTest, SubtitleDecodingTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mPlayMode = AmlMpTestSupporter::START_ALL_STOP_ALL;
         mpTestSupporter->startPlay(mPlayMode, false);
         void *player = getPlayer();
@@ -273,6 +278,7 @@ TEST_F(AmlMpTest, PauseResumeTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         EXPECT_FALSE(waitPlayingErrors(5 * 1000ll));
@@ -305,6 +311,7 @@ TEST_F(AmlMpTest, FlushTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         EXPECT_EQ(Aml_MP_Player_Flush(player), AML_MP_OK);
@@ -406,6 +413,7 @@ TEST_F(AmlMpTest, AVSyncModeTest)
                 printf("Format for this stream is not ts.");
                 continue;
             }
+            mProgramInfo->scrambled=true;
             mpTestSupporter->setAVSyncSource(avsyncsourceEnum);
             mpTestSupporter->startPlay();
             checkHasVideo(url);

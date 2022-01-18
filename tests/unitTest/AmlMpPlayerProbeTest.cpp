@@ -29,6 +29,7 @@ TEST_F(AmlMpTest, BufferTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         Aml_MP_BufferStat bufferstat;
@@ -53,6 +54,7 @@ TEST_F(AmlMpTest, PtsTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         int64_t pts;
@@ -77,6 +79,7 @@ TEST_F(AmlMpTest, VideoInfoTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
         void *player = getPlayer();
@@ -108,6 +111,7 @@ TEST_F(AmlMpTest, VideoDecodeStatTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
         void *player = getPlayer();
@@ -139,6 +143,7 @@ TEST_F(AmlMpTest, AudioInfoTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
         void *player = getPlayer();
@@ -169,6 +174,7 @@ TEST_F(AmlMpTest, AudioDecodeStatTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
         void *player = getPlayer();
@@ -198,6 +204,7 @@ TEST_F(AmlMpTest, AVSyncDoneEventTest)
             printf("Format for this stream is not ts.");
             continue;
         }
+        mProgramInfo->scrambled=true;
         mpTestSupporter->startPlay();
         waitPlaying(2 * 1000ll);
         void *player = getPlayer();
@@ -224,6 +231,7 @@ TEST_F(AmlMpTest, PidChangedEventTest)
                 printf("Format for this stream is not ts.");
                 continue;
             }
+            mProgramInfo->scrambled=true;
             mpTestSupporter->startPlay();
             EXPECT_FALSE(waitPlayingErrors(AML_MP_PID_CHANGED_DURATION));
             EXPECT_TRUE(waitDataLossEvent(AML_MP_DATA_LOSS_EVENT));

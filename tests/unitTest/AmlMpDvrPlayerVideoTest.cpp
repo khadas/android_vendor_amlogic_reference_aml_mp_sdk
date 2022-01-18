@@ -38,7 +38,7 @@ TEST_F(AmlMpTest, DVRPlaybackShowHideVideoTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         waitPlaying(5 * 1000ll);
@@ -74,7 +74,7 @@ TEST_F(AmlMpTest, DVRPlaybackSetVideoWindowTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         AmlMpTestSupporter::DisplayParam displayParam;
         displayParam.x = AML_MP_VIDEO_WINDOW_X;
         displayParam.y = AML_MP_VIDEO_WINDOW_Y;

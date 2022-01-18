@@ -25,6 +25,10 @@
 
 using namespace aml_mp;
 
+namespace aml_mp{
+    bool CryptoMode;
+}
+
 template<typename T1, typename T2>
 void AmlMpBase::ParameterTest(const std::string & url, T1 key, T2 parameter)
 {
@@ -325,18 +329,10 @@ int main(int argc, char** argv)
         return 0;
     }
     std::string testpath;
-    for (size_t i = 1; i < argc; i++)
+    for (int i = 1; i <= argc; i++)
     {
-        if (strcmp(argv[1], "--url"))
-        {
-            testpath = argv[i];
-            for (int j = i; j < argc - 1; ++j)
-            {
-                argv[j] = argv[j + 1];
-            }
-            argc--;
-        }
-        else
+        printf("Argument %d is %s.\n", i, argv[i]);
+        if (!strcmp(argv[i], "--url"))
         {
             testpath = argv[i+1];
             for (int j = i; j < argc - 2; ++j)
@@ -344,8 +340,21 @@ int main(int argc, char** argv)
                 argv[j] = argv[j + 2];
             }
             argc-=2;
+            i--;
+        }
+        else if (!strcmp(argv[i], "--crypto"))
+        {
+            CryptoMode = !strcmp(argv[i+1], "true");
+            for (int j = i; j < argc - 2; ++j)
+            {
+                argv[j] = argv[j + 2];
+            }
+            argc-=2;
+            i--;
         }
     }
+    printf("Argc %d is.\n", argc);
+
     testing::InitGoogleTest(&argc, argv);
 
     if (!testpath.empty())
@@ -361,3 +370,4 @@ int main(int argc, char** argv)
 
     return RUN_ALL_TESTS();
 }
+

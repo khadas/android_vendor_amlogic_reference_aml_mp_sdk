@@ -49,7 +49,7 @@ TEST_F(AmlMpTest, DVRPlaybackSetGetVolumeTest)
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-
+        mpTestSupporter2->setCrypto(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         DVRPlayback_SetGetVolume(AML_MP_RECORD_PATH, 0);
         DVRPlayback_SetGetVolume(AML_MP_RECORD_PATH, 20);

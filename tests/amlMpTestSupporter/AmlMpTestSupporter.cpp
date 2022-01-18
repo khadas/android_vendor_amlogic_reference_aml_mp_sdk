@@ -101,6 +101,11 @@ int AmlMpTestSupporter::setDataSource(const std::string& url)
     return 0;
 }
 
+void AmlMpTestSupporter::setCrypto(bool crypto)
+{
+    mCryptoMode = crypto;
+}
+
 int AmlMpTestSupporter::getSource()
 {
     int ret = 0;
@@ -242,6 +247,7 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     int ret = 0;
 
     mCryptoMode = cryptoMode;
+    MLOGI("mCryptoMode: %d \n", mCryptoMode);
     if (getProgramInfo() == nullptr)
     {
         return -1;
