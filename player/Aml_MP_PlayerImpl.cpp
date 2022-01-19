@@ -1879,6 +1879,7 @@ int AmlMpPlayerImpl::applyParameters_l()
     mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_BALANCE, &mAudioBalance);
     mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mAudioMute);
     mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_NETWORK_JITTER, &mNetworkJitter);
+    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE, &mVideoErrorRecoveryMode);
 
     if (mADMixLevel.masterVolume >= 0 && mADMixLevel.slaveVolume >= 0) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &mADMixLevel);

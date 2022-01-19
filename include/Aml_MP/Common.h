@@ -614,8 +614,9 @@ typedef struct {
 ////////////////////////////////////////
 //AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE
 typedef enum {
-    AML_MP_VIDEO_ERROR_RECOVERY_DROP,      //Drop frame if any error dected
-    AML_MP_VIDEO_ERROR_RECOVERY_NONE,      //Do nothing after decod error frame
+    AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT,    //Use decoder default setting to process error frame
+    AML_MP_VIDEO_ERROR_RECOVERY_DROP,       //Drop frame if any error detected
+    AML_MP_VIDEO_ERROR_RECOVERY_NONE,       //Do nothing after decoding error frame
 } Aml_MP_VideoErrorRecoveryMode;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -134,6 +134,7 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_USE_TIF);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_CROP);
+        ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE);
         //get only
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_GET_BASE);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_INFO);
@@ -146,6 +147,7 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_AD_DECODE_STAT);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_INSTANCE_ID);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SYNC_ID);
+        ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE);
 
         default:
             return "unknown player parameter key";
@@ -288,6 +290,7 @@ const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorReco
     switch (errorRecoveryMode) {
         ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_DROP);
         ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_NONE);
+        ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT);
         default:
             return "Unknown video error recovery mode";
     }
@@ -783,6 +786,31 @@ Aml_MP_StreamType convertToAmlMPStreamType(am_tsplayer_stream_type streamType) {
     }
 
     return (AML_MP_STREAM_TYPE_UNKNOWN);
+}
+
+#define CODEC_RECOVERY_NONE     0
+#define CODEC_RECOVERY_DROP     1
+#define CODEC_RECOVERY_DEFAULT  0x1FFF
+int convertToCodecRecoveryMode(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode) {
+    switch (errorRecoveryMode) {
+        case AML_MP_VIDEO_ERROR_RECOVERY_DROP:
+            return CODEC_RECOVERY_DROP;
+        case AML_MP_VIDEO_ERROR_RECOVERY_NONE:
+            return CODEC_RECOVERY_NONE;
+        default:
+            return CODEC_RECOVERY_DEFAULT;
+    }
+}
+
+Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryMode) {
+    switch (codecRecoveryMode) {
+        case CODEC_RECOVERY_NONE:
+            return AML_MP_VIDEO_ERROR_RECOVERY_NONE;
+        case CODEC_RECOVERY_DROP:
+            return AML_MP_VIDEO_ERROR_RECOVERY_DROP;
+        default:
+            return AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT;
+    }
 }
 
 #ifdef HAVE_SUBTITLE

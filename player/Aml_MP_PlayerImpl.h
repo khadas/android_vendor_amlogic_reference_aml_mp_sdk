@@ -260,7 +260,7 @@ private:
     AmlMpPlayerImpl(const AmlMpPlayerImpl&) = delete;
     AmlMpPlayerImpl& operator= (const AmlMpPlayerImpl&) = delete;
 
-    Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode = AML_MP_VIDEO_ERROR_RECOVERY_DROP;
+    Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode = AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT;
 };
 
 }

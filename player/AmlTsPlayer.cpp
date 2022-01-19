@@ -875,8 +875,12 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE:
         {
-            //TODO: tsplayer not have api now, need add api later
-            ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+#ifdef __linux__
+#ifndef ANDROID
+            int recoveryMode = convertToCodecRecoveryMode(*(Aml_MP_VideoErrorRecoveryMode*)parameter);
+            ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_VIDEO_RECOVERY_MODE, &recoveryMode);
+#endif
+#endif
         }
         break;
 
