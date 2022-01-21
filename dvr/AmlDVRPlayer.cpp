@@ -170,10 +170,6 @@ int AmlDVRPlayer::start(bool initialPaused)
         ret = AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_SET_AUDIO_PATCH_MANAGE_MODE, (void*)&audioPatchManageMode);
         MLOGI(" TsPlayer set AudioPatchManageMode: %d, return %s, result(%d)", audioPatchManageMode, (ret)? "FAIL" : "OK", ret);
     }
-    if (mSPDIFStatus != -1) {
-        ret = AmTsPlayer_setParams(mTsPlayerHandle, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, (void*)&mSPDIFStatus);
-        MLOGI(" TsPlayer set spdif status: %d, return %s, result(%d)", mSPDIFStatus, (ret)? "FAIL" : "OK", ret);
-    }
 #endif
 
     if (AmlMpConfig::instance().mTsPlayerNonTunnel) {
@@ -492,6 +488,12 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         {
             RETURN_IF(-1, parameter == nullptr);
             mSPDIFStatus = *(int*)parameter;
+#if ANDROID_PLATFORM_SDK_VERSION >= 28
+            if (mSPDIFStatus != -1) {
+                ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, (void*)&mSPDIFStatus);
+                MLOGI(" TsPlayer set spdif status: %d, return %s, result(%d)", mSPDIFStatus, (ret)? "FAIL" : "OK", ret);
+            }
+#endif
         }
         break;
 
