@@ -357,6 +357,7 @@ int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift)
     int ret = 0;
     ALOGI("enter startRecord\n");
     Aml_MP_DemuxId demuxId = mDemuxId; //mParser->getDemuxId();
+
     mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo, isTimeShift);
     ALOGI("before mRecorder start\n");
 

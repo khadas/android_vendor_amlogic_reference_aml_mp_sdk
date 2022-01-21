@@ -181,18 +181,19 @@ TEST_F(AmlMpTest, DVRPlaybackRate_MicroSpeed_Test)
         mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
-        waitPlaying(30 * 1000ll);
+        waitPlaying(20 * 1000ll);
+        stopPlaying();
 
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
         mpTestSupporter2->setCrypto(CryptoMode);
-        mpTestSupporter2->startDVRPlayback();
-        void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
+            mpTestSupporter2->startDVRPlayback();
+            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
-            EXPECT_FALSE(waitPlayingErrors(10 * 1000ll));
+            EXPECT_FALSE(waitPlayingErrors(20 * 1000ll));
         }
         stopPlaying();
         MLOGI("----------DVRPlaybackRate_MicroSpeed_Test END----------\n");
@@ -212,16 +213,17 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
         mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
-        waitPlaying(130 * 1000ll);
+        waitPlaying(30 * 1000ll);
+        stopPlaying();
 
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
         mpTestSupporter2->setCrypto(CryptoMode);
-        mpTestSupporter2->startDVRPlayback();
-        void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
+            mpTestSupporter2->startDVRPlayback();
+            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
             EXPECT_FALSE(waitPlayingErrors(10 * 1000ll));
         }
@@ -243,22 +245,24 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastBackward_Test)
         mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
-        waitPlaying(100 * 1000ll);
+        waitPlaying(30 * 1000ll);
+        stopPlaying();
 
         createMpTestSupporter2();
         mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
         mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
         mpTestSupporter2->setCrypto(CryptoMode);
-        mpTestSupporter2->startDVRPlayback();
-        void* dvrplayer = getDVRPlayer();
         for (int i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
+            mpTestSupporter2->startDVRPlayback();
+            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
+            waitPlaying(10 * 1000ll);
             EXPECT_FALSE(waitPlayingErrors(10 * 1000ll));
         }
         stopPlaying();
         MLOGI("----------DVRPlaybackRate_FastBackward_Test END----------\n");
-    }
+     }
 }
 
 
