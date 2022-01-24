@@ -603,7 +603,7 @@ int AmlMpPlayerImpl::writeData(const uint8_t* buffer, size_t size)
         if (ecmSize > 0) {
             mCasHandle->processEcm(false, 0, buffer + ecmOffset, ecmSize);
             mFirstEcmWritten = true;
-            MLOGI("first ECM written, offset:%d", mTsBuffer.size() + ecmOffset);
+            MLOGI("first ECM written, offset:%zu", mTsBuffer.size() + ecmOffset);
         } else {
             needBuffering = true;
         }
@@ -701,7 +701,7 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size)
 
                         ++retryCount;
                         if (retryCount%40 == 0) {
-                            MLOGI("writeData %d/%d(%d), ecmOffset:%d(%d), return:%d", written, totalSize, size, ecmOffset, ecmCount, ret);
+                            MLOGI("writeData %d/%zu(%zu), ecmOffset:%zu(%d), return:%d", written, totalSize, size, ecmOffset, ecmCount, ret);
                         }
                     } else {
                         buffer += ret;
@@ -1903,7 +1903,7 @@ void AmlMpPlayerImpl::notifyListener(Aml_MP_PlayerEventType eventType, int64_t p
     if (mEventCb) {
         mEventCb(mUserData, eventType, param);
     } else {
-        MLOGW("mEventCb is NULL, eventType: %s, param:%lld", mpPlayerEventType2Str(eventType), param);
+        MLOGW("mEventCb is NULL, eventType: %s, param:%" PRId64, mpPlayerEventType2Str(eventType), param);
     }
 
     mEventCbTid = -1;

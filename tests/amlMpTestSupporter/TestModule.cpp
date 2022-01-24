@@ -39,7 +39,7 @@ void TestModule::processCommand(const std::vector<std::string>& args)
     }
 
     if (args.size() <= command->argCount) {
-        printf("missing arguments, expect %d args\n", command->argCount);
+        printf("missing arguments, expect %zu args\n", command->argCount);
         return;
     }
 
@@ -78,7 +78,7 @@ void TestModule::printCommands(const Command* pCommands, bool printHeader)
 
     while (command && command->name) {
         const char* help = command->help ? command->help : "";
-        printf("%20s | %10u | %s\n", command->name, command->argCount, help);
+        printf("%20s | %10zu | %s\n", command->name, command->argCount, help);
 
         ++command;
     }

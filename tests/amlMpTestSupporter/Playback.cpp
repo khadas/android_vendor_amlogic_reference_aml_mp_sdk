@@ -182,7 +182,7 @@ int CasPlugin::startIPTVDescrambling()
             memcpy(casParams.private_data, mProgramInfo->privateData, mProgramInfo->privateDataLength);
             casParams.private_size =  mProgramInfo->privateDataLength;
         }
-        MLOGI("wvcas iptv, private_size=%d", casParams.private_size);
+        MLOGI("wvcas iptv, private_size=%zu", casParams.private_size);
     }
     break;
 
@@ -301,7 +301,7 @@ void Playback::playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* 
 
 void Playback::eventCallback(Aml_MP_PlayerEventType eventType, int64_t param)
 {
-    ALOGI("Playback eventCallback event: %d, %s, param %lld\n", eventType, mpPlayerEventType2Str(eventType), param);
+    ALOGI("Playback eventCallback event: %d, %s, param %" PRId64 "\n", eventType, mpPlayerEventType2Str(eventType), param);
     switch (eventType) {
         case AML_MP_PLAYER_EVENT_VIDEO_OVERFLOW:
         {
@@ -535,21 +535,21 @@ void Playback::printStreamsInfo()
             printf("Video Streams:\n");
         }
 
-        printf("\tVideo[%d] pid: %d, codec: %d\n", i, mProgramInfo->videoStreams.at(i).pid, mProgramInfo->videoStreams.at(i).codecId);
+        printf("\tVideo[%zu] pid: %d, codec: %d\n", i, mProgramInfo->videoStreams.at(i).pid, mProgramInfo->videoStreams.at(i).codecId);
     }
 
     for (size_t i = 0; i < mProgramInfo->audioStreams.size(); i++) {
         if (i == 0) {
             printf("Audio streams:\n");
         }
-        printf("\tAudio[%d] pid: %d, codec: %d\n", i, mProgramInfo->audioStreams.at(i).pid, mProgramInfo->audioStreams.at(i).codecId);
+        printf("\tAudio[%zu] pid: %d, codec: %d\n", i, mProgramInfo->audioStreams.at(i).pid, mProgramInfo->audioStreams.at(i).codecId);
     }
 
     for (size_t i = 0; i < mProgramInfo->subtitleStreams.size(); i++) {
         if (i == 0) {
             printf("Subtitle streams:\n");
         }
-        printf("\tSubtitle[%d] pid: %d, codec: %d", i, mProgramInfo->subtitleStreams.at(i).pid, mProgramInfo->subtitleStreams.at(i).codecId);
+        printf("\tSubtitle[%zu] pid: %d, codec: %d", i, mProgramInfo->subtitleStreams.at(i).pid, mProgramInfo->subtitleStreams.at(i).codecId);
         if (mProgramInfo->subtitleStreams.at(i).codecId == AML_MP_SUBTITLE_CODEC_DVB) {
             printf("[%d, %d]\n", mProgramInfo->subtitleStreams.at(i).compositionPageId, mProgramInfo->subtitleStreams.at(i).ancillaryPageId);
         } else {
@@ -670,9 +670,9 @@ static struct TestModule::Command g_commandTable[] = {
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int64_t pts;
             int ret = Aml_MP_Player_GetCurrentPts(player, AML_MP_STREAM_TYPE_VIDEO, &pts);
-            printf("Current video pts: 0x%llx, ret: %d\n", pts, ret);
+            printf("Current video pts: 0x%" PRIx64 ", ret: %d\n", pts, ret);
             ret = Aml_MP_Player_GetCurrentPts(player, AML_MP_STREAM_TYPE_AUDIO, &pts);
-            printf("Current audio pts: 0x%llx, ret: %d\n", pts, ret);
+            printf("Current audio pts: 0x%" PRIx64 ", ret: %d\n", pts, ret);
             return ret;
         }
     },

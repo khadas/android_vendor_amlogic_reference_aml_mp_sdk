@@ -332,7 +332,7 @@ void AmlSwDemux::onFeedData(const sptr<AmlMpBuffer>& entry)
             err = mTsParser->feedTs(mRemainingBytesBuffer->data(), kTSPacketSize);
             if (err != 0) {
                 const uint8_t* p = mRemainingBytesBuffer->data();
-                MLOGI("%d %lld, feedTSPacket err:%d, %#x, %#x, %#x, %#x, %#x", __LINE__, mOutBufferCount.load(), err,
+                MLOGI("%d %" PRId64 ", feedTSPacket err:%d, %#x, %#x, %#x, %#x, %#x", __LINE__, mOutBufferCount.load(), err,
                         p[0], p[1], p[2], p[3], p[4]);
             }
             mRemainingBytesBuffer->setRange(0, 0);
@@ -351,7 +351,7 @@ void AmlSwDemux::onFeedData(const sptr<AmlMpBuffer>& entry)
         }
 
         if (*entry->data() != 0x47) {
-            MLOGV("mOutBufferCount:%lld, entry start bytes:%#x, offset:%d, size:%d",
+            MLOGV("mOutBufferCount:%" PRId64 ", entry start bytes:%#x, offset:%zu, size:%zu",
                   mOutBufferCount.load(), *entry->data(), entry->offset(), entry->size());
             //const uint8_t* p = entry->data();
             //MLOGV("entry bytes: %#x %#x %#x %#x %#x", p[0], p[1], p[2], p[3], p[4]);
@@ -753,7 +753,7 @@ int SwTsParser::parsePID(
         int err = section->append(br->data(), br->numBitsLeft() / 8);
 
         if (err != 0) {
-            MLOGW("section append data %d size failed!", br->numBitsLeft()/8);
+            MLOGW("section append data %zu size failed!", br->numBitsLeft()/8);
             return err;
         }
 
@@ -772,7 +772,7 @@ int SwTsParser::parsePID(
         if (err != 0) {
             notifyListener = false;
 
-            MLOGE("parse failed:%d, section pid:%d, buffer size:%d, section length:%d", err, PID,
+            MLOGE("parse failed:%d, section pid:%d, buffer size:%zu, section length:%zu", err, PID,
                     section->size(), section->sectionLength());
 #if 0
             //
@@ -805,7 +805,7 @@ int SwTsParser::parsePID(
 #endif
 
         } else {
-            MLOGV("section pid:%d, set range:%d", PID, section->sectionLength());
+            MLOGV("section pid:%d, set range:%zu", PID, section->sectionLength());
             //section->setRange(0, section->sectionLength());
         }
 
@@ -957,7 +957,7 @@ size_t SwTsParser::PSISection::size() const {
 void SwTsParser::PSISection::setRange(size_t offset, size_t length)
 {
     if (mBuffer == nullptr || mBuffer->capacity() < length) {
-        MLOGE("section setRange failed! length:%d", length);
+        MLOGE("section setRange failed! length:%zu", length);
         return;
     }
 

@@ -230,7 +230,7 @@ int AmlTsPlayer::setVideoParams(const Aml_MP_VideoParams* params) {
     }
     am_tsplayer_video_params video_params = {videoCodecConvert(params->videoCodec), params->pid};
 
-    MLOGI("amtsplayer handle:%#x, video codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, video_params.codectype, video_params.pid, params->secureLevel);
+    MLOGI("amtsplayer handle:%#zx, video codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, video_params.codectype, video_params.pid, params->secureLevel);
     ret = AmTsPlayer_setVideoParams(mPlayer, &video_params);
     if (ret != AM_TSPLAYER_OK) {
         return -1;
@@ -262,7 +262,7 @@ int AmlTsPlayer::setAudioParams(const Aml_MP_AudioParams* params) {
 #ifdef HAVE_PACKETIZE_ESTOTS
     mApid = params->pid;
 #endif
-    MLOGI("amtsplayer handle:%#x, audio codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, audio_params.codectype, audio_params.pid, params->secureLevel);
+    MLOGI("amtsplayer handle:%#zx, audio codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, audio_params.codectype, audio_params.pid, params->secureLevel);
     ret = AmTsPlayer_setAudioParams(mPlayer, &audio_params);
     if (ret != AM_TSPLAYER_OK) {
         return -1;

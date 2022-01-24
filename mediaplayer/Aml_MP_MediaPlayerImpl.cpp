@@ -713,7 +713,7 @@ void AmlMpMediaPlayerImpl::notifyListener(Aml_MP_MediaPlayerEventType eventType,
         }
         mEventCb(mUserData, eventType, param);
     } else {
-        MLOGW("mEventCb is NULL, eventType: %s, param:%lld", mpPlayerEventType2Str(eventType), param);
+        MLOGW("mEventCb is NULL, eventType: %s, param:%" PRId64, mpPlayerEventType2Str(eventType), param);
     }
 }
 
