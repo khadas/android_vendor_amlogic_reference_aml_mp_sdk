@@ -484,10 +484,10 @@ Aml_MP_CodecID convertToMpCodecId(DVR_AudioFormat_t fmt)
         break;
 
     case DVR_AUDIO_FORMAT_AAC:
-    case DVR_AUDIO_FORMAT_HEAAC:
         codecId = AML_MP_AUDIO_CODEC_AAC;
         break;
 
+    case DVR_AUDIO_FORMAT_HEAAC:
     case DVR_AUDIO_FORMAT_LATM:
         codecId = AML_MP_AUDIO_CODEC_LATM;
         break;
