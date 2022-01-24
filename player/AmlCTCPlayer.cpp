@@ -309,6 +309,7 @@ int AmlCTCPlayer::setPlaybackRate(float rate) {
 }
 
 int AmlCTCPlayer::getPlaybackRate(float* rate) {
+    AML_MP_UNUSED(rate);
     MLOGI("%s:%d getPlaybackRate not implemented", __FUNCTION__, __LINE__);
     return AML_MP_ERROR_INVALID_OPERATION;
 }
