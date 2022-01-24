@@ -391,7 +391,7 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
     am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     am_tsplayer_handle mPlayer = mTsPlayerHandle;
 
-    MLOGI("Call setParameter, key is %s, mPlayer:%#x", mpPlayerParameterKey2Str(key), mPlayer);
+    MLOGI("Call setParameter, key is %s, mPlayer:%#zx", mpPlayerParameterKey2Str(key), mPlayer);
     switch (key) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE:
             ret = AmTsPlayer_setVideoMatchMode(mPlayer, convertToTsPlayerVideoMatchMode(*(Aml_MP_VideoDisplayMode*)parameter));
@@ -520,7 +520,7 @@ int AmlDVRPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter)
     am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     am_tsplayer_handle mPlayer = mTsPlayerHandle;
 
-    MLOGI("Call getParameter, key is %s, player:%#x", mpPlayerParameterKey2Str(key), mPlayer);
+    MLOGI("Call getParameter, key is %s, player:%#zx", mpPlayerParameterKey2Str(key), mPlayer);
     if (!parameter) {
         return -1;
     }
@@ -627,7 +627,7 @@ int AmlDVRPlayer::setDecryptParams(Aml_MP_DVRPlayerDecryptParams * decryptParams
     mSecureBuffer = decryptParams->secureBuffer;
     mSecureBufferSize = decryptParams->secureBufferSize;
 
-    MLOGI("mSecureBuffer:%p, mSecureBufferSize:%d", mSecureBuffer, mSecureBufferSize);
+    MLOGI("mSecureBuffer:%p, mSecureBufferSize:%zu", mSecureBuffer, mSecureBufferSize);
 
     mPlaybackOpenParams.clearkey = decryptParams->clearKey;
     mPlaybackOpenParams.cleariv = decryptParams->clearIV;

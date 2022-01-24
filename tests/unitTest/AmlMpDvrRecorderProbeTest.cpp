@@ -21,7 +21,7 @@ void AmlMpBase::getDVRSourceInfo(Aml_MP_DVRSourceInfo info)
     time_t              time = info.time;
     loff_t              size = info.size;
     uint32_t            pkts = info.pkts;
-    printf("info.time: %ld, info.size: %lld, info.pkts: %d \n", time, size, pkts);
+    printf("info.time: %ld, info.size: %" PRId64 ", info.pkts: %u \n", time, size, pkts);
     EXPECT_GE(time, time_temp);
     EXPECT_GE(size, size_temp);
     time_temp = time;

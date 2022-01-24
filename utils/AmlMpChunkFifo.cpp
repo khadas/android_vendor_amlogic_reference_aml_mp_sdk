@@ -28,13 +28,13 @@ void AmlMpChunkFifo::init(size_t maxSize, size_t chunkSize)
     mChunkSize = roundUpPowerOfTwo(chunkSize);
     mChunkCount = mMaxSize / mChunkSize;
 
-    MLOGI("maxSize = %u, mChunkCount = %u", maxSize, mChunkCount);
+    MLOGI("maxSize = %zu, mChunkCount = %zu", maxSize, mChunkCount);
 
     mChunkTable = new char*[mChunkCount]{};
 
     for (size_t i = 0; i < mChunkCount; ++i) {
         if (mChunkTable[i] != nullptr) {
-            MLOGE("ERROR! mChunkTable pointer:%p, i:%d", mChunkTable[i], i);
+            MLOGE("ERROR! mChunkTable pointer:%p, i:%zu", mChunkTable[i], i);
         }
     }
 }
@@ -91,7 +91,7 @@ size_t AmlMpChunkFifo::get(void* buffer, size_t size)
         int offset = mGetSize % mChunkSize;
         char* f = mChunkTable[index];
         if (f == nullptr) {
-            MLOGE("ERROR, chunk buffer is NULL, index:%d, size:%d", index, size);
+            MLOGE("ERROR, chunk buffer is NULL, index:%d, size:%zu", index, size);
             break;
         }
         len = std::min(size, mChunkSize-offset);

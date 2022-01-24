@@ -166,7 +166,7 @@ int AmlHwDemux::addPSISection(int pid, bool checkCRC)
             Looper::POLL_CALLBACK,
             Looper::EVENT_ERROR|Looper::EVENT_INPUT,
             mTsParser,
-            (void*)pid);
+            (void*)(long)pid);
 
     if (ret <= 0) {
         MLOGE("addFd failed! fd:%d", channelFd);
@@ -286,8 +286,8 @@ int HwTsParser::feedTs(const uint8_t* buffer, size_t size)
     uint8_t* buffer_secure = NULL;
     struct dmx_sec_ts_data ts_sec_data;
     if (mIsSecurebuffer) {
-        ts_sec_data.buf_start = (uint32_t)buffer;
-        ts_sec_data.buf_end = (uint32_t)(buffer+size);
+        ts_sec_data.buf_start = (uint32_t)(long)buffer;
+        ts_sec_data.buf_end = (uint32_t)(long)(buffer+size);
         buffer_secure = (uint8_t *)(&ts_sec_data);
         left = sizeof(struct dmx_sec_ts_data);
     }
@@ -408,7 +408,7 @@ int HwTsParser::handleEvent(int fd, int events, void* data)
     }
 
     int version = buffer->data()[5]>>1 & 0x1F;
-    int pid = (int)data;
+    int pid = (int)(long)data;
     if (mSectionCallback) {
         mSectionCallback(pid, buffer, version);
     }

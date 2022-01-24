@@ -16,6 +16,7 @@
 #include <Aml_MP/Aml_MediaPlayer.h>
 #include <string>
 #include <vector>
+#include <inttypes.h>
 #include "../amlMpTestSupporter/TestModule.h"
 #include <../../mediaplayer/AmlMediaPlayerBase.h>
 static const char* mName = LOG_TAG;
@@ -144,7 +145,7 @@ static void printMediaInfo(Aml_MP_MediaInfo *mediaInfo)
     int index = 0;
     Aml_MP_MediaInfo *info = mediaInfo;
 
-    printf("[mediaInfo] filename:%s, duration:%lld, file_size:%lld, bitrate:%lld, nb_streams:%d\n"
+    printf("[mediaInfo] filename:%s, duration:%" PRId64 ", file_size:%" PRId64 ", bitrate:%" PRId64 ", nb_streams:%d\n"
             ,info->filename
             ,info->duration
             ,info->file_size
@@ -202,7 +203,7 @@ static struct TestModule::Command g_commandTable[] = {
             int ret = 0;
             int msec = atoi(args.at(1).c_str());
             ret = Aml_MP_MediaPlayer_SeekTo(player, msec);
-            printf("call seek, msec:%d, size:%d, ret:%d\n", msec, args.size(), ret);
+            printf("call seek, msec:%d, size:%zu, ret:%d\n", msec, args.size(), ret);
             return ret;
         }
     },

@@ -187,7 +187,7 @@ int AmlDVRRecorder::start()
     }
 
     if (mIsEncryptStream) {
-        MLOGI("set secureBuffer:%p, secureBufferSize:%d", mSecureBuffer, mSecureBufferSize);
+        MLOGI("set secureBuffer:%p, secureBufferSize:%zu", mSecureBuffer, mSecureBufferSize);
         dvr_wrapper_set_record_secure_buffer(mRecoderHandle, mSecureBuffer, mSecureBufferSize);
     }
 

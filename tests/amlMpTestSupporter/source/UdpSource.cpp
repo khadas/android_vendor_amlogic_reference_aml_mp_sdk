@@ -358,7 +358,7 @@ void UdpSource::doStatistic(int size)
         int64_t period = nowUs - mLastBitRateMeasureTime;
         if (period >= 2000000) {
             int64_t bitrate = mBitRateMeasureSize * 1000000 / period;
-            MLOGI("receive bitrate:%.2fMB/s, fifoSize:%d", (bitrate>>10)/1024.0, mFifo.size());
+            MLOGI("receive bitrate:%.2fMB/s, fifoSize:%zu", (bitrate>>10)/1024.0, mFifo.size());
 
             mBitRateMeasureSize = 0;
             mLastBitRateMeasureTime = nowUs;

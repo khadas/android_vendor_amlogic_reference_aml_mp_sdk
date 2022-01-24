@@ -105,12 +105,12 @@ AmlDvbCasHal::AmlDvbCasHal(Aml_MP_CASServiceType serviceType)
         return;
     }
 
-    MLOG("openSession:%#x", mCasSession);
+    MLOG("openSession:%#zx", mCasSession);
 
     std::unique_lock<std::mutex> _l(sCasHalSessionLock);
     auto result = sCasHalSessionMap.emplace(mCasSession, this);
     if (!result.second) {
-        MLOGE("save CasSession failed! (%#x, %p)", mCasSession, this);
+        MLOGE("save CasSession failed! (%#zx, %p)", mCasSession, this);
     }
 #endif
 }
@@ -129,7 +129,7 @@ AmlDvbCasHal::~AmlDvbCasHal()
     std::unique_lock<std::mutex> _l(sCasHalSessionLock);
     auto result = sCasHalSessionMap.erase(mCasSession);
     if (result == 0) {
-        MLOGE("remove CasSession failed! (%#x, %p)", mCasSession, this);
+        MLOGE("remove CasSession failed! (%#zx, %p)", mCasSession, this);
     }
 #endif
 }
@@ -311,7 +311,7 @@ AML_MP_SECMEM AmlDvbCasHal::createSecmem(Aml_MP_CASServiceType type, void** pSec
     CA_SERVICE_TYPE_t caServiceType = convertToCAServiceType(type);
 
     secMem = AM_CA_CreateSecmem(mCasSession, caServiceType, pSecbuf, size);
-    MLOG("service type:%d, secMem:%#x", type, secMem);
+    MLOG("service type:%d, secMem:%#zx", type, secMem);
 
     return (AML_MP_SECMEM)secMem;
 #else
@@ -330,7 +330,7 @@ int AmlDvbCasHal::destroySecmem(AML_MP_SECMEM secMem)
     int ret = AML_MP_ERROR;
 
 #ifdef HAVE_CAS_HAL
-    MLOG("secMem:%#x", (SecMemHandle)secMem);
+    MLOG("secMem:%#zx", (SecMemHandle)secMem);
     ret = convertToAmlMPErrorCode(AM_CA_DestroySecmem(mCasSession, (SecMemHandle)secMem));
 #else
     AML_MP_UNUSED(secMem);
@@ -381,7 +381,7 @@ AM_RESULT AmlDvbCasHal::sCasHalCb(CasSession session, char* json)
     if (dvbCasCal != nullptr) {
         dvbCasCal->notifyListener(json);
     } else {
-        MLOGE("dvbCasCal is NULL, session:%#x", session);
+        MLOGE("dvbCasCal is NULL, session:%#zx", session);
     }
 
     return AM_ERROR_SUCCESS;

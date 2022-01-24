@@ -95,11 +95,11 @@ public:
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - mBeginTime).count();
 
         if (mVerbose) {
-            ALOG(LOG_DEBUG, "Aml_MP", "%s %s() << end %lld ms", m_tag, m_func, duration);
+            ALOG(LOG_DEBUG, "Aml_MP", "%s %s() << end %" PRId64 " ms", m_tag, m_func, duration);
         }
 
         if(duration >= mThreshold)
-            ALOG(LOG_WARN, "Aml_MP", "%s %s() takes %lld ms, Seems slow, check!", m_tag, m_func, duration);
+            ALOG(LOG_WARN, "Aml_MP", "%s %s() takes %" PRId64 " ms, Seems slow, check!", m_tag, m_func, duration);
     }
 
 private:

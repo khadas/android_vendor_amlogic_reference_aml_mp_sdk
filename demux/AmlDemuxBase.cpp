@@ -142,7 +142,7 @@ bool AmlDemuxBase::Channel::attachFilter(const sptr<Filter>& filter)
     {
         std::lock_guard<std::mutex> _l(mLock);
         mFilters.insert(filter);
-        MLOGV("attach filter:%d to channel:%d, totoal filters num:%d",
+        MLOGV("attach filter:%d to channel:%d, totoal filters num:%zu",
             filter->id(), mPid, mFilters.size());
     }
 
@@ -158,7 +158,7 @@ bool AmlDemuxBase::Channel::detachFilter(const sptr<Filter>& filter)
     if (mFilters.find(filter) != mFilters.end()) {
         filter->setOwner(nullptr);
         mFilters.erase(filter);
-        MLOGV("detach filter:%d from channel:%d, total filters num:%d",
+        MLOGV("detach filter:%d from channel:%d, total filters num:%zu",
             filter->id(), mPid, mFilters.size());
     }
 

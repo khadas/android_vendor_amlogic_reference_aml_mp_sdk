@@ -236,7 +236,7 @@ int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
     AML_MP_UNUSED(pid);
     Parser* parser = (Parser*)userData;
 
-    MLOGI("pat cb, size:%d", size);
+    MLOGI("pat cb, size:%zu", size);
     Section section(data, size);
     const uint8_t* p = section.data();
     //int table_id = p[0];
@@ -244,7 +244,7 @@ int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
     CHECK(section_syntax_indicator == 1);
     int section_length = (p[1] & 0x0F) << 4 | p[2];
     CHECK(section_length <= 4093);
-    MLOGI("section_length = %d, size:%d", section_length, size);
+    MLOGI("section_length = %d, size:%zu", section_length, size);
 
     p = section.advance(3);
     //int transport_stream_id = p[0]<<8 | p[1];
@@ -277,7 +277,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
 {
     Parser* parser = (Parser*)userData;
 
-    MLOGI("pmt cb, pid:%d, size:%d", pid, size);
+    MLOGI("pmt cb, pid:%d, size:%zu", pid, size);
     Section section(data, size);
     const uint8_t* p = section.data();
     //int table_id = p[0];
@@ -288,7 +288,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
     }
     int section_length = (p[1] & 0x0F) << 4 | p[2];
     CHECK(section_length <= 4093);
-    MLOGI("section_length = %d, size:%d", section_length, size);
+    MLOGI("section_length = %d, size:%zu", section_length, size);
 
     PMTSection results;
     results.pmtPid = pid;
@@ -476,7 +476,7 @@ int Parser::catCb(int pid, size_t size, const uint8_t* data, void* userData)
 {
     Parser* parser = (Parser*)userData;
 
-    MLOGI("cat cb, size:%d", size);
+    MLOGI("cat cb, size:%zu", size);
     Section section(data, size);
     const uint8_t* p = section.data();
 
@@ -485,7 +485,7 @@ int Parser::catCb(int pid, size_t size, const uint8_t* data, void* userData)
     CHECK(section_syntax_indicator == 1);
     int section_length = (p[1] & 0x0F) << 4 | p[2];
     CHECK(section_length <= 4093);
-    MLOGI("section_length = %d, size:%d", section_length, size);
+    MLOGI("section_length = %d, size:%zu", section_length, size);
 
     p = section.advance(3);
 
@@ -536,7 +536,7 @@ int Parser::ecmCb(int pid, size_t size, const uint8_t* data, void* userData)
 {
     Parser* parser = (Parser*)userData;
 
-    MLOGI("ecm cb, pid:0x%04X, size:%d", pid, size);
+    MLOGI("ecm cb, pid:0x%04X, size:%zu", pid, size);
     ECMSection results;
     results.ecmPid = pid;
     results.size = size;

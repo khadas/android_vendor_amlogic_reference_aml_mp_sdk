@@ -34,7 +34,7 @@ public:
     explicit AmlMpFifo(size_t size) {
         mSize = roundUpPowerOfTwo(size);
         mBuffer = (uint8_t*)calloc(mSize, 1);
-        ALOG(LOG_INFO, "AmlMpFifo", "Fifo_Size:%#x", mSize);
+        ALOG(LOG_INFO, "AmlMpFifo", "Fifo_Size:%#zx", mSize);
     }
 
     ~AmlMpFifo() {
