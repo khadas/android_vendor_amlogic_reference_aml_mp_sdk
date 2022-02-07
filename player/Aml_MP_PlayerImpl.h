@@ -222,7 +222,7 @@ private:
     WindowSize mVideoWindow;
     int mVideoTunnelId = -1;
     void* mSurfaceHandle = nullptr;
-    int mAudioPresentationId = 0;
+    int mAudioPresentationId = -1;
     int mUseTif = -1;
     int mSPDIFStatus = -1;
     Aml_MP_Rect mVideoCrop{0, 0, -1, -1};

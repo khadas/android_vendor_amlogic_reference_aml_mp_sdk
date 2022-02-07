@@ -292,7 +292,7 @@ int AmlMpPlayerImpl::start_l()
 
     if (mAudioParams.pid != AML_MP_INVALID_PID) {
         mPlayer->setAudioParams(&mAudioParams);
-        if (mAudioPresentationId > 0) {
+        if (mAudioPresentationId >= 0) {
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
         }
         if (mSPDIFStatus != -1) {
@@ -457,7 +457,7 @@ int AmlMpPlayerImpl::flush()
     }
     if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_STARTED) {
         mPlayer->setAudioParams(&mAudioParams);
-        if (mAudioPresentationId > 0) {
+        if (mAudioPresentationId >= 0) {
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
         }
         if (mSPDIFStatus != -1) {
@@ -1246,7 +1246,7 @@ int AmlMpPlayerImpl::startAudioDecoding_l()
     }
 
     mPlayer->setAudioParams(&mAudioParams);
-    if (mAudioPresentationId > 0) {
+    if (mAudioPresentationId >= 0) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
     }
     if (mSPDIFStatus != -1) {
@@ -1280,7 +1280,7 @@ int AmlMpPlayerImpl::stopAudioDecoding_l(std::unique_lock<std::mutex>& lock)
     int ret;
     RETURN_IF(-1, mPlayer == nullptr);
 
-    mAudioPresentationId = 0;
+    mAudioPresentationId = -1;
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         if (mPlayer) {
             mPlayer->stopAudioDecoding();
@@ -1943,7 +1943,7 @@ int AmlMpPlayerImpl::resetAudioCodec_l(bool callStart)
 
     if (mAudioParams.pid != AML_MP_INVALID_PID) {
         mPlayer->setAudioParams(&mAudioParams);
-        if (mAudioPresentationId > 0) {
+        if (mAudioPresentationId >= 0) {
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
         }
         if (mSPDIFStatus != -1) {

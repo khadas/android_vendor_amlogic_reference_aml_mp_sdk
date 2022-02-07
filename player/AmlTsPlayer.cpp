@@ -820,7 +820,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         {
 #ifdef ANDROID
             int para = *(int*)parameter;
-            if (para > 0) {
+            if (para >= 0) {
                 ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_AUDIO_PRESENTATION_ID, parameter);
             }
 #endif
