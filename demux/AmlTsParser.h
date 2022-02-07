@@ -66,6 +66,60 @@ struct StreamInfo
     int ancillaryPageId             = -1;
 };
 
+struct PMTInfo {
+    int programNumber;
+    int pmtPid;
+};
+
+struct PATSection {
+    int version_number;
+    std::vector<PMTInfo> pmtInfos;
+};
+
+struct PMTStream {
+    int streamPid;
+    int streamType;
+    int ecmPid={AML_MP_INVALID_PID}; //es info
+    int descriptorTags[10];
+    int descriptorCount = 0;
+
+    int compositionPageId{}; //dvb subtitle
+    int ancillaryPageId{}; //dvb subtitle
+};
+
+struct PMTSection {
+    int pmtPid;
+    int programNumber;
+    int version_number;
+    int current_next_indicator;
+
+    int pcrPid = 0x1FFF;
+
+    bool scrambled = false;
+    int caSystemId = -1;
+    int ecmPid = 0x1FFF;
+    int scrambleAlgorithm = -1;
+    SCRAMBLE_INFO_t scrambleInfo{};
+#define PRIVATE_DATA_LENGTH_MAX 256
+    int privateDataLength = 0;
+    uint8_t privateData[PRIVATE_DATA_LENGTH_MAX];
+
+    int streamCount = 0;
+    std::vector<PMTStream> streams;
+};
+
+struct CATSection {
+    int catPid;
+    int caSystemId = -1;
+    int emmPid= 0x1FFF;
+};
+
+struct ECMSection {
+    int ecmPid;
+    int size;
+    uint8_t* data;
+};
+
 struct ProgramInfo : public AmlMpRefBase
 {
     int programNumber               = -1;
@@ -120,11 +174,18 @@ class Parser : public AmlMpRefBase
 public:
     Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX, bool isSecureBuffer = false);
     ~Parser();
-    int open(bool autoParsing = true);
-    int close();
-    int wait();
-    void signalQuit();
+    int open();
+    void selectProgram(int programNumber);
+    void selectProgram(int vPid, int aPid);
+    void parseProgramInfoAsync();
+    int waitProgramInfoParsed();
+    sptr<ProgramInfo> parseProgramInfo();
     sptr<ProgramInfo> getProgramInfo() const;
+    int addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, void* userData, bool checkCRC = true);
+    int removeSectionFilter(int pid);
+
+    int close();
+    void signalQuit();
     Aml_MP_DemuxId getDemuxId() const {
         return mDemuxId;
     }
@@ -136,14 +197,7 @@ public:
         EVENT_ECM_DATA_PARSED
     };
     using ProgramEventCallback = void(ProgramEventType event, int programPid, int param, void* data);
-    void setProgram(int programNumber);
-    void setProgram(int vPid, int aPid);
-    bool hasProgramHint_l() const;
     void setEventCallback(const std::function<ProgramEventCallback>& cb);
-    int addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, bool checkCRC = true);
-    int removeSectionFilter(int pid);
-
-    static int ecmCb(int pid, size_t size, const uint8_t* data, void* userData);
 
 private:
     struct Section {
@@ -194,69 +248,20 @@ private:
         void* filter = nullptr;
     };
 
-    struct PATSection {
-        int programNumber;
-        int pmtPid;
-    };
-
-    static const int kMaxStreamsInPMT = 5;
-    struct PMTStream {
-        int streamPid;
-        int streamType;
-        int ecmPid={AML_MP_INVALID_PID}; //es info
-        int descriptorTags[10];
-        int descriptorCount = 0;
-
-        int compositionPageId{}; //dvb subtitle
-        int ancillaryPageId{}; //dvb subtitle
-    };
-
-    struct PMTSection {
-        int pmtPid;
-        int programNumber;
-        int version_number;
-        int current_next_indicator;
-
-        int pcrPid = 0x1FFF;
-
-        bool scrambled = false;
-        int caSystemId = -1;
-        int ecmPid = 0x1FFF;
-        int scrambleAlgorithm = -1;
-        SCRAMBLE_INFO_t scrambleInfo{};
-#define PRIVATE_DATA_LENGTH_MAX 256
-        int privateDataLength = 0;
-        uint8_t privateData[PRIVATE_DATA_LENGTH_MAX];
-
-        int streamCount = 0;
-        std::vector<PMTStream> streams;
-    };
-
-    struct CATSection {
-        int catPid;
-        int caSystemId = -1;
-        int emmPid= 0x1FFF;
-    };
-
-    struct ECMSection {
-        int ecmPid;
-        int size;
-        uint8_t* data;
-    };
-
     void clearAllSectionFilters();
     void notifyParseDone_l();
 
     static int patCb(int pid, size_t size, const uint8_t* data, void* userData);
     static int pmtCb(int pid, size_t size, const uint8_t* data, void* userData);
     static int catCb(int pid, size_t size, const uint8_t* data, void* userData);
+    static int ecmCb(int pid, size_t size, const uint8_t* data, void* userData);
 
-    void onPatParsed(const std::vector<PATSection>& results);
+    void onPatParsed(const PATSection& results);
     void onPmtParsed(const PMTSection& results);
     void onCatParsed(const CATSection& results);
     void onEcmParsed(const ECMSection& results);
 
-    bool checkPidChange(PMTSection oldPmt, PMTSection newPmt, Aml_MP_PlayerEventPidChangeInfo* pidChangeInfo);
+    bool checkPidChange(PMTSection oldPmt, PMTSection newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfo);
 
     std::function<ProgramEventCallback> mCb = nullptr;
 

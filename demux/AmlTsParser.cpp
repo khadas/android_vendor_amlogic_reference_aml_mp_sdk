@@ -112,7 +112,7 @@ Parser::~Parser()
     close();
 }
 
-int Parser::open(bool autoParsing)
+int Parser::open()
 {
     Aml_MP_DemuxType demuxType = mDemuxType;
     if (mIsHardwareSource) {
@@ -137,29 +137,43 @@ int Parser::open(bool autoParsing)
         return -1;
     }
 
-    if (autoParsing) {
-        addSectionFilter(0, patCb);
-        addSectionFilter(1, catCb);
-    }
     return 0;
 }
 
-void Parser::setProgram(int programNumber)
+void Parser::selectProgram(int programNumber)
 {
     std::lock_guard<std::mutex> _l(mLock);
     mProgramNumber = programNumber;
 }
 
-void Parser::setProgram(int vPid, int aPid)
+void Parser::selectProgram(int vPid, int aPid)
 {
     std::lock_guard<std::mutex> _l(mLock);
     mVPid = vPid;
     mAPid = aPid;
 }
 
-bool Parser::hasProgramHint_l() const
+void Parser::parseProgramInfoAsync()
 {
-    return mProgramNumber >= 0 || mVPid != AML_MP_INVALID_PID || mAPid != AML_MP_INVALID_PID;
+    addSectionFilter(0, patCb, this);
+    addSectionFilter(1, catCb, this);
+}
+
+int Parser::waitProgramInfoParsed()
+{
+    std::unique_lock<std::mutex> l(mLock);
+    bool ret = mCond.wait_for(l, std::chrono::seconds(60), [this] {
+        return mParseDone || mRequestQuit;
+    });
+
+    return ret ? 0 : -1;
+}
+
+sptr<ProgramInfo> Parser::parseProgramInfo()
+{
+    parseProgramInfoAsync();
+    waitProgramInfoParsed();
+    return getProgramInfo();
 }
 
 void Parser::setEventCallback(const std::function<ProgramEventCallback>& cb)
@@ -186,16 +200,6 @@ int Parser::close()
 
     MLOGI("%s:%d, end", __FUNCTION__, __LINE__);
     return 0;
-}
-
-int Parser::wait()
-{
-    std::unique_lock<std::mutex> l(mLock);
-    bool ret = mCond.wait_for(l, std::chrono::seconds(60), [this] {
-        return mParseDone || mRequestQuit;
-    });
-
-    return ret ? 0 : -1;
 }
 
 void Parser::signalQuit()
@@ -246,19 +250,20 @@ int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
     CHECK(section_length <= 4093);
     MLOGI("section_length = %d, size:%zu", section_length, size);
 
+    PATSection result;
     p = section.advance(3);
+    result.version_number = (p[2] & 0x3E) >> 1;
     //int transport_stream_id = p[0]<<8 | p[1];
     p = section.advance(5);
     int numPrograms = (section.dataSize() - 4)/4;
 
-    std::vector<PATSection> results;
     for (int i = 0; i < numPrograms; ++i) {
         int program_number = p[0]<<8 | p[1];
 
         if (program_number != 0) {
             int program_map_PID = (p[2]&0x01F) << 8 | p[3];
-			MLOGI("programNumber:%d, program_map_PID = %d\n", program_number, program_map_PID);
-            results.push_back({program_number, program_map_PID});
+            MLOGI("programNumber:%d, program_map_PID = %d\n", program_number, program_map_PID);
+            result.pmtInfos.push_back({program_number, program_map_PID});
         } else {
             //int network_PID = (p[2]&0x1F) << 8 | p[3];
         }
@@ -267,7 +272,7 @@ int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
     }
 
     if (parser) {
-        parser->onPatParsed(results);
+        parser->onPatParsed(result);
     }
 
     return 0;
@@ -297,7 +302,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
     int programNumber = p[0]<<8 | p[1];
     results.programNumber = programNumber;
     //check version_number and current_next_indicator to skip same pmt
-    results.version_number = p[2] & 0x3E;
+    results.version_number = (p[2] & 0x3E) >> 1;
     results.current_next_indicator = p[2] & 0x01;
     //MLOGI("pmt cb, version_number:%d, current_next_indicator:%d", results.version_number, results.current_next_indicator);
     if (results.current_next_indicator == 0) {
@@ -552,25 +557,24 @@ int Parser::ecmCb(int pid, size_t size, const uint8_t* data, void* userData)
     return 0;
 }
 
-void Parser::onPatParsed(const std::vector<PATSection>& results)
+void Parser::onPatParsed(const PATSection& result)
 {
-    if (results.empty()) {
-        return;
-    }
+    MLOGI("PATSection parsed: version:%d", result.version_number);
     removeSectionFilter(0);
 
     int programCount = 0;
     mPidProgramMap.clear();
-    for (auto& p : results) {
+    bool useFirstProgram = true;
+    if (mProgramNumber >= 0 || mVPid != AML_MP_INVALID_PID || mAPid != AML_MP_INVALID_PID) {
+        useFirstProgram = false;
+    }
+    for (auto& p : result.pmtInfos) {
         programCount++;
         mPidProgramMap.emplace(p.pmtPid, p.programNumber);
-        addSectionFilter(p.pmtPid, pmtCb);
-
-        std::lock_guard<std::mutex> _l(mLock);
-        if (!hasProgramHint_l()) {
+        if (useFirstProgram && mProgramNumber == -1) {
             mProgramNumber = p.programNumber;
-            MLOGI("set default program number:%d, pmt pid:%d", mProgramNumber, p.pmtPid);
         }
+        addSectionFilter(p.pmtPid, pmtCb, this);
     }
 
     if (programCount == 0) {
@@ -586,18 +590,20 @@ void Parser::onPmtParsed(const PMTSection& results)
         return;
     }
 
-    bool isNewEcm = false;
     bool isProgramSeleted = false;
+    bool isNewEcm = false;
     bool isNewPmt = false;
     bool isPidChanged = false;
-    Aml_MP_PlayerEventPidChangeInfo pidChangeInfo;
+    std::vector<Aml_MP_PlayerEventPidChangeInfo> pidChangeInfos;
     {
         std::lock_guard<std::mutex> _l(mLock);
-        if (!hasProgramHint_l()) {
-            isProgramSeleted = true;
-        } else if (mProgramNumber != -1 && results.programNumber == mProgramNumber) {
-            isProgramSeleted = true;
-        } else if (mVPid != AML_MP_INVALID_PID || mAPid != AML_MP_INVALID_PID) {
+        if (mProgramNumber != -1) {
+            // check if this pmt is the selected program
+            if (mProgramNumber == results.programNumber) {
+                isProgramSeleted = true;
+            }
+        } else {
+            // check if this pmt contains with a/v pid
             bool containsAudio = false, containsVideo = false;
             for (PMTStream stream : results.streams) {
                 if (mVPid == stream.streamPid) {
@@ -608,23 +614,23 @@ void Parser::onPmtParsed(const PMTSection& results)
             }
             if ((mVPid == AML_MP_INVALID_PID || containsVideo) && (mAPid == AML_MP_INVALID_PID || containsAudio)) {
                 isProgramSeleted = true;
+                mProgramNumber = results.programNumber;
             }
         }
-        //check is newPmt or updatePmt
+
+        //check if this pmt is newPmt or pmt changed
         auto it = mPidPmtMap.find(results.pmtPid);
         if (it == mPidPmtMap.end()) {
             // is new pmt
             isNewPmt = true;
             mPidPmtMap.emplace(results.pmtPid, results);
         } else {
-            // is pmt updated
-            if (isProgramSeleted) {
-                // check pid change
-                isPidChanged = checkPidChange(it->second, results, &pidChangeInfo);
-            }
+            // is pmt changed
+            isPidChanged = checkPidChange(it->second, results, &pidChangeInfos);
             mPidPmtMap.erase(results.pmtPid);
             mPidPmtMap.emplace(results.pmtPid, results);
         }
+
         //check is newEcm
         if (isProgramSeleted && results.scrambled && mEcmPidSet.find(results.ecmPid) == mEcmPidSet.end()) {
             isNewEcm = true;
@@ -639,7 +645,7 @@ void Parser::onPmtParsed(const PMTSection& results)
 
     if (isNewEcm && results.scrambled) {
         // filter ecmData
-        addSectionFilter(results.ecmPid, ecmCb, false);
+        addSectionFilter(results.ecmPid, ecmCb, this, false);
     }
 
     sptr<ProgramInfo> programInfo = mProgramInfo;
@@ -756,9 +762,11 @@ void Parser::onPmtParsed(const PMTSection& results)
         if (mCb && mProgramInfo->isComplete()) {
             mCb(ProgramEventType::EVENT_PROGRAM_PARSED, mProgramInfo->pmtPid, mProgramInfo->programNumber, mProgramInfo.get());
         }
-    } else {
+    } else if (isPidChanged) {
         if (mCb) {
-            mCb(ProgramEventType::EVENT_AV_PID_CHANGED, results.pmtPid, results.programNumber, (void *)&pidChangeInfo);
+            for (Aml_MP_PlayerEventPidChangeInfo pidChangeInfo : pidChangeInfos) {
+                mCb(ProgramEventType::EVENT_AV_PID_CHANGED, results.pmtPid, results.programNumber, (void *)&pidChangeInfo);
+            }
         }
     }
 
@@ -790,42 +798,134 @@ void Parser::onEcmParsed(const ECMSection& results){
     }
 }
 
-bool Parser::checkPidChange(PMTSection oldPmt, PMTSection newPmt, Aml_MP_PlayerEventPidChangeInfo* pidChangeInfo)
+/**
+ * 1. same pid and same streamType
+ * 2. only pid changed
+ * 3. only streamType changed
+ * 4. pid and streamType both changed (same Aml_MP_StreamType)
+ * 5. old stream removed
+ * 6. new stream inserted
+ */
+bool Parser::checkPidChange(PMTSection oldPmt, PMTSection newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfos)
 {
-    std::set<int> oldPidSet;
-    std::set<int> newPidSet;
-    std::set<int> unChangedPidSet;
+    std::map<int, PMTStream> oldPidStreamMap;
+    std::map<int, PMTStream> newPidStreamMap;
+    std::set<int> unChangedPidSet; // case 1: same pid and same streamType
+    std::set<std::pair<int, int>> streamChangedSet; // case 2/3/4/5/6: oldPid --> newPid
+
     for (PMTStream pmtStream : oldPmt.streams) {
-        oldPidSet.insert(pmtStream.streamPid);
+        oldPidStreamMap.insert({pmtStream.streamPid, pmtStream});
     }
     for (PMTStream pmtStream : newPmt.streams) {
-        newPidSet.insert(pmtStream.streamPid);
+        newPidStreamMap.insert({pmtStream.streamPid, pmtStream});
     }
-    for (int pid : oldPidSet) {
-        if (newPidSet.find(pid) != newPidSet.end()) {
-            unChangedPidSet.insert(pid);
+    // find all streams in case 1, 3
+    for (auto oldPidStream : oldPidStreamMap) {
+        int oldPid = oldPidStream.first;
+        auto newPidStream = newPidStreamMap.find(oldPid);
+        if (newPidStream != newPidStreamMap.end()) {
+            if (newPidStream->second.streamType == oldPidStream.second.streamType) {
+                unChangedPidSet.insert(oldPid); // 1. same pid and same streamType
+            } else {
+                streamChangedSet.insert(std::pair<int,int>(oldPid, newPidStream->first)); // 3. only streamType changed
+            }
         }
     }
+
+    // remove all streams in case 1
     for (int pid : unChangedPidSet) {
-        oldPidSet.erase(pid);
-        newPidSet.erase(pid);
+        oldPidStreamMap.erase(pid);
+        newPidStreamMap.erase(pid);
     }
-    bool isPidChange =false;
-    if (!oldPidSet.empty()) {
-        pidChangeInfo->oldStreamPid = *oldPidSet.begin();
-        isPidChange = true;
+    // remove all streams in case 3
+    for (auto streamChanged : streamChangedSet) {
+        oldPidStreamMap.erase(streamChanged.first);
+        newPidStreamMap.erase(streamChanged.second);
     }
-    if (!newPidSet.empty()) {
-        pidChangeInfo->newStreamPid = *newPidSet.begin();
-        isPidChange = true;
+    // find all streams in case 2, 4, 5
+    for (auto oldPidStream : oldPidStreamMap) {
+        int oldPid = oldPidStream.first;
+        int streamType = oldPidStream.second.streamType;
+        bool isStreamRemoved = true;
+        for (auto newPidStream : newPidStreamMap) {
+            if (newPidStream.second.streamType == streamType) {
+                streamChangedSet.insert(std::pair<int,int>(oldPid, newPidStream.first)); // 2. only pid changed
+                newPidStreamMap.erase(newPidStream.first);
+                isStreamRemoved = false;
+                break;
+            }
+            Aml_MP_StreamType oldType = getStreamTypeInfo(oldPidStream.second.streamType)->mpStreamType;
+            Aml_MP_StreamType newType = getStreamTypeInfo(newPidStream.second.streamType)->mpStreamType;
+            if (oldType == newType) {
+                streamChangedSet.insert(std::pair<int,int>(oldPid, newPidStream.first)); // 4. pid and streamType both changed (same Aml_MP_StreamType)
+                newPidStreamMap.erase(newPidStream.first);
+                isStreamRemoved = false;
+                break;
+            }
+        }
+        if (isStreamRemoved) {
+            streamChangedSet.insert(std::pair<int,int>(oldPid, AML_MP_INVALID_PID)); // 5. old stream removed
+        }
     }
-    pidChangeInfo->programPid = oldPmt.pmtPid;
-    pidChangeInfo->programNumber = oldPmt.programNumber;
+    // remove all streams in case 2, 4, 5
+    for (auto streamChanged : streamChangedSet) {
+        if (streamChanged.first != AML_MP_INVALID_PID) {
+            oldPidStreamMap.erase(streamChanged.first);
+        }
+        if (streamChanged.second != AML_MP_INVALID_PID) {
+            newPidStreamMap.erase(streamChanged.second);
+        }
+    }
+    // find all streams in case 6
+    for (auto newPidStream : newPidStreamMap) {
+        streamChangedSet.insert(std::pair<int,int>(AML_MP_INVALID_PID, newPidStream.first)); // 6. new stream inserted
+    }
+
+    // convert streamChangedSet to Aml_MP_PlayerEventPidChangeInfos
+    bool isPidChange = !streamChangedSet.empty();
+    oldPidStreamMap.clear();
+    newPidStreamMap.clear();
+    for (PMTStream pmtStream : oldPmt.streams) {
+        oldPidStreamMap.insert({pmtStream.streamPid, pmtStream});
+    }
+    for (PMTStream pmtStream : newPmt.streams) {
+        newPidStreamMap.insert({pmtStream.streamPid, pmtStream});
+    }
+    for (auto streamChanged : streamChangedSet) {
+        Aml_MP_PlayerEventPidChangeInfo pidChangeInfo;
+        memset(&pidChangeInfo, 0, sizeof(Aml_MP_PlayerEventPidChangeInfo));
+        pidChangeInfo.programNumber = newPmt.programNumber;
+        pidChangeInfo.programPid = newPmt.pmtPid;
+        pidChangeInfo.oldStreamPid = streamChanged.first;
+        pidChangeInfo.newStreamPid = streamChanged.second;
+        if (pidChangeInfo.newStreamPid != AML_MP_INVALID_PID) {
+            PMTStream newPmtStream = newPidStreamMap.find(pidChangeInfo.newStreamPid)->second;
+            const struct StreamType* type = getStreamTypeInfo(newPmtStream.streamType);
+            pidChangeInfo.type = type->mpStreamType;
+            switch (pidChangeInfo.type) {
+                case AML_MP_STREAM_TYPE_AUDIO:
+                    pidChangeInfo.u.audioParams.pid = streamChanged.second;
+                    pidChangeInfo.u.audioParams.audioCodec = type->codecId;
+                    break;
+                case AML_MP_STREAM_TYPE_VIDEO:
+                    pidChangeInfo.u.videoParams.pid = streamChanged.second;
+                    pidChangeInfo.u.videoParams.videoCodec = type->codecId;
+                    break;
+                case AML_MP_STREAM_TYPE_SUBTITLE:
+                    pidChangeInfo.u.subtitleParams.pid = streamChanged.second;
+                    pidChangeInfo.u.subtitleParams.subtitleCodec = type->codecId;
+                    break;
+                default:
+                    break;
+            }
+        }
+        pidChangeInfos->push_back(pidChangeInfo);
+    }
     return isPidChange;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int Parser::addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, bool checkCRC)
+int Parser::addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, void* userData, bool checkCRC)
 {
     int ret = 0;
 
@@ -847,7 +947,7 @@ int Parser::addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, bool chec
         return ret;
     }
 
-    context->filter = mDemux->createFilter(cb, this);
+    context->filter = mDemux->createFilter(cb, userData);
     if (ret < 0) {
         MLOGE("create filter for pid:%d failed!", pid);
         return ret;

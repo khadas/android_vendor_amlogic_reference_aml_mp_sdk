@@ -77,6 +77,12 @@ int Aml_MP_GetCodecSupportInfo(Aml_MP_StreamType streamType, void* supportInfoJs
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Player                                   //
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Aml_MP_PlayerCreateParams
+ *
+ * \param options optional values come from Aml_MP_Option
+ */
 typedef struct {
     Aml_MP_ChannelId        channelId;
     Aml_MP_DemuxId          demuxId;

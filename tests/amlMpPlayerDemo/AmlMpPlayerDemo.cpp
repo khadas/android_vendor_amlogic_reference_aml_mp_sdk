@@ -32,8 +32,8 @@ struct Argument
     int crypto = 0;
     int uiMode = 0;
     int channelId = -1;
-    int tunerhal = 0;
     int videoErrorRecoveryMode = 0;
+    uint64_t options = 0;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -49,8 +49,8 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"crypto",      no_argument,        nullptr, 'c'},
         {"ui",          no_argument,        nullptr, 'u'},
         {"id",          required_argument,  nullptr, 'd'},
-        {"tunerhal",    no_argument,        nullptr, 't'},
         {"video-error-recovery-mode",    required_argument,  nullptr, 'e'},
+        {"options",     required_argument,  nullptr, 'o'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -140,18 +140,19 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
-        case 't':
-        {
-            printf("prefer tunerhal!\n");
-            argument->tunerhal = true;
-        }
-        break;
-
         case 'e':
         {
             int tmpMode = strtol(optarg, nullptr, 0);
             printf("video error recovery mode: %d(%s)\n", tmpMode, mpVideoErrorRecoveryMode2Str((Aml_MP_VideoErrorRecoveryMode)tmpMode));
             argument->videoErrorRecoveryMode = tmpMode;
+        }
+        break;
+
+        case 'o':
+        {
+            uint64_t options = strtoul(optarg, nullptr, 0);
+            printf("options :0x%" PRIx64 "\n", options);
+            argument->options = options;
         }
         break;
 
@@ -194,11 +195,13 @@ static void showUsage()
             "   --crypto      crypto mode\n"
             "   --ui          create ui only\n"
             "   --id          specify the corresponding ui channel id\n"
-            "   --tunerhal    test tunerhal playback\n"
             "   --video-error-recovery-mode\n"
             "                 0: default\n"
             "                 1: drop error frame\n"
             "                 2: do nothing, display error frame\n"
+            "   --options     set options, eg: 3, 3 equals with 0b0011, so it means \"prefer tunerhal\" and \"monitor pid change\"\n"
+            "                 0-bit set 1 means prefer tunerhal:       AML_MP_OPTION_PREFER_TUNER_HAL\n"
+            "                 1-bit set 1 means monitor pid change:    AML_MP_OPTION_MONITOR_PID_CHANGE\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -234,8 +237,8 @@ int main(int argc, char *argv[])
     displayParam.videoMode = argument.videoMode;
     displayParam.channelId = argument.channelId;
     mpTestSupporter->setDisplayParam(displayParam);
-    if (argument.tunerhal) {
-        mpTestSupporter->addOptions(AML_MP_OPTION_PREFER_TUNER_HAL);
+    if (argument.options) {
+        mpTestSupporter->addOptions(argument.options);
     }
 
     if (argument.uiMode) {

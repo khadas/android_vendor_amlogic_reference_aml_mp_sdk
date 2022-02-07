@@ -1691,16 +1691,15 @@ int AmlMpPlayerImpl::prepare_l()
         setState_l(STATE_PREPARING);
     }
 
-    if (mParser == nullptr && mPrepareWaitingType != kPrepareWaitingNone) {
+    if (mParser == nullptr && (mPrepareWaitingType != kPrepareWaitingNone || (mCreateParams.options & AML_MP_OPTION_MONITOR_PID_CHANGE))) {
         mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_HARDWARE_DEMUX);
-        mParser->setProgram(mVideoParams.pid, mAudioParams.pid);
+        mParser->open();
+        mParser->selectProgram(mVideoParams.pid, mAudioParams.pid);
         mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
                 return programEventCallback(event, param1, param2, data);
         });
 
         if (mPrepareWaitingType == kPrepareWaitingEcm) {
-            mParser->open(false /*autoParsing*/);
-
             int lastEcmPid = AML_MP_INVALID_PID;
             for (size_t i = 0; i < mEcmPids.size(); ++i) {
                 int ecmPid = mEcmPids[i];
@@ -1709,7 +1708,13 @@ int AmlMpPlayerImpl::prepare_l()
                 }
 
                 if (ecmPid != lastEcmPid) {
-                    mParser->addSectionFilter(ecmPid, Parser::ecmCb, false);
+                    mParser->addSectionFilter(ecmPid, [] (int pid, size_t size, const uint8_t* data, void* userData) -> int {
+                        AmlMpPlayerImpl* playerImpl = (AmlMpPlayerImpl*)userData;
+                        if (playerImpl) {
+                            playerImpl->programEventCallback(Parser::ProgramEventType::EVENT_ECM_DATA_PARSED, pid, size, (void*)data);
+                        }
+                        return 0;
+                    }, this, false);
                     lastEcmPid = ecmPid;
                 }
             }
@@ -1718,7 +1723,7 @@ int AmlMpPlayerImpl::prepare_l()
                 MLOGE("no valid ecm pid!");
             }
         } else {
-            mParser->open();
+            mParser->parseProgramInfoAsync();
         }
     }
 

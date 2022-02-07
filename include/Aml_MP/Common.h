@@ -103,19 +103,23 @@ typedef enum {
     AML_MP_INPUT_STREAM_SECURE_MEMORY,
 } Aml_MP_InputStreamType;
 
-
+/**
+ * @brief Aml_MP_Option
+ *
+ * \param AML_MP_OPTION_PREFER_TUNER_HAL
+ *      playing through TunerHal, playbackpipeline is:
+ *      TunerHal + MediaCodec + AudioTrack
+ * \param AML_MP_OPTION_MONITOR_PID_CHANGE
+ *      monitor A/V pid change when playing, and report
+ *      AML_MP_PLAYER_EVENT_PID_CHANGED when pid changed
+ */
 typedef enum {
-    AML_MP_INPUT_BUFFER_TYPE_NORMAL,
-    AML_MP_INPUT_BUFFER_TYPE_SECURE,
-    AML_MP_INPUT_BUFFER_TYPE_TVP,
-} Aml_MP_InputBufferType;
-
-typedef enum {
-    AML_MP_OPTION_PREFER_TUNER_HAL = 1 << 0,
-} Aml_MP_OPTION;
+    AML_MP_OPTION_PREFER_TUNER_HAL      = 1 << 0,
+    AML_MP_OPTION_MONITOR_PID_CHANGE    = 1 << 1,
+} Aml_MP_Option;
 
 typedef struct {
-    Aml_MP_InputBufferType type;
+    Aml_MP_InputStreamType type;
     uint8_t* address;
     size_t size;
 } Aml_MP_Buffer;
@@ -689,7 +693,7 @@ typedef enum {
     AML_MP_PLAYER_EVENT_SCRAMBLING,
     AML_MP_PLAYER_EVENT_USERDATA_AFD,
     AML_MP_PLAYER_EVENT_USERDATA_CC,
-    AML_MP_PLAYER_EVENT_PID_CHANGED,
+    AML_MP_PLAYER_EVENT_PID_CHANGED,                        //param: Aml_MP_PlayerEventPidChangeInfo
 
     // DVR player
     AML_MP_DVRPLAYER_EVENT_ERROR                = 0x1000,   /**< Signal a critical playback error*/
@@ -768,8 +772,14 @@ typedef struct {
 typedef struct {
     int programPid;
     int programNumber;
+    Aml_MP_StreamType type;
     int oldStreamPid;
     int newStreamPid;
+    union {
+        Aml_MP_VideoParams      videoParams;
+        Aml_MP_AudioParams      audioParams;
+        Aml_MP_SubtitleParams   subtitleParams;
+    } u;
 } Aml_MP_PlayerEventPidChangeInfo;
 
 

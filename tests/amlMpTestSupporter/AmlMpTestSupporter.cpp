@@ -163,7 +163,7 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
         demuxType = AML_MP_SOFTWARE_DEMUX;
     }
     mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, demuxType);
-    mParser->setProgram(programNumber);
+    mParser->selectProgram(programNumber);
     if (mParser == nullptr) {
         MLOGE("create parser failed!");
         //return -1;
@@ -177,6 +177,7 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     }
 
     ret = mParser->open();
+    mParser->parseProgramInfoAsync();
     if (ret < 0) {
         MLOGE("parser open failed!");
         //return -1;
@@ -189,7 +190,7 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     ret = mSource->start();
 
     MLOGI("parsing...");
-    ret = mParser->wait();
+    ret = mParser->waitProgramInfoParsed();
     if (ret < 0) {
         MLOGE("parser wait failed!");
         //return -1;
