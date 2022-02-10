@@ -151,6 +151,7 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_INSTANCE_ID);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SYNC_ID);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE);
+        ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_AV_INFO_JSON);
 
         default:
             return "unknown player parameter key";
@@ -786,6 +787,7 @@ am_tsplayer_audio_stereo_mode convertToTsPlayerAudioStereoMode(Aml_MP_AudioBalan
 void convertToMpPlayerEventAudioFormat(Aml_MP_PlayerEventAudioFormat* dest, am_tsplayer_audio_format_t* source) {
     dest->sample_rate = source->sample_rate;
     dest->channels = source->channels;
+    dest->channel_mask = source->channel_mask;
 }
 
 static struct DemuxSourceConvertMap {

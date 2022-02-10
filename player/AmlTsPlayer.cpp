@@ -857,7 +857,30 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             ret = AM_TSPLAYER_ERROR_INVALID_OPERATION;
         }
         break;
-
+        case AML_MP_PLAYER_PARAMETER_AV_INFO_JSON: {
+            Aml_MP_AvInfo *mpAvInfo = (Aml_MP_AvInfo*)parameter;
+            am_tsplayer_state_t tsAvInfo;
+            bool_t hasVideo = false;
+            bool_t hasAudio = false;
+            tsAvInfo.data = mpAvInfo->data;
+            tsAvInfo.data_len = mpAvInfo->dataLength;
+            if (mpAvInfo->streamTypeMask & AML_MP_STREAM_TYPE_MASK_VIDEO) {
+                hasVideo = true;
+            }
+            if (mpAvInfo->streamTypeMask & AML_MP_STREAM_TYPE_MASK_AUDIO) {
+                hasAudio = true;
+            }
+            if (hasVideo && hasAudio) {
+                tsAvInfo.av_flag = (am_tsplayer_av_info_state)0;
+            } else if (hasAudio) {
+                tsAvInfo.av_flag = (am_tsplayer_av_info_state)1;
+            } else if (hasVideo) {
+                tsAvInfo.av_flag = (am_tsplayer_av_info_state)2;
+            }
+            ret = AmTsPlayer_getState(mPlayer, &tsAvInfo);
+            mpAvInfo->actualLength = tsAvInfo.actual_len;
+            break;
+        }
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -866,7 +889,6 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
     switch (ret) {
         case AM_TSPLAYER_OK:
             return AML_MP_OK;
-
         case AM_TSPLAYER_ERROR_INVALID_PARAMS:
             return AML_MP_ERROR_BAD_VALUE;
         case AM_TSPLAYER_ERROR_INVALID_OPERATION:
