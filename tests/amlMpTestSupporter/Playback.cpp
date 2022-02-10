@@ -793,6 +793,21 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "sDspMode", 0, "set display mode",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            Aml_MP_VideoDisplayMode videoMode = AML_MP_VIDEO_DISPLAY_MODE_NORMAL;
+            if (args.size() != 2) {
+                printf("Input example: sDspMode display_mode\n");
+                return -1;
+            }
+            videoMode = (Aml_MP_VideoDisplayMode)stoi(args[1]);
+            int ret = Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, &videoMode);
+            printf("AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE set mode: %d, ret: %d\n", videoMode, ret);
+            return ret;
+        }
+    },
+
+    {
         "sParam", 0, "set param",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             Aml_MP_VideoDisplayMode videoMode = AML_MP_VIDEO_DISPLAY_MODE_NORMAL;
@@ -872,9 +887,21 @@ static struct TestModule::Command g_commandTable[] = {
     {
         "gDecCap", 0, "get decoder capability",
         [](AML_MP_PLAYER player __unused, const std::vector<std::string>& args __unused) -> int {
+            int32_t decType;
             char jsonInfo[1000]{0};
-            int ret  = Aml_MP_GetCodecSupportInfo(AML_MP_STREAM_TYPE_VIDEO, jsonInfo);
-            printf("Aml_MP_Initialize json: %s", jsonInfo);
+            int ret;
+            if (args.size() != 2) {
+                printf("Input example: gDecCap decoder_id\n");
+                printf("Run getDecCapDemo\n");
+                ret = Aml_MP_GetCodecCapability(AML_MP_VIDEO_CODEC_H264, jsonInfo, 1000);
+                printf("Aml_MP_GetCodecCapability video AML_MP_VIDEO_CODEC_H264 json(%d): %s\n", ret, jsonInfo);
+                ret = Aml_MP_GetCodecCapability(AML_MP_AUDIO_CODEC_MP3, jsonInfo, 1000);
+                printf("Aml_MP_GetCodecCapability audio AML_MP_AUDIO_CODEC_MP3 json(%d): %s\n", ret, jsonInfo);
+            } else {
+                decType = stoi(args[1]);
+                ret = Aml_MP_GetCodecCapability((Aml_MP_CodecID)decType, jsonInfo, 1000);
+                printf("Aml_MP_GetCodecCapability json(%d): %s\n", ret, jsonInfo);
+            }
             return ret;
         }
     },

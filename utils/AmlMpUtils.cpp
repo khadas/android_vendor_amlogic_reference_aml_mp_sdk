@@ -48,7 +48,8 @@ const char* mpCodecId2Str(Aml_MP_CodecID codecId)
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_VP9);
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_AVS2);
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_MJPEG);
-
+        ENUM_TO_STR(AML_MP_VIDEO_CODEC_AV1);
+        ENUM_TO_STR(AML_MP_VIDEO_CODEC_MAX);
 
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_BASE);
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_MP2);
@@ -63,12 +64,14 @@ const char* mpCodecId2Str(Aml_MP_CodecID codecId)
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_FLAC);
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_VORBIS);
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_OPUS);
+        ENUM_TO_STR(AML_MP_AUDIO_CODEC_MAX);
 
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_BASE);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_CC);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_SCTE27);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_DVB);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_TELETEXT);
+        ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_MAX);
         default: return "unknown codec Id";
     }
 }
@@ -393,6 +396,86 @@ aformat_t convertToAForamt(Aml_MP_CodecID audioCodec)
     return aFormat;
 }
 
+am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec) {
+    switch (aml_MP_VideoCodec) {
+        case AML_MP_VIDEO_CODEC_MPEG12:
+            return AV_VIDEO_CODEC_MPEG2;
+        case AML_MP_VIDEO_CODEC_MPEG4:
+            return AV_VIDEO_CODEC_MPEG4;
+        case AML_MP_VIDEO_CODEC_H264:
+            return AV_VIDEO_CODEC_H264;
+        case AML_MP_VIDEO_CODEC_AVS:
+            return AV_VIDEO_CODEC_AVS;
+        case AML_MP_VIDEO_CODEC_VP9:
+            return AV_VIDEO_CODEC_VP9;
+        case AML_MP_VIDEO_CODEC_HEVC:
+            return AV_VIDEO_CODEC_H265;
+        case AML_MP_VIDEO_CODEC_MJPEG:
+            return AV_VIDEO_CODEC_MJPEG;
+        default:
+            return AV_VIDEO_CODEC_AUTO;
+    }
+}
+
+am_tsplayer_audio_codec convertToAudioCodec(Aml_MP_CodecID aml_MP_AudioCodec) {
+    switch (aml_MP_AudioCodec) {
+        case AML_MP_AUDIO_CODEC_MP2:
+            return AV_AUDIO_CODEC_MP2;
+        case AML_MP_AUDIO_CODEC_MP3:
+            return AV_AUDIO_CODEC_MP3;
+        case AML_MP_AUDIO_CODEC_AC3:
+            return AV_AUDIO_CODEC_AC3;
+        case AML_MP_AUDIO_CODEC_EAC3:
+            return AV_AUDIO_CODEC_EAC3;
+        case AML_MP_AUDIO_CODEC_DTS:
+            return AV_AUDIO_CODEC_DTS;
+        case AML_MP_AUDIO_CODEC_AAC:
+            return AV_AUDIO_CODEC_AAC;
+        case AML_MP_AUDIO_CODEC_LATM:
+            return AV_AUDIO_CODEC_LATM;
+        case AML_MP_AUDIO_CODEC_PCM:
+            return AV_AUDIO_CODEC_PCM;
+        case AML_MP_AUDIO_CODEC_AC4:
+            return AV_AUDIO_CODEC_AC4;
+        case AML_MP_AUDIO_CODEC_FLAC:
+            return AV_AUDIO_CODEC_FLAC;
+        case AML_MP_AUDIO_CODEC_VORBIS:
+            return AV_AUDIO_CODEC_VORBIS;
+        case AML_MP_AUDIO_CODEC_OPUS:
+            return AV_AUDIO_CODEC_OPUS;
+
+        default:
+            return AV_AUDIO_CODEC_AUTO;
+    }
+}
+
+am_tsplayer_input_source_type convertToInputSourceType(Aml_MP_InputSourceType sourceType) {
+    switch (sourceType) {
+    case AML_MP_INPUT_SOURCE_TS_MEMORY:
+        return TS_MEMORY;
+
+    case AML_MP_INPUT_SOURCE_TS_DEMOD:
+        return TS_DEMOD;
+
+    case AML_MP_INPUT_SOURCE_ES_MEMORY:
+        return ES_MEMORY;
+
+    default:
+        return TS_MEMORY;
+    }
+}
+
+am_tsplayer_avsync_mode convertToAVSyncSourceType(Aml_MP_AVSyncSource avSyncSource) {
+    switch (avSyncSource) {
+        case AML_MP_AVSYNC_SOURCE_VIDEO:
+            return TS_SYNC_VMASTER;
+        case AML_MP_AVSYNC_SOURCE_AUDIO:
+            return TS_SYNC_AMASTER;
+        default:
+            return TS_SYNC_PCRMASTER;
+    }
+}
+
 Aml_MP_StreamType convertToMpStreamType(DVR_StreamType_t streamType)
 {
     switch (streamType) {
@@ -619,7 +702,6 @@ am_tsplayer_video_match_mode convertToTsPlayerVideoMatchMode(Aml_MP_VideoDisplay
         return AV_VIDEO_MATCH_MODE_WIDTHFULL;
     case AML_MP_VIDEO_DISPLAY_MODE_HEIGHTFULL:
         return AV_VIDEO_MATCH_MODE_HEIGHFULL;
-#ifdef ANDROID
     case AML_MP_VIDEO_DISPLAY_MODE_4_3_LETTER_BOX:
         return AV_VIDEO_WIDEOPTION_4_3_LETTER_BOX;
     case AML_MP_VIDEO_DISPLAY_MODE_4_3_PAN_SCAN:
@@ -636,7 +718,6 @@ am_tsplayer_video_match_mode convertToTsPlayerVideoMatchMode(Aml_MP_VideoDisplay
         return AV_VIDEO_WIDEOPTION_16_9_COMBINED;
     case AML_MP_VIDEO_DISPLAY_MODE_CUSTOM:
         return AV_VIDEO_WIDEOPTION_CUSTOM;
-#endif
     default:
         return AV_VIDEO_MATCH_MODE_NONE;
     }
@@ -1040,13 +1121,6 @@ Aml_MP_CodecID convertToMpCodecId(std::string mimeStr) {
     }
 
     return AML_MP_CODEC_UNKNOWN;
-}
-
-const char* convertToResolutionString(Aml_MP_Resolution resolution) {
-    if (resolution < AML_MP_RESOLUTION_MAX) {
-        return resolutionMap[resolution];
-    }
-    return resolutionMap[AML_MP_RESOLUTION_1080P];
 }
 
 void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters) {

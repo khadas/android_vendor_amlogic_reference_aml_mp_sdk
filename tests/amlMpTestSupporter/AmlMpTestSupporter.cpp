@@ -326,8 +326,8 @@ if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
 }
 #else
     if (mDisplayParam.channelId < 0) {
-        printf("Please specify the ui channel id by --id option!\n");
-        return -1;
+        printf("Please specify the ui channel id by --id option, default set to 0 now!\n");
+        mDisplayParam.channelId = 0;
     }
     mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
 #endif

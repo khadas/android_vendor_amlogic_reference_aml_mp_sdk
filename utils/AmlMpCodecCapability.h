@@ -13,27 +13,44 @@
 #include "json/json.h"
 
 namespace aml_mp {
+typedef enum {
+    AML_MP_RESOLUTION_1080P,
+    AML_MP_RESOLUTION_4K,
+    AML_MP_RESOLUTION_8K,
+    AML_MP_RESOLUTION_MAX,
+} Aml_MP_Resolution;
+
+typedef struct {
+    Aml_MP_CodecID decoderName;
+    Aml_MP_Resolution decoderMaxResolution;
+} Aml_MP_DecoderCapabilityInfo;
+
+typedef struct {
+    Aml_MP_CodecID decoderName;
+    char decoderNameStr[10];
+}DecoderNamePair;
+
+typedef struct {
+    Aml_MP_Resolution maxResolution;
+    char resolutionStr[10];
+}ResolutionNamePair;
+
 class AmlMpCodecCapability
 {
 public:
-    typedef struct {
-        Aml_MP_CodecID decoderName;
-        Aml_MP_Resolution decoderMaxResolution;
-    } Aml_MP_DecoderCapabilityInfo;
     static AmlMpCodecCapability* getCodecCapabilityHandle();
-    void getCodecCapabilityStr(Aml_MP_StreamType streamType, char* str);
+    void getCodecCapabilityStr(Aml_MP_CodecID codecId, char* caps, size_t size);
 private:
     std::vector<Aml_MP_DecoderCapabilityInfo> mVideoCapabilityMap;
-    std::vector<Aml_MP_DecoderCapabilityInfo> mAudiooCapabilityMap;
-    std::string mVideoCabilityJsonStr;
-    std::string mAudioCabilityJsonStr;
+    std::vector<Aml_MP_DecoderCapabilityInfo> mAudioCapabilityMap;
     AmlMpCodecCapability();
     ~AmlMpCodecCapability();
-    static AmlMpCodecCapability* mHandle;
-    void getVideoDecoderCapability(std::string str);
     void updateVideoCapability();
-    bool matchCodecType(std::string str, Aml_MP_CodecID* codecId);
+    void updateAudioCapability();
+
+    void getVideoDecoderCapability(std::string str);
+    bool matchVideoCodecType(std::string str, Aml_MP_CodecID* codecId);
     bool matchMaxResolution(std::string str, Aml_MP_Resolution* resolution);
-    void getCodecCapabilityJson(Aml_MP_StreamType streamType, Json::Value* videoInfo);
+    const char* convertToResolutionString(Aml_MP_Resolution resolution);
 };
 }

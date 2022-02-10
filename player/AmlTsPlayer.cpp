@@ -23,86 +23,6 @@
 
 namespace aml_mp {
 
-am_tsplayer_video_codec videoCodecConvert(Aml_MP_CodecID aml_MP_VideoCodec) {
-    switch (aml_MP_VideoCodec) {
-        case AML_MP_VIDEO_CODEC_MPEG12:
-            return AV_VIDEO_CODEC_MPEG2;
-        case AML_MP_VIDEO_CODEC_MPEG4:
-            return AV_VIDEO_CODEC_MPEG4;
-        case AML_MP_VIDEO_CODEC_H264:
-            return AV_VIDEO_CODEC_H264;
-        case AML_MP_VIDEO_CODEC_AVS:
-            return AV_VIDEO_CODEC_AVS;
-        case AML_MP_VIDEO_CODEC_VP9:
-            return AV_VIDEO_CODEC_VP9;
-        case AML_MP_VIDEO_CODEC_HEVC:
-            return AV_VIDEO_CODEC_H265;
-        case AML_MP_VIDEO_CODEC_MJPEG:
-            return AV_VIDEO_CODEC_MJPEG;
-        default:
-            return AV_VIDEO_CODEC_AUTO;
-    }
-}
-
-am_tsplayer_audio_codec audioCodecConvert(Aml_MP_CodecID aml_MP_AudioCodec) {
-    switch (aml_MP_AudioCodec) {
-        case AML_MP_AUDIO_CODEC_MP2:
-            return AV_AUDIO_CODEC_MP2;
-        case AML_MP_AUDIO_CODEC_MP3:
-            return AV_AUDIO_CODEC_MP3;
-        case AML_MP_AUDIO_CODEC_AC3:
-            return AV_AUDIO_CODEC_AC3;
-        case AML_MP_AUDIO_CODEC_EAC3:
-            return AV_AUDIO_CODEC_EAC3;
-        case AML_MP_AUDIO_CODEC_DTS:
-            return AV_AUDIO_CODEC_DTS;
-        case AML_MP_AUDIO_CODEC_AAC:
-            return AV_AUDIO_CODEC_AAC;
-        case AML_MP_AUDIO_CODEC_LATM:
-            return AV_AUDIO_CODEC_LATM;
-        case AML_MP_AUDIO_CODEC_PCM:
-            return AV_AUDIO_CODEC_PCM;
-        case AML_MP_AUDIO_CODEC_AC4:
-            return AV_AUDIO_CODEC_AC4;
-        case AML_MP_AUDIO_CODEC_FLAC:
-            return AV_AUDIO_CODEC_FLAC;
-        case AML_MP_AUDIO_CODEC_VORBIS:
-            return AV_AUDIO_CODEC_VORBIS;
-        case AML_MP_AUDIO_CODEC_OPUS:
-            return AV_AUDIO_CODEC_OPUS;
-
-        default:
-            return AV_AUDIO_CODEC_AUTO;
-    }
-}
-
-am_tsplayer_input_source_type sourceTypeConvert(Aml_MP_InputSourceType sourceType) {
-    switch (sourceType) {
-    case AML_MP_INPUT_SOURCE_TS_MEMORY:
-        return TS_MEMORY;
-
-    case AML_MP_INPUT_SOURCE_TS_DEMOD:
-        return TS_DEMOD;
-
-    case AML_MP_INPUT_SOURCE_ES_MEMORY:
-        return ES_MEMORY;
-
-    default:
-        return TS_MEMORY;
-    }
-}
-
-am_tsplayer_avsync_mode AVSyncSourceTypeConvert(Aml_MP_AVSyncSource avSyncSource) {
-    switch (avSyncSource) {
-        case AML_MP_AVSYNC_SOURCE_VIDEO:
-            return TS_SYNC_VMASTER;
-        case AML_MP_AVSYNC_SOURCE_AUDIO:
-            return TS_SYNC_AMASTER;
-        default:
-            return TS_SYNC_PCRMASTER;
-    }
-}
-
 AmlTsPlayer::AmlTsPlayer(Aml_MP_PlayerCreateParams* createParams, int instanceId)
 : aml_mp::AmlPlayerBase(createParams, instanceId)
 {
@@ -115,7 +35,7 @@ AmlTsPlayer::AmlTsPlayer(Aml_MP_PlayerCreateParams* createParams, int instanceId
         createParams->demuxId = AML_MP_HW_DEMUX_ID_0;
     }
 
-    init_param.source = sourceTypeConvert(createParams->sourceType);
+    init_param.source = convertToInputSourceType(createParams->sourceType);
     init_param.drmmode = inputStreamTypeConvert(createParams->drmMode);
     init_param.dmx_dev_id = createParams->demuxId;
     init_param.event_mask = 0;
@@ -213,7 +133,7 @@ int AmlTsPlayer::setVideoParams(const Aml_MP_VideoParams* params) {
         MLOGI("amtsplayer video params seted.\n");
         mVideoParaSeted = true;
     }
-    am_tsplayer_video_params video_params = {videoCodecConvert(params->videoCodec), params->pid};
+    am_tsplayer_video_params video_params = {convertToVideoCodec(params->videoCodec), params->pid};
 
     MLOGI("amtsplayer handle:%#zx, video codec:%d, pid:0x%x, secureLevel:%#x", mPlayer, video_params.codectype, video_params.pid, params->secureLevel);
     ret = AmTsPlayer_setVideoParams(mPlayer, &video_params);
@@ -240,9 +160,9 @@ int AmlTsPlayer::setAudioParams(const Aml_MP_AudioParams* params) {
         mAudioParaSeted = true;
     }
     #ifdef ANDROID
-    am_tsplayer_audio_params audio_params = {audioCodecConvert(params->audioCodec), params->pid, (int32_t)params->secureLevel};
+    am_tsplayer_audio_params audio_params = {convertToAudioCodec(params->audioCodec), params->pid, (int32_t)params->secureLevel};
     #else
-    am_tsplayer_audio_params audio_params = {audioCodecConvert(params->audioCodec), params->pid};
+    am_tsplayer_audio_params audio_params = {convertToAudioCodec(params->audioCodec), params->pid};
     #endif
 #ifdef HAVE_PACKETIZE_ESTOTS
     mApid = params->pid;
@@ -962,8 +882,8 @@ int AmlTsPlayer::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     am_tsplayer_result ret = AM_TSPLAYER_OK;
 
     MLOGI("setsyncmode, syncSource %s!!!", mpAVSyncSource2Str(syncSource));
-    MLOGI("converted syncSoource is: %d", AVSyncSourceTypeConvert(syncSource));
-    ret = AmTsPlayer_setSyncMode(mPlayer, AVSyncSourceTypeConvert(syncSource));
+    MLOGI("converted syncSoource is: %d", convertToAVSyncSourceType(syncSource));
+    ret = AmTsPlayer_setSyncMode(mPlayer, convertToAVSyncSourceType(syncSource));
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
@@ -1100,7 +1020,7 @@ int AmlTsPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) {
     am_tsplayer_audio_params audioParams;
 
     audioParams.pid = (int32_t)(params->pid);
-    audioParams.codectype = audioCodecConvert(params->audioCodec);
+    audioParams.codectype = convertToAudioCodec(params->audioCodec);
     audioParams.seclevel = (int32_t)params->secureLevel;
 
     ret = AmTsPlayer_setADParams(mPlayer, &audioParams);

@@ -62,11 +62,15 @@ int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource* source)
     return ret;
 }
 
-int Aml_MP_GetCodecSupportInfo(Aml_MP_StreamType streamType, void* supportInfoJson) {
+int Aml_MP_GetCodecCapability(Aml_MP_CodecID codecId, char* caps, size_t size) {
     MLOG();
 
+    if (size <= 0 || size > AML_MP_MAX_CODEC_CAPABILITY_STRING_SIZE) {
+        size = AML_MP_MAX_CODEC_CAPABILITY_STRING_SIZE;
+    }
+
     aml_mp::AmlMpCodecCapability* DecoderCapability = aml_mp::AmlMpCodecCapability::getCodecCapabilityHandle();
-    DecoderCapability->getCodecCapabilityStr(streamType, (char*)supportInfoJson);
+    DecoderCapability->getCodecCapabilityStr(codecId, caps, size);
 
     return 0;
 }

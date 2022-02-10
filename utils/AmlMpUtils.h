@@ -165,6 +165,11 @@ const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorReco
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec);
 aformat_t convertToAForamt(Aml_MP_CodecID audioCodec);
 
+am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec);
+am_tsplayer_audio_codec convertToAudioCodec(Aml_MP_CodecID aml_MP_AudioCodec);
+am_tsplayer_input_source_type convertToInputSourceType(Aml_MP_InputSourceType sourceType);
+am_tsplayer_avsync_mode convertToAVSyncSourceType(Aml_MP_AVSyncSource avSyncSource);
+
 Aml_MP_StreamType convertToMpStreamType(DVR_StreamType_t streamType);
 DVR_StreamType_t convertToDVRStreamType(Aml_MP_StreamType streamType);
 
@@ -229,7 +234,6 @@ static inline pid_t gettid()
 
 const char* convertToMIMEString(Aml_MP_CodecID codecId);
 Aml_MP_CodecID convertToMpCodecId(std::string mimeStr);
-const char* convertToResolutionString(Aml_MP_Resolution resolution);
 
 void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters = " ");
 std::string trim(std::string& s, const std::string& chars = " \n");

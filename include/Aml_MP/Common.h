@@ -20,6 +20,7 @@
 #define AML_MP_INVALID_HANDLE   (0)
 #define AML_MP_INVALID_PID      (0x1FFF)
 #define AML_MP_MAX_PATH_SIZE    512
+#define AML_MP_MAX_CODEC_CAPABILITY_STRING_SIZE  (1024)
 
 #ifndef AML_MP_DEPRECATED
 #define AML_MP_DEPRECATED __attribute((deprecated))
@@ -162,13 +163,6 @@ typedef enum {
     AML_MP_SUBTITLE_CODEC_TELETEXT,
     AML_MP_SUBTITLE_CODEC_MAX,
 } Aml_MP_CodecID;
-
-typedef enum {
-    AML_MP_RESOLUTION_1080P,
-    AML_MP_RESOLUTION_4K,
-    AML_MP_RESOLUTION_8K,
-    AML_MP_RESOLUTION_MAX,
-} Aml_MP_Resolution;
 
 typedef struct {
     uint16_t                pid;

@@ -498,6 +498,8 @@ int AmlMpPlayerImpl::setPlaybackRate(float rate)
         mPlaybackRate = rate;
     }
 
+    mUserPlaybackRate = rate; //save valid user playback rate
+
     newDecodeMode = (mPlaybackRate >= FAST_PLAY_THRESHOLD)?AML_MP_VIDEO_DECODE_MODE_IONLY:AML_MP_VIDEO_DECODE_MODE_NONE;
     decodeModeChanged = (newDecodeMode != mVideoDecodeMode);
 
@@ -531,18 +533,15 @@ int AmlMpPlayerImpl::getPlaybackRate(float* rate) {
         return AML_MP_ERROR;
     }
 
-    int ret = AML_MP_ERROR;
+    int ret = AML_MP_OK;
     if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) != AML_MP_DECODING_STATE_STARTED) {
         *rate = 0;
     } else {
-        //TODO: Now media_hal compile not correct, return playback rate in aml_mp,
-        //      need get rate info from decoder after compile correct
-#if 0
-        ret = mPlayer->getPlaybackRate(rate);
-#else
-        *rate = mPlaybackRate < FAST_PLAY_THRESHOLD ? mPlaybackRate : FAST_PLAY_THRESHOLD;
-        ret = AML_MP_OK;
-#endif
+        if (mPlaybackRate >= FAST_PLAY_THRESHOLD) {
+            *rate = mUserPlaybackRate;
+        } else {
+            ret = mPlayer->getPlaybackRate(rate);
+        }
     }
     MLOG("rate: %f, mPlaybackRate: %f", *rate, mPlaybackRate);
 

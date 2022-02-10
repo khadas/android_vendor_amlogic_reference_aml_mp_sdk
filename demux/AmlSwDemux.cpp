@@ -6,7 +6,7 @@
  *
  * Description:
  */
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 #define LOG_TAG "AmlMpPlayerDemo_AmlSwDemux"
 #include <utils/AmlMpLog.h>
 #include "AmlSwDemux.h"

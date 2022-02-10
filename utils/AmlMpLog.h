@@ -10,6 +10,16 @@
 #ifndef _AML_MP_LOG_H_
 #define _AML_MP_LOG_H_
 
+#ifdef __linux__
+#ifndef ANDROID
+
+#ifndef LOG_NDEBUG
+    #define LOG_NDEBUG 1
+#endif
+
+#endif
+#endif
+
 #include <utils/Log.h>
 #include "AmlMpConfig.h"
 

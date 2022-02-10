@@ -216,6 +216,7 @@ private:
     float mVolume = -1.0;
 
     float mPlaybackRate = 1.0f;
+    float mUserPlaybackRate = 1.0f;
     #ifdef ANDROID
     android::sp<ANativeWindow> mNativeWindow;
     #endif

@@ -64,15 +64,16 @@ int Aml_MP_SetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource source);
 int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource *source);
 
 /**
- * \brief Aml_MP_GetVideoSupportInfo
- * Get video decoder support info form Aml MP
+ * \brief Aml_MP_GetCodecCapability
  *
- * \param [in]  stream type
- * \param [out] string of video support info json
+ * \param codecId
+ * \param caps user buffer to save codec capability.
+ * \param size user buffer size, codec capability string size
+ * will not exceed this size AML_MP_MAX_CODEC_CAPABILITY_STRING_SIZE.
  *
- * \return 0 if success
+ * \return 0 if success, otherwise the specified codec may not be supported.
  */
-int Aml_MP_GetCodecSupportInfo(Aml_MP_StreamType streamType, void* supportInfoJson);
+int Aml_MP_GetCodecCapability(Aml_MP_CodecID codecId, char* caps, size_t size);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                  Player                                   //

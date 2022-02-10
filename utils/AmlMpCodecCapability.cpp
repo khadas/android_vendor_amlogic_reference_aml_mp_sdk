@@ -12,16 +12,6 @@
 #include "Amlsysfsutils.h"
 #include "AmlMpLog.h"
 
-typedef struct {
-    Aml_MP_CodecID decoderName;
-    char decoderNameStr[10];
-}DecoderNamePair;
-
-typedef struct {
-    Aml_MP_Resolution maxResolution;
-    char resolutionStr[10];
-}ResolutionNamePair;
-
 #define VIDEO_SUPPORT_INFO_PATH "/sys/class/amstream/vcodec_profile"
 
 namespace aml_mp {
@@ -46,17 +36,10 @@ static const ResolutionNamePair mResolutionMap[] = {
     {AML_MP_RESOLUTION_1080P,   "1080p"},
 };
 
-AmlMpCodecCapability* AmlMpCodecCapability::mHandle;
-
 AmlMpCodecCapability::AmlMpCodecCapability()
 {
     updateVideoCapability();
-
-    Json::Value json;
-    getCodecCapabilityJson(AML_MP_STREAM_TYPE_VIDEO, &json);
-
-    Json::StreamWriterBuilder builder;
-    mVideoCabilityJsonStr = Json::writeString(builder, json);
+    updateAudioCapability();
 }
 
 AmlMpCodecCapability::~AmlMpCodecCapability()
@@ -65,15 +48,11 @@ AmlMpCodecCapability::~AmlMpCodecCapability()
 }
 
 AmlMpCodecCapability* AmlMpCodecCapability::getCodecCapabilityHandle() {
-
-    if (mHandle == nullptr) {
-        mHandle = new AmlMpCodecCapability();
-    }
-
-    return mHandle;
+    static AmlMpCodecCapability instance;
+    return &instance;
 }
 
-bool AmlMpCodecCapability::matchCodecType(std::string str, Aml_MP_CodecID* codecId) {
+bool AmlMpCodecCapability::matchVideoCodecType(std::string str, Aml_MP_CodecID* codecId) {
     for (DecoderNamePair testPair : mDecoderNameMap) {
         if (testPair.decoderNameStr == str) {
             *codecId = testPair.decoderName;
@@ -102,11 +81,13 @@ void AmlMpCodecCapability::getVideoDecoderCapability(std::string str){
 
     split(str, splitInfo, " ,:;");
 
-    if (matchCodecType(splitInfo[0], &decoderName)) {
+    if (matchVideoCodecType(splitInfo[0], &decoderName)) {
         Aml_MP_DecoderCapabilityInfo info;
         info.decoderName = decoderName;
         if (splitInfo.size() > 1) {
             matchMaxResolution(splitInfo[1], &(info.decoderMaxResolution));
+        } else {
+            info.decoderMaxResolution = AML_MP_RESOLUTION_1080P;
         }
         mVideoCapabilityMap.push_back(info);
     }
@@ -127,43 +108,54 @@ void AmlMpCodecCapability::updateVideoCapability() {
     }
 }
 
-void AmlMpCodecCapability::getCodecCapabilityJson(Aml_MP_StreamType streamType, Json::Value* videoInfo) {
-    int decoderCount = 0;
-    (*videoInfo)["name"] = mpStreamType2Str(streamType);
-
-    Json::Value codecInfoList;
-    for (Aml_MP_DecoderCapabilityInfo supportInfo : mVideoCapabilityMap) {
-        Json::Value infoPair;
-        infoPair["codecName"] = convertToMIMEString(supportInfo.decoderName);
-        if (streamType == AML_MP_STREAM_TYPE_VIDEO) {
-            infoPair["maxResolution"] = convertToResolutionString(supportInfo.decoderMaxResolution);
+void AmlMpCodecCapability::updateAudioCapability() {
+    int ret = 0;
+    for (int i = AML_MP_AUDIO_CODEC_BASE + 1; i < AML_MP_AUDIO_CODEC_MAX; i++) {
+        //TODO: This function need media_hal merge, after media_hal code merge need open this func to enable audio capability info get.
+#if 0
+        ret = AmTsPlayer_isAudioCodecSupport(convertToAudioCodec((Aml_MP_CodecID)i));
+#endif
+        if (ret > 0) {
+            Aml_MP_DecoderCapabilityInfo info;
+            info.decoderName = (Aml_MP_CodecID)i;
+            mAudioCapabilityMap.push_back(info);
         }
-        codecInfoList[decoderCount] = infoPair;
-        decoderCount++;
     }
-    (*videoInfo)["codecList"] = codecInfoList;
-
-/*
-    Json::FastWriter writer;
-
-    std::string debugStr = writer.write(*videoInfo);
-    MLOGI("json string :%s", debugStr.c_str());
-*/
 }
 
-void AmlMpCodecCapability::getCodecCapabilityStr(Aml_MP_StreamType streamType, char* str) {
-    *str = '\0';
+void AmlMpCodecCapability::getCodecCapabilityStr(Aml_MP_CodecID codecId, char* caps, size_t size) {
+    *caps = '\0';
+    Json::Value tmpJson;
+    std::string tmpString;
+    Json::StreamWriterBuilder builder;
 
-    switch (streamType) {
-        case AML_MP_STREAM_TYPE_VIDEO:
-        {
-            memcpy(str, mVideoCabilityJsonStr.c_str(), mVideoCabilityJsonStr.length()+1);
-            break;
+    if (codecId > AML_MP_VIDEO_CODEC_BASE && codecId < AML_MP_VIDEO_CODEC_MAX) {
+        for (Aml_MP_DecoderCapabilityInfo tmp: mVideoCapabilityMap) {
+            if (codecId == tmp.decoderName) {
+                tmpJson["codecName"] = convertToMIMEString(codecId);
+                tmpJson["maxResolution"] = convertToResolutionString(tmp.decoderMaxResolution);
+                tmpString = Json::writeString(builder, tmpJson);
+                memcpy(caps, tmpString.c_str(), tmpString.length()+1 < size ? tmpString.length()+1 : size);
+                break;
+            }
         }
-
-        default:
-            break;
+    } else if (codecId > AML_MP_AUDIO_CODEC_BASE && codecId < AML_MP_AUDIO_CODEC_MAX) {
+        for (Aml_MP_DecoderCapabilityInfo tmp: mAudioCapabilityMap) {
+            if (codecId == tmp.decoderName) {
+                tmpJson["codecName"] = convertToMIMEString(codecId);
+                tmpString = Json::writeString(builder, tmpJson);
+                memcpy(caps, tmpString.c_str(), tmpString.length()+1 < size ? tmpString.length()+1 : size);
+                break;
+            }
+        }
     }
+}
+
+const char* AmlMpCodecCapability::convertToResolutionString(Aml_MP_Resolution resolution) {
+    if (resolution < AML_MP_RESOLUTION_MAX) {
+        return resolutionMap[resolution];
+    }
+    return resolutionMap[AML_MP_RESOLUTION_1080P];
 }
 
 }
