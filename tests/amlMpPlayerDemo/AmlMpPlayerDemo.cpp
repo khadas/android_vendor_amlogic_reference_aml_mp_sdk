@@ -33,6 +33,7 @@ struct Argument
     int uiMode = 0;
     int channelId = -1;
     int tunerhal = 0;
+    int videoErrorRecoveryMode = 0;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -49,6 +50,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"ui",          no_argument,        nullptr, 'u'},
         {"id",          required_argument,  nullptr, 'd'},
         {"tunerhal",    no_argument,        nullptr, 't'},
+        {"video-error-recovery-mode",    required_argument,  nullptr, 'e'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -145,6 +147,14 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 'e':
+        {
+            int tmpMode = strtol(optarg, nullptr, 0);
+            printf("video error recovery mode: %d(%s)\n", tmpMode, mpVideoErrorRecoveryMode2Str((Aml_MP_VideoErrorRecoveryMode)tmpMode));
+            argument->videoErrorRecoveryMode = tmpMode;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -185,6 +195,10 @@ static void showUsage()
             "   --ui          create ui only\n"
             "   --id          specify the corresponding ui channel id\n"
             "   --tunerhal    test tunerhal playback\n"
+            "   --video-error-recovery-mode\n"
+            "                 0: default\n"
+            "                 1: drop error frame\n"
+            "                 2: do nothing, display error frame\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -236,6 +250,7 @@ int main(int argc, char *argv[])
         MLOGI("argument.record=%d\n", argument.record);
         if (!argument.record) {
             MLOGI(">>>> AmlMpPlayerDemo Start\n");
+            mpTestSupporter->setVideoErrorRecoveryMode(argument.videoErrorRecoveryMode);
             ret = mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode);
             if (ret < 0) {
                 return -1;

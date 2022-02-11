@@ -254,6 +254,12 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     return ret;
 }
 
+void AmlMpTestSupporter::setVideoErrorRecoveryMode(int videoErrorRecoveryMode)
+{
+    mpVideoErrorRecoveryMode = videoErrorRecoveryMode;
+    MLOGI("mpVideoErrorRecoveryMode: %d\n", mpVideoErrorRecoveryMode);
+}
+
 int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceReceiver)
 {
     int ret = 0;
@@ -328,6 +334,7 @@ if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
     {
         mPlayback->setAVSyncSource(mSyncSource);
         mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_WORK_MODE, &mWorkMode);
+        mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE, &mpVideoErrorRecoveryMode);
         if (mSyncSource == AML_MP_AVSYNC_SOURCE_PCR && mPcrPid != AML_MP_INVALID_PID)
         {
             mPlayback->setPcrPid(mPcrPid);

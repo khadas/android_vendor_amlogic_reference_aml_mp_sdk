@@ -349,7 +349,7 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_USE_TIF,                        //setUseTif(bool*)
     AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION,               //SetSPDIFProtection(int*)
     AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                     //setVideoCrop(Aml_MP_Rect*)
-    AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorConcralment(Aml_MP_VideoErrorRecoveryMode*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorRecoveryMode(Aml_MP_VideoErrorRecoveryMode*)
 
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,

@@ -77,6 +77,7 @@ public:
     int prepare(bool cryptoMode = false);
     void setDisplayParam(const DisplayParam& displayParam);
     void addOptions(uint64_t options);
+    void setVideoErrorRecoveryMode(int recoveryMode);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
     int startRecord(bool isSetStreams = true, bool isTimeShift = false);
     int startDVRPlayback(bool isSetStreams=true, bool isTimeShift=false);
@@ -157,6 +158,8 @@ private:
 #endif
     Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
     int mPcrPid = AML_MP_INVALID_PID;
+
+    int mpVideoErrorRecoveryMode = 0;
 
     AmlMpTestSupporter(const AmlMpTestSupporter&) = delete;
     AmlMpTestSupporter& operator=(const AmlMpTestSupporter&) = delete;
