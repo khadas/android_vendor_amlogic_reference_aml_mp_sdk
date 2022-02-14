@@ -63,8 +63,9 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
 #endif
     MLOG("sdk:%d, platform:%s", sdkVersion, platform);
 #else
-    MLOG("drmMode:%s, sourceType:%s", mpInputStreamType2Str(createParams->drmMode), mpInputSourceType2Str(createParams->sourceType));
+    ;
 #endif
+    MLOG("drmMode:%s, sourceType:%s", mpInputStreamType2Str(createParams->drmMode), mpInputSourceType2Str(createParams->sourceType));
 
     memset(&mVideoParams, 0, sizeof(mVideoParams));
     mVideoParams.pid = AML_MP_INVALID_PID;

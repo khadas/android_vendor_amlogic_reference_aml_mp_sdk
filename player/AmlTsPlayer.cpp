@@ -197,10 +197,18 @@ int AmlTsPlayer::start() {
 }
 
 int AmlTsPlayer::getMediaSyncId() {
-    int mediasyncId = 0;
+    int mediasyncId = -1;
     AmTsPlayer_getSyncInstansNo(mPlayer, &mediasyncId);
     MLOGI("getMediaSyncId:%d\n",mediasyncId);
     return mediasyncId;
+}
+
+int AmlTsPlayer::getPlayerId() {
+    uint32_t instanceId = -1;
+    AmTsPlayer_getInstansNo(mPlayer, &instanceId);
+    MLOGI("getPlayerId:%d\n", instanceId);
+
+    return (int)instanceId;
 }
 
 int AmlTsPlayer::stop() {

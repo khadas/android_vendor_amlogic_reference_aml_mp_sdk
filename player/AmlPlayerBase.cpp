@@ -60,7 +60,7 @@ AmlPlayerBase::AmlPlayerBase(Aml_MP_PlayerCreateParams* createParams, int instan
 :mInstanceId(instanceId)
 , mEventCb(nullptr)
 , mUserData(nullptr)
-, mSubtitleParams{}
+, mSubtitleParams{0, AML_MP_SUBTITLE_CODEC_CC, AML_MP_CODEC_UNKNOWN, 0, 0, 0}//default CC
 ,mCreateParams(createParams)
 {
     AML_MP_UNUSED(mCreateParams);
@@ -227,6 +227,7 @@ int AmlPlayerBase::startSubtitleDecoding()
     AmlSubtitleParam subParam{};
     subParam.ioSource = AmlSubtitleIOType::E_SUBTITLE_DEMUX;
     if (!constructAmlSubtitleParam(&subParam, &mSubtitleParams)) {
+        MLOGI("unknow subtitle codec, not start subtitle");
         return 0;
     }
 
@@ -254,13 +255,25 @@ int AmlPlayerBase::startSubtitleDecoding()
         MLOGE("amlsub_Open failed!");
     }
 
-    if (AmlMpConfig::instance().mTsPlayerNonTunnel == 1) {
-        int mediasyncId = getMediaSyncId();
-        MLOGI("nontunnel mode setpip for subtitle,mediasyncId:%d\n",mediasyncId);
-        amlsub_SetPip(mSubtitleHandle, MODE_SUBTITLE_PIP_MEDIASYNC, mediasyncId);
+    if (mSubtitleParams.subtitleCodec == AML_MP_SUBTITLE_CODEC_CC) {
+        //only cc set it
+        amlsub_SetPip(mSubtitleHandle, MODE_SUBTITLE_PIP_PLAYER, getPlayerId());
+        MLOGI("cc setpip for subtitle playerId");
     }
 
-    showSubtitle();
+    if (AmlMpConfig::instance().mTsPlayerNonTunnel == 1) {
+        int mediasyncId = getMediaSyncId();
+
+        //we get mediasyncid in NonTunnelMode but video initialization time is 200~300ms
+        if (mediasyncId >= 0) {
+            MLOGI("nontunnel mode setpip for subtitle,mediasyncId:%d\n",mediasyncId);
+            amlsub_SetPip(mSubtitleHandle, MODE_SUBTITLE_PIP_MEDIASYNC, mediasyncId);
+        } else {
+            MLOGI("setpip for subtitle, mediasyncId=-1, get the first frame event and set it again\n");
+        }
+    }
+
+    showSubtitle();//SubtitleServer: Error, no default fallback display registed!
     MLOGI("Subtitle size is x:%d, y: %d, width: %d, height: %d", mSubWindowX, mSubWindowY, mSubWindowWidth, mSubWindowHeight);
     ret = amlsub_UiSetSurfaceViewRect(mSubtitleHandle, mSubWindowX, mSubWindowY, mSubWindowWidth, mSubWindowHeight);
     if (ret != SUB_STAT_OK) {
@@ -498,6 +511,23 @@ void AmlPlayerBase::AmlMPSubtitleInfoCb(int what, int extra) {
 void AmlPlayerBase::notifyListener(Aml_MP_PlayerEventType eventType, int64_t param)
 {
     if (mEventCb) {
+        switch (eventType) {
+            case AML_MP_PLAYER_EVENT_VIDEO_DECODE_FIRST_FRAME:
+            {
+#ifdef HAVE_SUBTITLE
+                if (AmlMpConfig::instance().mTsPlayerNonTunnel == 1) {
+                    int mediasyncId = getMediaSyncId();
+                    //get the first frame event and set it again
+                    MLOGI("nontunnel mode setpip for subtitle when first video decoded,mediasyncId:%d\n",mediasyncId);
+                    amlsub_SetPip(mSubtitleHandle, MODE_SUBTITLE_PIP_MEDIASYNC, mediasyncId);
+                }
+#endif
+                break;
+            }
+            default:
+                break;
+        }
+
         mEventCb(mUserData, eventType, param);
     } else {
         MLOGE("mEventCb is NULL! %s", mpPlayerEventType2Str(eventType));
