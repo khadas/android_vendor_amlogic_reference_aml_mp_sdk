@@ -101,31 +101,44 @@ int AmlMpTestSupporter::setDataSource(const std::string& url)
     return 0;
 }
 
-void AmlMpTestSupporter::setCrypto(bool crypto)
+sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo() const
 {
-    mCryptoMode = crypto;
+    return mProgramInfo;
 }
 
-int AmlMpTestSupporter::getSource()
+int AmlMpTestSupporter::prepare(bool cryptoMode)
 {
     int ret = 0;
+
+    mCryptoMode = cryptoMode;
+    MLOGI("mCryptoMode: %d \n", mCryptoMode);
+
     mSource = Source::create(mUrl.c_str());
     if (mSource == nullptr) {
         MLOGE("create source failed!");
         return -1;
-        //return nullptr;
     }
 
     ret = mSource->initCheck();
     if (ret < 0) {
         MLOGE("source initCheck failed!");
         return -1;
-        //return nullptr;
     }
-    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
-    //int programNumber = mSource->getProgramNumber();
+
+    mDemuxId = mSource->getDemuxId();
+    Aml_MP_DemuxId demuxId = mDemuxId;
+    int programNumber = mSource->getProgramNumber();
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     Aml_MP_Initialize();
+
+    Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
+    if (mOptions & AML_MP_OPTION_PREFER_TUNER_HAL) {
+        demuxType = AML_MP_TUNERHAL_DEMUX;
+    } else if(mSource->getFlags()&Source::kIsHardwareSource) {
+        demuxType = AML_MP_HARDWARE_DEMUX;
+    } else {
+        demuxType = AML_MP_SOFTWARE_DEMUX;
+    }
 
     //set default demux source
     if (mSource->getFlags()&Source::kIsHardwareSource) {
@@ -142,46 +155,25 @@ int AmlMpTestSupporter::getSource()
         mIsDVRPlayback = true;
         MLOGI("dvr playback");
         return 0;
-        //return nullptr;
     }
-    return 0;
-}
 
-sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
-{
-    int ret = 0;
-    getSource();
-    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
-    int programNumber = mSource->getProgramNumber();
-    //Aml_MP_DemuxSource sourceId = mSource->getSourceId();
-    Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
-    if (mOptions & AML_MP_OPTION_PREFER_TUNER_HAL) {
-        demuxType = AML_MP_TUNERHAL_DEMUX;
-    } else if(mSource->getFlags()&Source::kIsHardwareSource) {
-        demuxType = AML_MP_HARDWARE_DEMUX;
-    } else {
-        demuxType = AML_MP_SOFTWARE_DEMUX;
-    }
     mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, demuxType);
     mParser->selectProgram(programNumber);
     if (mParser == nullptr) {
         MLOGE("create parser failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     if (ret < 0) {
         MLOGE("source start failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     ret = mParser->open();
     mParser->parseProgramInfoAsync();
     if (ret < 0) {
         MLOGE("parser open failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     mParserReceiver = new ParserReceiver(mParser);
@@ -193,8 +185,7 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     ret = mParser->waitProgramInfoParsed();
     if (ret < 0) {
         MLOGE("parser wait failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
 
     MLOGI("parsed done!");
@@ -205,10 +196,9 @@ sptr<ProgramInfo> AmlMpTestSupporter::getProgramInfo()
     mProgramInfo = mParser->getProgramInfo();
     if (mProgramInfo == nullptr) {
         MLOGE("get programInfo failed!");
-        //return -1;
-        return nullptr;
+        return -1;
     }
-    return mProgramInfo;
+    return 0;
 }
 
 int AmlMpTestSupporter::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
@@ -242,19 +232,6 @@ int AmlMpTestSupporter::setPcrPid(int pid)
     return 0;
 }
 
-int AmlMpTestSupporter::prepare(bool cryptoMode)
-{
-    int ret = 0;
-
-    mCryptoMode = cryptoMode;
-    MLOGI("mCryptoMode: %d \n", mCryptoMode);
-    if (getProgramInfo() == nullptr)
-    {
-        return -1;
-    };
-    return ret;
-}
-
 void AmlMpTestSupporter::setVideoErrorRecoveryMode(int videoErrorRecoveryMode)
 {
     mpVideoErrorRecoveryMode = videoErrorRecoveryMode;
@@ -269,8 +246,8 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     if (mIsDVRPlayback) {
         return startDVRPlayback();
     }
+    mDemuxId = mParser->getDemuxId();
     Aml_MP_DemuxId demuxId = mDemuxId;
-    //Aml_MP_DemuxId demuxId = mParser->getDemuxId();
     Aml_MP_InputSourceType sourceType = AML_MP_INPUT_SOURCE_TS_MEMORY;
     Aml_MP_InputStreamType inputStreamType{AML_MP_INPUT_STREAM_NORMAL};
     AML_MP_CASSESSION casSession = AML_MP_INVALID_HANDLE;
@@ -303,7 +280,8 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     ret = mPlayback->setSubtitleDisplayWindow(mDisplayParam.width, 0, mDisplayParam.width, mDisplayParam.height);
     #endif
 
-#if defined(ANDROID) && !defined(__ANDROID_VNDK__)
+#ifdef ANDROID
+#ifndef __ANDROID_VNDK__
 if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
     if (!mDisplayParam.videoMode) {
         if (mDisplayParam.aNativeWindow) {
@@ -330,6 +308,15 @@ if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
         mDisplayParam.channelId = 0;
     }
     mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
+#endif
+#else
+    if (mDisplayParam.channelId < 0) {
+        printf("Please specify the ui channel id by --id option, default set to 0 now!\n");
+        mDisplayParam.channelId = 0;
+    }
+    mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mDisplayParam.channelId);
+    mPlayback->setVideoWindow(mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
+    MLOGI("x:%d y:%d width:%d height:%d\n", mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
 #endif
     if (mStart == true)
     {
@@ -363,7 +350,8 @@ int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift)
 {
     int ret = 0;
     ALOGI("enter startRecord\n");
-    Aml_MP_DemuxId demuxId = mDemuxId; //mParser->getDemuxId();
+    mDemuxId = mParser->getDemuxId();
+    Aml_MP_DemuxId demuxId = mDemuxId;
 
     mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo, isTimeShift);
     ALOGI("before mRecorder start\n");
@@ -433,11 +421,6 @@ int AmlMpTestSupporter::startDVRPlaybackAfterSetStreams()
     return 0;
 }
 
-void AmlMpTestSupporter::getmUrl(std::string url)
-{
-    mUrl = url;
-}
-
 std::string AmlMpTestSupporter::stripUrlIfNeeded(const std::string& url) const
 {
     printf("url: %s \n", url.c_str());
@@ -469,7 +452,8 @@ int AmlMpTestSupporter::startDVRPlayback(bool isSetStreams, bool isTimeShift)
     MLOG();
     int ret = 0;
 
-    Aml_MP_DemuxId demuxId = mDemuxId; //mSource->getDemuxId();
+    mDemuxId = mSource->getDemuxId();
+    Aml_MP_DemuxId demuxId = mDemuxId;
     mTestModule = mDVRPlayback = new DVRPlayback(mUrl, mCryptoMode, demuxId, isTimeShift);
 
     if (mEventCallback != nullptr) {

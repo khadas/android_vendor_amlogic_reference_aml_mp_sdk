@@ -86,8 +86,6 @@ public:
     int startDVRRecorderAfterSetStreams();
     int startDVRPlaybackAfterSetStreams();
     std::string stripUrlIfNeeded(const std::string& url) const;
-    void getmUrl(std::string url);
-    void setCrypto(bool crypto);
 
     int startUIOnly();
     int stop();
@@ -109,8 +107,7 @@ public:
     sp<ANativeWindow> getSurfaceControl();
     void setWindow(bool mSurface = true);
 #endif
-    int getSource();
-    sptr<ProgramInfo> getProgramInfo();
+    sptr<ProgramInfo> getProgramInfo() const;
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
 
     Aml_MP_ChannelId mChannelId = AML_MP_CHANNEL_ID_MAIN;

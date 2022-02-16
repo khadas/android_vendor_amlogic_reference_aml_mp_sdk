@@ -40,6 +40,7 @@ void AmlMpBase::DVRSegment(std::string url)
 TEST_F(AmlMpTest, NormalRecorderTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
@@ -58,9 +59,10 @@ TEST_F(AmlMpTest, NormalRecorderTest)
         stopPlaying();
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         waitPlaying(15 * 1000ll);
         DVRSegment(AML_MP_RECORD_PATH, true);
@@ -72,6 +74,7 @@ TEST_F(AmlMpTest, NormalRecorderTest)
 TEST_F(AmlMpTest, TimeshiftRecordTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
@@ -83,9 +86,10 @@ TEST_F(AmlMpTest, TimeshiftRecordTest)
         waitPlaying(20 * 1000ll);
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(true, true), AML_MP_OK);
         waitPlaying(20 * 1000ll);
         DVRSegment(AML_MP_RECORD_PATH, true);
@@ -97,6 +101,7 @@ TEST_F(AmlMpTest, TimeshiftRecordTest)
 TEST_F(AmlMpTest, DynamicSetStreamTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
@@ -123,9 +128,10 @@ TEST_F(AmlMpTest, DynamicSetStreamTest)
         stopPlaying();
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter2->startDVRPlayback(), AML_MP_OK);
         waitPlaying(40 * 1000ll);
         //get segment list/info/delete

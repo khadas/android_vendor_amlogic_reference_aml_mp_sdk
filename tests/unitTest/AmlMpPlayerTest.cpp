@@ -89,7 +89,10 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
 {
     MLOGI("----------FCCAndPIPTest START----------\n");
     createMpTestSupporter();
-    mpTestSupporter->setDataSource(url);
+    char demuxInfo[30];
+    sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 1, 1);
+    std::string finalUrl = url + demuxInfo;
+    mpTestSupporter->setDataSource(finalUrl);
     sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
     if (mProgramInfo == nullptr)
     {
@@ -110,7 +113,6 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     mProgramInfo->videoPid = 640;
     mProgramInfo->audioPid = 641;
     mpTestSupporter->mChannelId = AML_MP_CHANNEL_ID_MAIN;
-    mpTestSupporter->mDemuxId = AML_MP_HW_DEMUX_ID_1;
     mpTestSupporter->startPlay();
     //void *player = getPlayer();
     if (mPIP) {
@@ -118,7 +120,9 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     }
 
     createMpTestSupporter2();
-    mpTestSupporter2->setDataSource(url);
+    sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 0, 0);
+    finalUrl = url + demuxInfo;
+    mpTestSupporter2->setDataSource(finalUrl);
     sptr<ProgramInfo> mProgramInfo2 = mpTestSupporter2->getProgramInfo();
     if (mProgramInfo2 == nullptr)
     {
@@ -128,7 +132,6 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     mProgramInfo2->videoPid = 620;
     mProgramInfo2->audioPid = 621;
     mpTestSupporter2->mChannelId = AML_MP_CHANNEL_ID_PIP;
-    mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_0;
     if (!mPIP) {
         mpTestSupporter2->mWorkMode = AML_MP_PLAYER_MODE_CACHING_ONLY;
     }

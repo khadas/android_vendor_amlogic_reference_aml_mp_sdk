@@ -19,6 +19,7 @@ using namespace aml_mp;
 TEST_F(AmlMpTest, DVRPlaybackShowHideVideoTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
@@ -36,9 +37,10 @@ TEST_F(AmlMpTest, DVRPlaybackShowHideVideoTest)
         waitPlaying(20 * 1000ll);
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         void* dvrplayer = getDVRPlayer();
         waitPlaying(5 * 1000ll);
@@ -55,6 +57,7 @@ TEST_F(AmlMpTest, DVRPlaybackShowHideVideoTest)
 TEST_F(AmlMpTest, DVRPlaybackSetVideoWindowTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
@@ -72,9 +75,10 @@ TEST_F(AmlMpTest, DVRPlaybackSetVideoWindowTest)
         waitPlaying(20 * 1000ll);
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         AmlMpTestSupporter::DisplayParam displayParam;
         displayParam.x = AML_MP_VIDEO_WINDOW_X;
         displayParam.y = AML_MP_VIDEO_WINDOW_Y;

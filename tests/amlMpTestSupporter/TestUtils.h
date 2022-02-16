@@ -30,7 +30,6 @@ using android::sp;
 #endif
 
 #define AML_MP_TEST_SUPPORTER_RECORD_FILE   "/data/amlMpRecordFile"
-#define AML_MP_TEST_SUPPORTER_RECORD_TO_USB "/storage/7F5D-3C01/amlMpRecordFile"
 
 #ifdef ANDROID
 

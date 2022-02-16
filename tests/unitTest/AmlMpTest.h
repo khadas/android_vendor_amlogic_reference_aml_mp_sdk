@@ -69,7 +69,7 @@ static const int kCheckFrameTimeOutMs = 50 * 1000ll;
 #define AML_MP_PID_CHANGED_DURATION 38 * 1000ll
 #define AML_MP_PID_CHANGED_EVENT 2 * 1000ll
 #define AML_MP_DATA_LOSS_EVENT 5 * 1000ll
-#define AML_MP_RECORD_PATH "dvr://storage/7F5D-3C01/amlMpRecordFile"
+#define AML_MP_RECORD_PATH "dvr://data/amlMpRecordFile"
 
 
 struct AmlMpBase: public testing::Test

@@ -30,12 +30,17 @@ void AmlMpBase::DVRPlayback_SetGetVolume(std::string url __unused, float volume)
 TEST_F(AmlMpTest, DVRPlaybackSetGetVolumeTest)
 {
     std::string url;
+    char recordPathInfo[100];
     for (auto &url: mUrls)
     {
         int ret = 0;
         MLOGI("----------DVRPlaybackSetGetVolumeTest START----------\n");
+        //TODO: AUT Need change test code as follow
+        //mpTestSupporter need call as this order:
+        //setDataSource(url) -> prepare(cryptoMode_ifNeed) -> (getProgramInfo) -> start
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -47,9 +52,10 @@ TEST_F(AmlMpTest, DVRPlaybackSetGetVolumeTest)
         waitPlaying(20 * 1000ll);
 
         createMpTestSupporter2();
-        mpTestSupporter2->getmUrl(AML_MP_RECORD_PATH);
-        mpTestSupporter2->mDemuxId = AML_MP_HW_DEMUX_ID_1;
-        mpTestSupporter2->setCrypto(CryptoMode);
+        sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        std::string finalUrl = recordPathInfo;
+        mpTestSupporter2->setDataSource(finalUrl);
+        mpTestSupporter2->prepare(CryptoMode);
         mpTestSupporter2->startDVRPlayback();
         DVRPlayback_SetGetVolume(AML_MP_RECORD_PATH, 0);
         DVRPlayback_SetGetVolume(AML_MP_RECORD_PATH, 20);
