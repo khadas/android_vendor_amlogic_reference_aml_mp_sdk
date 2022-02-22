@@ -54,21 +54,6 @@ typedef struct __tagCAS_INIT_HEADERS {
 	char *content_type;
 } CasInitHeaders;
 
-#define MAX_ECM_PID_NUM			3
-typedef struct __tagCAS_STREAM_INFO {
-	unsigned int		ca_system_id;
-	uint16_t			desc_num;
-	unsigned int		ecm_pid[MAX_ECM_PID_NUM];
-	uint16_t			audio_pid;
-	uint16_t			video_pid;
-	int					audio_channel;
-	int					video_channel;
-	bool				av_diff_ecm;
-	uint8_t				*private_data;
-	unsigned int		pri_data_len;
-	CasInitHeaders		*headers;
-} CasStreamInfo;
-
 template <Aml_MP_CASServiceType serviceType>
 class AmCasLibWrapper : public AmlMpRefBase
 {
