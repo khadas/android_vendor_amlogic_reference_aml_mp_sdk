@@ -260,7 +260,10 @@ int AmlDVRPlayer::stop()
     }
 
     error = dvr_wrapper_close_playback(mDVRPlayerHandle);
-    AmTsPlayer_release(mTsPlayerHandle);
+    if (mTsPlayerHandle != 0) {
+        AmTsPlayer_release(mTsPlayerHandle);
+        mTsPlayerHandle = 0;
+    }
     return 0;
 }
 

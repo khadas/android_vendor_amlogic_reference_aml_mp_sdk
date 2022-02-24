@@ -617,6 +617,7 @@ DVR_AudioFormat_t convertToDVRAudioFormat(Aml_MP_CodecID codecId)
 {
     switch (codecId) {
         case AML_MP_AUDIO_CODEC_MP2:
+        case AML_MP_AUDIO_CODEC_MP3:
             return DVR_AUDIO_FORMAT_MPEG;
         case AML_MP_AUDIO_CODEC_AC3:
             return DVR_AUDIO_FORMAT_AC3;
