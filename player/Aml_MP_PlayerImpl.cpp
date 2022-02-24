@@ -453,26 +453,33 @@ int AmlMpPlayerImpl::resume_l() {
 
     RETURN_IF(-1, mPlayer == nullptr);
 
-    if (mPlayer->resume() < 0) {
+    int ret = 0;
+    // video state
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_PAUSED) {
+        ret += mPlayer->resumeVideoDecoding();
+        setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, AML_MP_DECODING_STATE_STARTED);
+    }
+    // audio state
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_PAUSED) {
+        ret += mPlayer->resumeAudioDecoding();
+        setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_STARTED);
+    } else if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_STOPPED && mAudioStoppedInSwitching) {
+        ret += startAudioDecoding_l();
+    }
+    // ad state
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_PAUSED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_AD, AML_MP_DECODING_STATE_STARTED);
+    }
+    // subtitle state
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE) == AML_MP_DECODING_STATE_PAUSED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_DECODING_STATE_STARTED);
+    }
+
+    if (ret < 0) {
         return -1;
     }
 
     setState_l(STATE_RUNNING);
-
-    finishResumeStream_l(AML_MP_STREAM_TYPE_AUDIO);
-    finishResumeStream_l(AML_MP_STREAM_TYPE_AD);
-    finishResumeStream_l(AML_MP_STREAM_TYPE_VIDEO);
-    finishResumeStream_l(AML_MP_STREAM_TYPE_SUBTITLE);
-
-    return 0;
-}
-
-int AmlMpPlayerImpl::finishResumeStream_l(Aml_MP_StreamType stream)
-{
-    AML_MP_DecodingState state = getDecodingState_l(stream);
-    if (state == AML_MP_DECODING_STATE_PAUSED) {
-        setDecodingState_l(stream, AML_MP_DECODING_STATE_STARTED);
-    }
 
     return 0;
 }
@@ -613,7 +620,12 @@ int AmlMpPlayerImpl::switchAudioTrack(const Aml_MP_AudioParams* params)
         }
 
         ret = mPlayer->stopAudioDecoding();
-        ret += startAudioDecoding_l();
+        setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_STOPPED);
+        if (mState == STATE_RUNNING) {
+            ret += startAudioDecoding_l();
+        } else {
+            mAudioStoppedInSwitching = true;
+        }
     }
 
     return ret;
@@ -1346,6 +1358,7 @@ int AmlMpPlayerImpl::stopAudioDecoding_l(std::unique_lock<std::mutex>& lock)
 
     // ensure stream stopped if mState isn't running or paused
     setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_STOPPED);
+    mAudioStoppedInSwitching = false;
 
     ret = resetIfNeeded_l(lock);
 
@@ -1739,7 +1752,7 @@ int AmlMpPlayerImpl::prepare_l()
     }
 
     if (mParser == nullptr && (mPrepareWaitingType != kPrepareWaitingNone || (mCreateParams.options & AML_MP_OPTION_MONITOR_PID_CHANGE))) {
-        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_HARDWARE_DEMUX);
+        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_HARDWARE_DEMUX, mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY);
         mParser->open();
         mParser->selectProgram(mVideoParams.pid, mAudioParams.pid);
         mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
@@ -2086,6 +2099,7 @@ void AmlMpPlayerImpl::resetVariables_l()
 
     mLastBytesWritten = 0;
     mLastWrittenTimeUs = 0;
+    mAudioStoppedInSwitching = false;
 }
 
 int AmlMpPlayerImpl::getDecodingState(Aml_MP_StreamType streamType, AML_MP_DecodingState* streamState) {

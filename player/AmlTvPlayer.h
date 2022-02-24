@@ -60,9 +60,13 @@ public:
     int setPcrPid(int pid) override;
 
     int startVideoDecoding() override;
+    int pauseVideoDecoding() override;
+    int resumeVideoDecoding() override;
     int stopVideoDecoding() override;
 
     int startAudioDecoding() override;
+    int pauseAudioDecoding() override;
+    int resumeAudioDecoding() override;
     int stopAudioDecoding() override;
     int startADDecoding() override;
     int stopADDecoding() override;

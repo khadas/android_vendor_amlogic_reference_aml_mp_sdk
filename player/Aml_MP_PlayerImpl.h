@@ -147,7 +147,6 @@ private:
     int stop_l(std::unique_lock<std::mutex>& lock);
     int pause_l();
     int resume_l();
-    int finishResumeStream_l(Aml_MP_StreamType stream);
 
     int startVideoDecoding_l();
     int startAudioDecoding_l();
@@ -192,6 +191,7 @@ private:
     uint32_t mPrepareWaitingType{kPrepareWaitingNone};
     WaitingEcmMode mWaitingEcmMode = kWaitingEcmSynchronous;
     bool mFirstEcmWritten = false;
+    bool mAudioStoppedInSwitching = false;
 
     Aml_MP_PlayerCreateParams mCreateParams;
 

@@ -11,6 +11,7 @@
 #include <utils/Log.h>
 #include "AmlTvPlayer.h"
 #include <utils/AmlMpUtils.h>
+#include <media/AudioSystem.h>
 #include "Aml_MP_PlayerImpl.h"
 
 #ifdef ANDROID
@@ -106,6 +107,7 @@ int AmlTvPlayer::start() {
         MediaCodecParams mediaCodecParams {
             .codecId = mVideoParams.videoCodec,
             .nativewindow = mNativewindow,
+            .audioHwSync = AudioSystem::getAudioHwSyncForSession((audio_session_t)AudioSystem::newAudioUniqueId(AUDIO_UNIQUE_ID_USE_SESSION)),
             .filterId = filterId,
             .hwAvSyncId = hwAvSyncId,
             .isPassthrough = true,
@@ -274,11 +276,27 @@ int AmlTvPlayer::startVideoDecoding() {
     return 0;
 }
 
+int AmlTvPlayer::pauseVideoDecoding() {
+    return 0;
+}
+
+int AmlTvPlayer::resumeVideoDecoding() {
+    return 0;
+}
+
 int AmlTvPlayer::stopVideoDecoding() {
     return 0;
 }
 
 int AmlTvPlayer::startAudioDecoding() {
+    return 0;
+}
+
+int AmlTvPlayer::pauseAudioDecoding() {
+    return 0;
+}
+
+int AmlTvPlayer::resumeAudioDecoding() {
     return 0;
 }
 

@@ -60,13 +60,13 @@ public:
 
     int startVideoDecoding() override;
     int stopVideoDecoding() override;
-    int pauseVideoDecoding();
-    int resumeVideoDecoding();
+    int pauseVideoDecoding() override;
+    int resumeVideoDecoding() override;
 
     int startAudioDecoding() override;
     int stopAudioDecoding() override;
-    int pauseAudioDecoding();
-    int resumeAudioDecoding();
+    int pauseAudioDecoding() override;
+    int resumeAudioDecoding() override;
 
     int setADParams(const Aml_MP_AudioParams* params, bool enableMix) override;
 

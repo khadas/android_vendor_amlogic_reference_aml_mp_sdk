@@ -66,9 +66,13 @@ public:
     virtual int setPcrPid(int pid) = 0;
 
     virtual int startVideoDecoding() = 0;
+    virtual int pauseVideoDecoding() = 0;
+    virtual int resumeVideoDecoding() = 0;
     virtual int stopVideoDecoding() = 0;
 
     virtual int startAudioDecoding() = 0;
+    virtual int pauseAudioDecoding() = 0;
+    virtual int resumeAudioDecoding() = 0;
     virtual int stopAudioDecoding() = 0;
     virtual int startADDecoding() {return 0;}
     virtual int stopADDecoding() {return 0;}

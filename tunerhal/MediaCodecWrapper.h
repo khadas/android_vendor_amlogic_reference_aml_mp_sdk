@@ -20,6 +20,7 @@ struct MediaCodecParams {
     Aml_MP_CodecID codecId;
     ANativeWindow *nativewindow;
     // TunerFramework params begin
+    unsigned int audioHwSync;
     int filterId;
     int hwAvSyncId;
     bool isPassthrough;

@@ -74,6 +74,7 @@ void MediaCodecWrapper::configure(MediaCodecParams mediaCodecParams) {
     format->setString("mime", mime);
     format->setInt32("width", 1920);
     format->setInt32("height", 1080);
+    format->setInt32("audio-hw-sync", mediaCodecParams.audioHwSync);
     format->setInt32("vendor.tunerhal.video-filter-id", mediaCodecParams.filterId);
     format->setInt32("vendor.tunerhal.hw-av-sync-id", mediaCodecParams.hwAvSyncId);
     format->setInt32("feature-tunneled-playback", 1);
