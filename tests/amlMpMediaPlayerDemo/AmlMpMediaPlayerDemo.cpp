@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 #include <inttypes.h>
+#include <signal.h>
+#include <thread>
 #include "../amlMpTestSupporter/TestModule.h"
 #include <../../mediaplayer/AmlMediaPlayerBase.h>
 static const char* mName = LOG_TAG;
@@ -32,6 +34,7 @@ struct AmlMpMediaPlayerDemo : public TestModule
         void setCommandHandle(void * handle);
         void waitPreparedEvent();
         void broadcast();
+        int installSignalHandler();
 public:
         AML_MP_MEDIAPLAYER mPlayer = NULL;
         bool mQuitPending = false;
@@ -44,6 +47,7 @@ protected:
 
 private:
         sptr<CommandProcessor> mCommandProcessor;
+        std::thread mSignalHandleThread;
 };
 
 AmlMpMediaPlayerDemo::AmlMpMediaPlayerDemo()
@@ -507,6 +511,53 @@ void AmlMpMediaPlayerDemo::broadcast()
     mCondition.notify_all();
 }
 
+int AmlMpMediaPlayerDemo::installSignalHandler()
+{
+    int ret = 0;
+    sigset_t blockSet, oldMask;
+    sigemptyset(&blockSet);
+    sigaddset(&blockSet, SIGINT);
+    ret = pthread_sigmask(SIG_SETMASK, &blockSet, &oldMask);
+    if (ret != 0) {
+        MLOGE("pthread_sigmask failed! %d", ret);
+        return -1;
+    }
+
+    mSignalHandleThread = std::thread([blockSet, oldMask, this] {
+        int signo;
+        int err;
+
+        for (;;) {
+            err = sigwait(&blockSet, &signo);
+            if (err != 0) {
+                MLOGE("sigwait error! %d", err);
+                exit(0);
+            }
+
+            printf("%s\n", strsignal(signo));
+
+            switch (signo) {
+            case SIGINT:
+            {
+                //quit
+                mQuitPending = true;
+            }
+            break;
+
+            default:
+                break;
+            }
+
+            if (pthread_sigmask(SIG_SETMASK, &oldMask, nullptr) != 0) {
+                MLOGE("restore sigmask failed!");
+            }
+        }
+    });
+    mSignalHandleThread.detach();
+
+    return ret;
+}
+
 struct Argument
 {
     std::string url;
@@ -634,6 +685,7 @@ int main(int argc, char *argv[])
     }
 
     AmlMpMediaPlayerDemo* commandsProcess = new AmlMpMediaPlayerDemo;
+    commandsProcess->installSignalHandler();
 
     AML_MP_MEDIAPLAYER mPlayer = NULL;
 
