@@ -124,6 +124,7 @@ private:
     int getParameter_l(Aml_MP_MediaPlayerParameterKey key, void* parameter);
     bool isPlaying_l();
     void notifyListener(Aml_MP_MediaPlayerEventType eventType, int64_t param);
+    int setPlaybackRate_l(float rate);
 
     const char* stateString(State state);
     void setState_l(State state);

@@ -724,6 +724,7 @@ int AmlMpMediaPlayerImpl::setPlaybackRate(float rate)
     MLOG("rate:%f", rate);
 
     int ret = 0;
+#if 0
     Aml_MP_VideoDecodeMode newDecodeMode;
     bool decodeModeChanged = false;
 
@@ -760,8 +761,19 @@ int AmlMpMediaPlayerImpl::setPlaybackRate(float rate)
             ret = mPlayer->setPlaybackRate(rate);
         }
     }
+#else
+    //do it in AmlMpPlayerImpl
+    ret = setPlaybackRate_l(rate);
+#endif
 
     return ret;
+}
+
+int AmlMpMediaPlayerImpl::setPlaybackRate_l(float rate)
+{
+    RETURN_IF(-1, mPlayer == nullptr);
+
+    return mPlayer->setPlaybackRate(rate);
 }
 
 ///////////////////////////////////////////////////////////////

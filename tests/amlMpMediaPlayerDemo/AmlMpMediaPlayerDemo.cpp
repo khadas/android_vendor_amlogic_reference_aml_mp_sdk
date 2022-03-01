@@ -273,15 +273,19 @@ static struct TestModule::Command g_commandTable[] = {
             return ret;
         }
     },
+*/
 
     {
-        "sFast", 0, "set Fast rate",
+        "sFast", 1, "set Fast rate",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            printf("call set Fast rate, not finished\n");
-            return -1;
+            int ret = 0;
+            float x = atof(args.at(1).c_str());
+            ret = Aml_MP_MediaPlayer_SetPlaybackRate(player, x);
+            printf("call set Fast rate, speed:%f, ret:%d\n", x, ret);
+            return ret;
         }
     },
-*/
+
     {
         "sWindow", 4, "set video window",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -714,6 +718,13 @@ int main(int argc, char *argv[])
     //prepare
     Aml_MP_MediaPlayer_PrepareAsync(mPlayer);
     commandsProcess->waitPreparedEvent();
+
+#ifndef ANDROID
+        //set videotunnel id = 0 on yocto
+        //must before prepare
+        int iD = 0;
+        Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID, (void*)(&iD));
+#endif
 
     //start
     Aml_MP_MediaPlayer_Start(mPlayer);

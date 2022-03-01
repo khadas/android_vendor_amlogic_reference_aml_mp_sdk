@@ -121,6 +121,7 @@ typedef enum {
     //set/get
     AML_MP_MEDIAPLAYER_PARAMETER_SET_BASE  = 0x6000,
     AML_MP_MEDIAPLAYER_PARAMETER_ONLYHINT_TYPE,                        //setOnlyHintType(Aml_MP_MediaPlayerOnlyHintType*)
+    AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID,                      //setVideoTunnelID(int*)
 
 } Aml_MP_MediaPlayerParameterKey;
 
@@ -342,6 +343,17 @@ int Aml_MP_MediaPlayer_GetParameter(AML_MP_MEDIAPLAYER handle, Aml_MP_MediaPlaye
  * \return 0 if success
  */
 int Aml_MP_MediaPlayer_RegisterEventCallBack(AML_MP_MEDIAPLAYER handle, Aml_MP_MediaPlayerEventCallback cb, void* userData);
+
+/**
+ * \brief Aml_MP_MediaPlayer_SetPlaybackRate
+ * Set playback rate
+ *
+ * \param [in]  player handle
+ * \param [in]  rate
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_SetPlaybackRate(AML_MP_MEDIAPLAYER handle, float rate);
 
 #ifdef __cplusplus
 }
