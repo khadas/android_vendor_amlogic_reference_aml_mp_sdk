@@ -51,8 +51,8 @@ UdpSource::~UdpSource()
 
 int UdpSource::initCheck()
 {
-    char hostAddress[100];
-    char port[10];
+    char hostAddress[100]{0};
+    char port[10]{0};
     int ret = 0;
 
     auto p = mAddress.find_last_of(':');
@@ -68,7 +68,7 @@ int UdpSource::initCheck()
     strcpy(port, mAddress.data()+p+1);
     strncpy(hostAddress, mAddress.data(), p);
 
-    MLOGV("hostAddress:%s, port:%s", hostAddress, port);
+    MLOGI("hostAddress:%s, port:%s", hostAddress, port);
 
     struct addrinfo hints{};
     hints.ai_family = AF_INET;
@@ -79,7 +79,7 @@ int UdpSource::initCheck()
     struct addrinfo* result = nullptr;
     ret = getaddrinfo(hostAddress, port, &hints, &result);
     if (ret != 0) {
-        MLOGE("getaddrinfo failed, %s", gai_strerror(ret));
+        MLOGE("getaddrinfo failed, %d %s", ret, gai_strerror(ret));
         return -1;
     }
 
