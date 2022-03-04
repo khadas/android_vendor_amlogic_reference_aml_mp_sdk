@@ -58,7 +58,6 @@ int CasPlugin::stop()
 int CasPlugin::startDVBDescrambling()
 {
     MLOG();
-    #ifdef ANDROID
     Aml_MP_CAS_Initialize();
 
     Aml_MP_CAS_SetEmmPid(mDemuxId, mProgramInfo->emmPid);
@@ -99,14 +98,14 @@ int CasPlugin::startDVBDescrambling()
     if (mSecMem == nullptr) {
         MLOGE("create secmem failed!");
     }
-    #endif
+
     return 0;
 }
 
 int CasPlugin::stopDVBDescrambling()
 {
     MLOG("mCasSession:%p", mCasSession);
-    #ifdef ANDROID
+
     if (mCasSession == nullptr) {
         return 0;
     }
@@ -118,8 +117,7 @@ int CasPlugin::stopDVBDescrambling()
 
     Aml_MP_CAS_CloseSession(mCasSession);
     mCasSession = nullptr;
-    #endif
-    return 0;
+
     return 0;
 }
 
