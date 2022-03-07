@@ -200,6 +200,7 @@ void convertToMpPlayerEventAudioFormat(Aml_MP_PlayerEventAudioFormat* dest, am_t
 DVB_DemuxSource_t convertToDVBDemuxSource(Aml_MP_DemuxSource source);
 Aml_MP_DemuxSource convertToMpDemuxSource(DVB_DemuxSource_t source);
 am_tsplayer_stream_type convertToTsplayerStreamType(Aml_MP_StreamType streamType);
+am_tsplayer_media_time_type convertToTsplayerMediaTimeType(Aml_MP_StreamType streamType);
 Aml_MP_StreamType convertToAmlMPStreamType(am_tsplayer_stream_type streamType);
 am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType streamType);
 

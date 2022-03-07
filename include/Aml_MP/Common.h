@@ -81,7 +81,7 @@ typedef enum {
     AML_MP_DEMUX_SECSOURCE_DMA4, /**< DMA secure port 4.*/
     AML_MP_DEMUX_SECSOURCE_DMA5, /**< DMA secure port 5.*/
     AML_MP_DEMUX_SECSOURCE_DMA6, /**< DMA secure port 6.*/
-    AML_MP_DEMUX_SECSOURCE_DMA7,  /**< DMA secure port 7.*/
+    AML_MP_DEMUX_SECSOURCE_DMA7, /**< DMA secure port 7.*/
 } Aml_MP_DemuxSource;
 
 typedef enum {
@@ -224,7 +224,7 @@ typedef enum {
     AML_MP_CAS_SERVICE_VERIMATRIX_IPTV, /**< Verimatrix IPTV*/
     AML_MP_CAS_SERVICE_VERIMATRIX_WEB,  /**<verimatrix WEB*/
     AML_MP_CAS_SERVICE_WIDEVINE,        /**<widevine*/
-    AML_MP_CAS_SERVICE_TYPE_INVALID = 0xFF,    /**< Invalid type.*/
+    AML_MP_CAS_SERVICE_TYPE_INVALID = 0xFF,     /**< Invalid type.*/
 } Aml_MP_CASServiceType;
 
 //add for get url info from setdatasource,such as wv
@@ -308,6 +308,8 @@ typedef enum {
     AML_MP_STREAM_TYPE_ECM,
     AML_MP_STREAM_TYPE_EMM,
     AML_MP_STREAM_TYPE_SECTION,
+    AML_MP_STREAM_TYPE_PCR,
+    AML_MP_STREAM_TYPE_STC,
     AML_MP_STREAM_TYPE_NB,
 } Aml_MP_StreamType;
 

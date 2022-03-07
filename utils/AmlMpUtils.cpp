@@ -170,7 +170,6 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SYNC_ID);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_AV_INFO_JSON);
-
         default:
             return "unknown player parameter key";
     }
@@ -893,6 +892,24 @@ am_tsplayer_stream_type convertToTsplayerStreamType(Aml_MP_StreamType streamType
     }
 
     return (am_tsplayer_stream_type)-1;
+}
+
+am_tsplayer_media_time_type convertToTsplayerMediaTimeType(Aml_MP_StreamType streamType) {
+    switch (streamType) {
+        case AML_MP_STREAM_TYPE_VIDEO:
+            return TS_MEDIA_TIME_VIDEO;
+        case AML_MP_STREAM_TYPE_AUDIO:
+        case AML_MP_STREAM_TYPE_AD:
+            return TS_MEDIA_TIME_AUDIO;
+        case AML_MP_STREAM_TYPE_PCR:
+            return TS_MEDIA_TIME_PCR;
+        case AML_MP_STREAM_TYPE_STC:
+            return TS_MEDIA_TIME_STC;
+        default:
+            break;
+    }
+
+    return (am_tsplayer_media_time_type)-1;
 }
 
 Aml_MP_StreamType convertToAmlMPStreamType(am_tsplayer_stream_type streamType) {

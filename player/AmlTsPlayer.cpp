@@ -543,7 +543,28 @@ int AmlTsPlayer::incrementContinuityCounter(int isAudio)
 int AmlTsPlayer::getCurrentPts(Aml_MP_StreamType type, int64_t* pts) {
     am_tsplayer_result ret;
 
-    ret = AmTsPlayer_getPts(mPlayer, convertToTsplayerStreamType(type), (uint64_t*)pts);
+    switch (type) {
+        case AML_MP_STREAM_TYPE_VIDEO:
+        case AML_MP_STREAM_TYPE_AUDIO:
+        case AML_MP_STREAM_TYPE_AD:
+        case AML_MP_STREAM_TYPE_SUBTITLE:
+        {
+            ret = AmTsPlayer_getPts(mPlayer, convertToTsplayerStreamType(type), (uint64_t*)pts);
+            break;
+        }
+        case AML_MP_STREAM_TYPE_PCR:
+        case AML_MP_STREAM_TYPE_STC:
+        {
+            ret = AmTsPlayer_getMediaTime(mPlayer, convertToTsplayerMediaTimeType(type), TS_UNIT_PTS, (uint64_t*)pts);
+            break;
+        }
+        default:
+        {
+            ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+            break;
+        }
+    }
+
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
