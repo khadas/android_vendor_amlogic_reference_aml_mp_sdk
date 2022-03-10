@@ -52,6 +52,7 @@ SET(AML_MP_UTILS_SRC
     utils/json/lib_json/json_value.cpp
     utils/json/lib_json/json_writer.cpp
     utils/AmlMpCodecCapability.cpp
+    utils/AmlMpSignalHandler.cpp
 )
 
 SET(AML_MP_DEMUX_SRC

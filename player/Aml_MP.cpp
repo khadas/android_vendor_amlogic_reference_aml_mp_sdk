@@ -13,6 +13,7 @@
 #include <Aml_MP/Aml_MP.h>
 #include <utils/AmlMpUtils.h>
 #include <utils/AmlMpCodecCapability.h>
+#include <utils/AmlMpSignalHandler.h>
 
 static const char* mName = LOG_TAG;
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,10 +29,21 @@ static const char* mName = LOG_TAG;
 #define AML_MP_TOSTRING(x)     #x
 
 ///////////////////////////////////////////////////////////////////////////////
+static pthread_once_t g_amlMpInitFlag = PTHREAD_ONCE_INIT;
 
 int Aml_MP_Initialize()
 {
     MLOG();
+
+#ifdef __linux__
+#ifndef ANDROID
+    pthread_once(&g_amlMpInitFlag, [] {
+            aml_mp::AmlMpSignalHandler::instance().installSignalHandlers();
+    });
+
+#endif
+#endif
+
 
     return 0;
 }
