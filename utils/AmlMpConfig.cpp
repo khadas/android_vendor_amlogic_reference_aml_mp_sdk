@@ -57,6 +57,9 @@ void AmlMpConfig::reset()
 #elif ANDROID_PLATFORM_SDK_VERSION >= 30
     mUseVideoTunnel = 1;
 #endif
+    mCasPipSupport = 0;
+    mSecMemSize = 0;
+    mCasType = "none";
 }
 
 void AmlMpConfig::init()
@@ -68,7 +71,9 @@ void AmlMpConfig::init()
     initProperty("vendor.amlmp.waiting-ecm-mode", mWaitingEcmMode);
     initProperty("vendor.amlmp.write-buffer-size", mWriteBufferSize);
     initProperty("vendor.enable.dump.packts", mDumpPackts);
-
+    initProperty("vendor.cas.support.pip.function", mCasPipSupport);
+    initProperty("vendor.pip.secmem.size", mSecMemSize);
+    initProperty("vendor.cas.type", mCasType);
 #endif
 
 }

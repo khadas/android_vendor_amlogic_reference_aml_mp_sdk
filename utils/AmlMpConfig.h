@@ -9,6 +9,7 @@
 
 #ifndef _AML_MP_CONFIG_H_
 #define _AML_MP_CONFIG_H_
+#include <string>
 
 namespace aml_mp {
 
@@ -31,7 +32,9 @@ public:
     int mWaitingEcmMode;
     int mWriteBufferSize;
     int mDumpPackts;
-
+    int mCasPipSupport;
+    int mSecMemSize;
+    std::string mCasType;
 private:
     void reset();
 
