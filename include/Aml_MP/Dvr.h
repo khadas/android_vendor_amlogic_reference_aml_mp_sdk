@@ -32,6 +32,8 @@ typedef struct {
     Aml_MP_DVRRecorderFlag      flags;
     int                         bufferSize;         //flush size
     int                         ringbufSize;        //dvbcore ringbuf size,this buf is uesd to cache ts data,
+    uint8_t                     forceSysClock;      //1: force to use system clock as PVR index time source
+                                                    //0: determine index time source based on actual situation
 } Aml_MP_DVRRecorderBasicParams;
 
 typedef struct {

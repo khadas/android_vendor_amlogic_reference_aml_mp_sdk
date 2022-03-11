@@ -264,6 +264,7 @@ int AmlDVRRecorder::setBasicParams(Aml_MP_DVRRecorderBasicParams* basicParams)
     mRecOpenParams.flags = (DVR_RecordFlag_t)basicParams->flags;
     mRecOpenParams.flush_size = basicParams->bufferSize;
     mRecOpenParams.ringbuf_size = basicParams->ringbufSize;
+    mRecOpenParams.force_sysclock = basicParams->forceSysClock;
     MLOGI("location:%s", basicParams->location);
 
     return 0;
