@@ -18,12 +18,14 @@
 #include <mutex>
 #include <condition_variable>
 #include "AmlPlayerBase.h"
+#include "utils/Amlsysfsutils.h"
 
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
 #include <gui/Surface.h>
 #include <gui/SurfaceComposerClient.h>
 #endif
+#include <cutils/properties.h>
 #endif
 #include <utils/AmlMpEventLooper.h>
 
@@ -39,6 +41,10 @@ namespace aml_mp {
 #define START_SUBTITLE_PENDING  (1 << 3)
 
 #define FAST_PLAY_THRESHOLD     2.0f
+
+#define DEFAULT_DEMUX_MEM_SEC_LEVEL     AML_MP_DEMUX_MEM_SEC_LEVEL2
+#define DEFAULT_DEMUX_MEM_SEC_SIZE      (20<<20)//20M
+#define PIP_DEMUX_MEM_SEC_SIZE          (40<<20)//40M
 
 ///////////////////////////////////////////////////////////////////////////////
 AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
@@ -88,6 +94,9 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     mZorder = kZorderBase + mInstanceId;
 
     mPlayer = AmlPlayerBase::create(&mCreateParams, mInstanceId);
+
+    // in CAS PIP case we need increase the sec buffer size
+    increaseDmxSecMemSize();
 }
 
 AmlMpPlayerImpl::~AmlMpPlayerImpl()
@@ -96,6 +105,9 @@ AmlMpPlayerImpl::~AmlMpPlayerImpl()
 
     CHECK(mState == STATE_IDLE);
     CHECK(mStreamState == 0);
+
+    // recover demux sec mem size to default, this value same as DMC_MEM_DEFAULT_SIZE
+    recoverDmxSecMemSize();
 
     AmlMpPlayerRoster::instance().unregisterPlayer(mInstanceId);
 }
@@ -140,7 +152,7 @@ int AmlMpPlayerImpl::setVideoParams(const Aml_MP_VideoParams* params)
 
 #if 1 // This commit commit config the secure level 2.
     if (mVideoParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
-        mVideoParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
+        mVideoParams.secureLevel = DEFAULT_DEMUX_MEM_SEC_LEVEL;
         MLOGI("change video secure level to %d", mVideoParams.secureLevel);
     }
 #endif
@@ -172,7 +184,7 @@ int AmlMpPlayerImpl::setAudioParams_l(const Aml_MP_AudioParams* params)
 
 #if 1 // This commit config the secure level 2.
     if (mAudioParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
-        mAudioParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
+        mAudioParams.secureLevel = DEFAULT_DEMUX_MEM_SEC_LEVEL;
         MLOGI("change audio secure level to %d", mAudioParams.secureLevel);
     }
 #endif
@@ -220,7 +232,7 @@ int AmlMpPlayerImpl::setADParams(Aml_MP_AudioParams* params)
 
 #if 1 // This commit config the secure level 2.
     if (mADParams.secureLevel == AML_MP_DEMUX_MEM_SEC_NONE && mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
-        mADParams.secureLevel = AML_MP_DEMUX_MEM_SEC_LEVEL2;
+        mADParams.secureLevel = DEFAULT_DEMUX_MEM_SEC_LEVEL;
         MLOGI("change ad secure level to %d", mADParams.secureLevel);
     }
 #endif
@@ -2046,6 +2058,32 @@ int AmlMpPlayerImpl::getDecodingState(Aml_MP_StreamType streamType, AML_MP_Decod
     *streamState = getDecodingState_l(streamType);
 
     return AML_MP_OK;
+}
+
+void AmlMpPlayerImpl::increaseDmxSecMemSize() {
+    MLOGI("suportPIP=%d secMemSize=%d isCasProject=%d", AmlMpConfig::instance().mCasPipSupport,
+        AmlMpConfig::instance().mSecMemSize, AmlMpConfig::instance().mCasType != "none");
+    if (AmlMpConfig::instance().mCasPipSupport && AmlMpConfig::instance().mCasType != "none") {
+        char valuebuf[64] = {0};
+        if (AmlMpConfig::instance().mSecMemSize < DEFAULT_DEMUX_MEM_SEC_SIZE
+            || AmlMpConfig::instance().mSecMemSize > PIP_DEMUX_MEM_SEC_SIZE)
+            AmlMpConfig::instance().mSecMemSize = PIP_DEMUX_MEM_SEC_SIZE;
+        sprintf(valuebuf, "%d %d", DEFAULT_DEMUX_MEM_SEC_LEVEL>>10, AmlMpConfig::instance().mSecMemSize);
+
+        int ret = amsysfs_set_sysfs_str("/sys/class/stb/dmc_mem", valuebuf);
+        MLOGI("dmc mem ret=%d level=%d value=%d", ret, DEFAULT_DEMUX_MEM_SEC_LEVEL,
+            AmlMpConfig::instance().mSecMemSize);
+    }
+}
+
+void AmlMpPlayerImpl::recoverDmxSecMemSize() {
+    if (AmlMpConfig::instance().mCasPipSupport && AmlMpConfig::instance().mCasType != "none") {
+        char valuebuf[64] = {0};
+        sprintf(valuebuf, "%d %d", DEFAULT_DEMUX_MEM_SEC_LEVEL>>10, DEFAULT_DEMUX_MEM_SEC_SIZE);
+        int ret = amsysfs_set_sysfs_str("/sys/class/stb/dmc_mem", valuebuf);
+        MLOGI("recover dmc mem ret=%d level=%d value=%d", ret,
+            DEFAULT_DEMUX_MEM_SEC_LEVEL, DEFAULT_DEMUX_MEM_SEC_SIZE);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

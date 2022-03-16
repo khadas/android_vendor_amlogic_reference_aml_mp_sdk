@@ -173,6 +173,9 @@ private:
 
     void resetVariables_l();
 
+    void increaseDmxSecMemSize();
+    void recoverDmxSecMemSize();
+
     const int mInstanceId;
     char mName[50];
 
