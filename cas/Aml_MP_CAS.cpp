@@ -75,7 +75,7 @@ int Aml_MP_CAS_Initialize()
     });
 #endif
 
-    return 0;
+    return AML_MP_OK;
 }
 
 int Aml_MP_CAS_Terminate()
@@ -162,7 +162,7 @@ int Aml_MP_CAS_OpenSession(AML_MP_CASSESSION* casSession, Aml_MP_CASServiceType 
     casBase->incStrong(casBase.get());
 
     *casSession = aml_handle_cast(casBase);
-    return 0;
+    return AML_MP_OK;
 }
 
 int Aml_MP_CAS_CloseSession(AML_MP_CASSESSION casSession)
@@ -171,13 +171,13 @@ int Aml_MP_CAS_CloseSession(AML_MP_CASSESSION casSession)
     RETURN_IF(-1, casBase == nullptr);
     casBase->decStrong(casSession);
 
-    return 0;
+    return AML_MP_OK;
 }
 
 int Aml_MP_CAS_RegisterEventCallback(AML_MP_CASSESSION casSession, Aml_MP_CAS_EventCallback cb, void* userData)
 {
     sptr<AmlCasBase> casBase = aml_handle_cast<AmlCasBase>(casSession);
-    int ret = 0;
+    int ret = AML_MP_OK;
 
     if (casBase) {
         ret = casBase->registerEventCallback(cb, userData);
