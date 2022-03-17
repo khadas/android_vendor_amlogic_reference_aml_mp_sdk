@@ -407,11 +407,23 @@ int AmlMpPlayerImpl::pause_l() {
     }
 
     setState_l(STATE_PAUSED);
-    mPauseBackupState = mStreamState;
-    setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_PAUSED);
-    setDecodingState_l(AML_MP_STREAM_TYPE_AD, AML_MP_DECODING_STATE_PAUSED);
-    setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, AML_MP_DECODING_STATE_PAUSED);
-    setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_DECODING_STATE_PAUSED);
+
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_STARTED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_PAUSED);
+    }
+
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_STARTED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_AD, AML_MP_DECODING_STATE_PAUSED);
+    }
+
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_STARTED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, AML_MP_DECODING_STATE_PAUSED);
+    }
+
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE) == AML_MP_DECODING_STATE_STARTED) {
+        setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_DECODING_STATE_PAUSED);
+    }
+
     return 0;
 }
 
@@ -434,10 +446,22 @@ int AmlMpPlayerImpl::resume_l() {
     }
 
     setState_l(STATE_RUNNING);
-    setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, (mPauseBackupState >> (AML_MP_STREAM_TYPE_AUDIO * kStreamStateBits) & kStreamStateMask));
-    setDecodingState_l(AML_MP_STREAM_TYPE_AD, (mPauseBackupState >> (AML_MP_STREAM_TYPE_AD * kStreamStateBits) & kStreamStateMask));
-    setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, (mPauseBackupState >> (AML_MP_STREAM_TYPE_VIDEO * kStreamStateBits) & kStreamStateMask));
-    setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, (mPauseBackupState >> (AML_MP_STREAM_TYPE_SUBTITLE * kStreamStateBits) & kStreamStateMask));
+
+    finishResumeStream_l(AML_MP_STREAM_TYPE_AUDIO);
+    finishResumeStream_l(AML_MP_STREAM_TYPE_AD);
+    finishResumeStream_l(AML_MP_STREAM_TYPE_VIDEO);
+    finishResumeStream_l(AML_MP_STREAM_TYPE_SUBTITLE);
+
+    return 0;
+}
+
+int AmlMpPlayerImpl::finishResumeStream_l(Aml_MP_StreamType stream)
+{
+    AML_MP_DecodingState state = getDecodingState_l(stream);
+    if (state == AML_MP_DECODING_STATE_PAUSED) {
+        setDecodingState_l(stream, AML_MP_DECODING_STATE_STARTED);
+    }
+
     return 0;
 }
 
@@ -555,7 +579,7 @@ int AmlMpPlayerImpl::getPlaybackRate(float* rate) {
             ret = mPlayer->getPlaybackRate(rate);
         }
     }
-    MLOG("rate: %f, mPlaybackRate: %f", *rate, mPlaybackRate);
+    //MLOG("rate: %f, mPlaybackRate: %f", *rate, mPlaybackRate);
 
     return ret;
 }

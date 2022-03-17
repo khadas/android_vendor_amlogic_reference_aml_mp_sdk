@@ -147,6 +147,7 @@ private:
     int stop_l(std::unique_lock<std::mutex>& lock);
     int pause_l();
     int resume_l();
+    int finishResumeStream_l(Aml_MP_StreamType stream);
 
     int startVideoDecoding_l();
     int startAudioDecoding_l();
@@ -188,7 +189,6 @@ private:
     mutable std::mutex mLock;
     State mState{STATE_IDLE};
     uint32_t mStreamState{0};
-    uint32_t mPauseBackupState{0};
     uint32_t mPrepareWaitingType{kPrepareWaitingNone};
     WaitingEcmMode mWaitingEcmMode = kWaitingEcmSynchronous;
     bool mFirstEcmWritten = false;
