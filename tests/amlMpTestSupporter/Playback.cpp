@@ -851,15 +851,6 @@ static struct TestModule::Command g_commandTable[] = {
             int32_t syncId;
             ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_SYNC_ID, &syncId);
             printf("AML_MP_PLAYER_PARAMETER_SYNC_ID get sync id: %d\n", syncId);
-
-            Aml_MP_AvInfo avState;
-            avState.dataLength = 1024;
-            avState.streamTypeMask = AML_MP_STREAM_TYPE_MASK_VIDEO | AML_MP_STREAM_TYPE_MASK_AUDIO;
-            avState.data = (uint8_t *)malloc(avState.dataLength);
-            ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_AV_INFO_JSON, &avState);
-            printf("AML_MP_PLAYER_PARAMETER_AV_INFO_JSON, json[%d]:\n%s\n", avState.actualLength, avState.data);
-            free(avState.data);
-            avState.data = NULL;
             return ret;
         }
     },
