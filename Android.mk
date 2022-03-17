@@ -33,10 +33,10 @@ AML_MP_PLAYER_SRC := \
 	player/AmlPlayerBase.cpp \
 	player/AmlTsPlayer.cpp \
 
-AML_MP_PLAYER_SYSTEM_SRC_29 := \
+#AML_MP_PLAYER_SYSTEM_SRC_29 := \
 	player/AmlCTCPlayer.cpp \
 
-AML_MP_PLAYER_VENDOR_SRC_29 := \
+#AML_MP_PLAYER_VENDOR_SRC_29 := \
 	player/AmlCTCPlayer.cpp \
 
 ifeq ($(HAVE_TUNER_HAL), true)
@@ -50,7 +50,7 @@ AML_MP_CAS_SRC := \
 	cas/AmlDvbCasHal.cpp \
 	cas/AmCasLibWrapper.cpp \
 
-AML_MP_CAS_SYSTEM_SRC_29 += \
+#AML_MP_CAS_SYSTEM_SRC_29 += \
 	cas/vmx_iptvcas/AmlVMXIptvCas.cpp
 
 # AML_MP_CAS_VENDOR_SRC_ge_30 += \
@@ -172,8 +172,8 @@ endif
 
 AML_MP_SYSTEM_CFLAGS_29 := \
 	-DHAVE_SUBTITLE \
-	-DHAVE_CTC \
-	-DHAVE_VMXIPTV_CAS \
+	#-DHAVE_VMXIPTV_CAS \
+	#-DHAVE_CTC \
 
 ifeq ($(HAVE_CAS_HAL), true)
 AML_MP_SYSTEM_CFLAGS_29 += \
@@ -181,7 +181,7 @@ AML_MP_SYSTEM_CFLAGS_29 += \
 endif
 
 AML_MP_VENDOR_CFLAGS_29 := \
-	-DHAVE_CTC \
+	#-DHAVE_CTC \
 
 AML_MP_SYSTEM_CFLAGS_ge_30 := \
 	-DHAVE_SUBTITLE \
@@ -250,7 +250,7 @@ AML_MP_SYSTEM_SHARED_LIBS_29 := \
 	libgui \
 	libamgralloc_ext@2 \
 	libamdvr.product \
-	libCTC_MediaProcessor \
+	#libCTC_MediaProcessor \
 
 AML_MP_SYSTEM_SHARED_LIBS_ge_30 := \
 	libmediahal_tsplayer.system \
@@ -282,7 +282,7 @@ AML_MP_VENDOR_SHARED_LIBS_29 := \
 	libamdvr \
 	libmediahal_tsplayer \
 	libamgralloc_ext_vendor@2 \
-	libCTC_MediaProcessor.vendor \
+	#libCTC_MediaProcessor.vendor \
 
 AML_MP_VENDOR_SHARED_LIBS_ge_30 := \
 	libSubtitleClient \
