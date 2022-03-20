@@ -1088,6 +1088,14 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
         notifyListener(AML_MP_PLAYER_EVENT_AV_SYNC_DONE);
         break;
 
+    case AM_TSPLAYER_EVENT_TYPE_INPUT_VIDEO_BUFFER_DONE:
+        notifyListener(AML_MP_PLAYER_EVENT_VIDEO_INPUT_BUFFER_DONE, (int64_t)event->event.bufptr);
+        break;
+
+    case AM_TSPLAYER_EVENT_TYPE_INPUT_AUDIO_BUFFER_DONE:
+        notifyListener(AML_MP_PLAYER_EVENT_AUDIO_INPUT_BUFFER_DONE, (int64_t)event->event.bufptr);
+        break;
+
     case AM_TSPLAYER_EVENT_TYPE_DATA_LOSS:
         notifyListener(AML_MP_PLAYER_EVENT_DATA_LOSS);
         break;
