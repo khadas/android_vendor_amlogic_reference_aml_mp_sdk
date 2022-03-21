@@ -454,3 +454,20 @@ int Aml_MP_Player_GetDecodingState(AML_MP_PLAYER handle, Aml_MP_StreamType strea
     return player->getDecodingState(streamType, decodingState);
 }
 
+int Aml_MP_Player_SetADVolume(AML_MP_PLAYER handle, float volume)
+{
+    AML_MP_TRACE(10);
+    sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->setADVolume(volume);
+}
+
+int Aml_MP_Player_GetADVolume(AML_MP_PLAYER handle, float* volume)
+{
+    AML_MP_TRACE(10);
+    sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->getADVolume(volume);
+}

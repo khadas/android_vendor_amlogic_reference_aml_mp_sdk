@@ -546,6 +546,27 @@ int Aml_MP_DVRPlayer_SetANativeWindow(AML_MP_DVRPLAYER handle, ANativeWindow* na
  */
 int Aml_MP_DVRPlayer_SetVideoWindow(AML_MP_DVRPLAYER handle, int32_t x, int32_t y, int32_t width, int32_t height);
 
+/**
+ * \brief Aml_MP_DVRPlayer_SetADVolume
+ * Set DVR player ad volume
+ *
+ * \param [in]  DVR player handle
+ * \param [in]  volume [0.0 ~ 100.0]
+ *
+ * \return 0 if success
+ */
+int Aml_MP_DVRPlayer_SetADVolume(AML_MP_DVRPLAYER handle, float volume);
+
+/**
+ * \brief Aml_MP_DVRPlayer_GetADVolume
+ * Get DVR player ad volume
+ *
+ * \param [in]  DVR player handle
+ * \param [in]  volume [0.0 ~ 100.0]
+ *
+ * \return 0 if success
+ */
+int Aml_MP_DVRPlayer_GetADVolume(AML_MP_DVRPLAYER handle, float* volume);
 
 
 #ifdef __cplusplus

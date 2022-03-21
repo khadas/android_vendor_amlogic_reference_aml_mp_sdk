@@ -81,6 +81,8 @@ public:
     virtual int getPlayerId() {return 0;}
 
     virtual int setADParams(const Aml_MP_AudioParams* params, bool enableMix) = 0;
+    virtual int setADVolume(float volume) = 0;
+    virtual int getADVolume(float* volume) = 0;
 
 #ifdef HAVE_SUBTITLE
     //Subtitle Call back function

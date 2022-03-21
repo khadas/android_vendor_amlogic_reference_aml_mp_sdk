@@ -324,4 +324,14 @@ int AmlTvPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) {
     return 0;
 }
 
+int AmlTvPlayer::setADVolume(float volume) {
+    AML_MP_UNUSED(volume);
+    return 0;
+}
+
+int AmlTvPlayer::getADVolume(float* volume) {
+    AML_MP_UNUSED(volume);
+    return 0;
+}
+
 } // namespace aml_mp

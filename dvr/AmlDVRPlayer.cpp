@@ -570,6 +570,13 @@ int AmlDVRPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         case AML_MP_PLAYER_PARAMETER_SYNC_ID:
             ret = AmTsPlayer_getSyncInstansNo(mPlayer, (int32_t*)parameter);
             break;
+        case AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL:
+        {
+            Aml_MP_ADVolume* ADVolume = (Aml_MP_ADVolume*)parameter;
+            ret = AmTsPlayer_getADMixLevel(mPlayer, (int32_t*)(&ADVolume->masterVolume), (int32_t*)(&ADVolume->slaveVolume));
+            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, value is master %d, slave %d %p, %p", ADVolume->masterVolume, ADVolume->slaveVolume, ADVolume, parameter);
+            break;
+        }
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -598,6 +605,47 @@ int AmlDVRPlayer::setVideoWindow(int x, int y, int width, int height)
     if (ret != AM_TSPLAYER_OK) {
         return AML_MP_ERROR;
     }
+
+    return ret;
+}
+
+int AmlDVRPlayer::setADVolume(float volume)
+{
+    MLOG("ad volume:%f", volume);
+
+    am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+
+#ifdef ANDROID
+#if ANDROID_PLATFORM_SDK_VERSION >= 30
+    ret = AmTsPlayer_setADVolume(mTsPlayerHandle, volume);
+#endif
+#else
+    ret = AmTsPlayer_setADVolume(mTsPlayerHandle, volume);
+#endif
+
+    return ret;
+}
+
+int AmlDVRPlayer::getADVolume(float* volume)
+{
+    MLOG();
+
+    if (volume == NULL) {
+       return -1;
+    }
+
+    am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+    int32_t tsVolume = 0;
+
+#ifdef ANDROID
+#if ANDROID_PLATFORM_SDK_VERSION >= 30
+    ret = AmTsPlayer_getADVolume(mTsPlayerHandle, &tsVolume);
+#endif
+#else
+    ret = AmTsPlayer_getADVolume(mTsPlayerHandle, &tsVolume);
+#endif
+
+    *volume = tsVolume;
 
     return ret;
 }

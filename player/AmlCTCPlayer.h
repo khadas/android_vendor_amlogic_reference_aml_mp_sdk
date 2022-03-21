@@ -70,7 +70,8 @@ public:
     int resumeAudioDecoding() override;
 
     int setADParams(const Aml_MP_AudioParams* params, bool enableMix) override;
-
+    int setADVolume(float volume) override;
+    int getADVolume(float* volume) override;
 
 private:
     char mName[50];

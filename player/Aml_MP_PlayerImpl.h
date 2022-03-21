@@ -90,6 +90,9 @@ public:
 
     int getDecodingState(Aml_MP_StreamType streamType, AML_MP_DecodingState* streamState);
 
+    int setADVolume(float volume);
+    int getADVolume(float* volume);
+
 private:
     enum State {
         STATE_IDLE,
@@ -212,6 +215,7 @@ private:
     Aml_MP_PlayerWorkMode mWorkMode;
 
     float mVolume = -1.0;
+    float mADVolume = -1.0;
 
     float mPlaybackRate = 1.0f;
     float mUserPlaybackRate = 1.0f;

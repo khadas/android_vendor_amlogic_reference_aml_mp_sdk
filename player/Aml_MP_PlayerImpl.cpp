@@ -1755,6 +1755,10 @@ int AmlMpPlayerImpl::prepare_l()
         mPlayer->setVolume(mVolume);
     }
 
+    if (mADVolume >= 0) {
+        mPlayer->setADVolume(mADVolume);
+    }
+
     applyParameters_l();
 
     mPrepareWaitingType = kPrepareWaitingNone;
@@ -2169,6 +2173,34 @@ void AmlMpPlayerImpl::recoverDmxSecMemSize() {
         MLOGI("recover dmc mem ret=%d level=%d value=%d", ret,
             DEFAULT_DEMUX_MEM_SEC_LEVEL, DEFAULT_DEMUX_MEM_SEC_SIZE);
     }
+}
+
+int AmlMpPlayerImpl::setADVolume(float volume) {
+    std::unique_lock<std::mutex> _l(mLock);
+    int ret = 0;
+    if (volume < 0) {
+        MLOGI("volume is %f, set to 0.0", volume);
+        volume = 0.0;
+    } else if (volume > 100) {
+        MLOGI("volume is %f, set to 100.0", volume);
+        volume = 100.0;
+    }
+    mADVolume = volume;
+
+    if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
+        RETURN_IF(-1, mPlayer == nullptr);
+        ret = mPlayer->setADVolume(volume);
+    }
+    return ret;
+}
+
+
+int AmlMpPlayerImpl::getADVolume(float* volume)
+{
+    std::unique_lock<std::mutex> _l(mLock);
+    RETURN_IF(-1, mPlayer == nullptr);
+
+    return mPlayer->getADVolume(volume);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -393,4 +393,22 @@ int Aml_MP_DVRPlayer_SetVideoWindow(AML_MP_DVRPLAYER handle, int32_t x, int32_t 
     return ret;
 }
 
+int Aml_MP_DVRPlayer_SetADVolume(AML_MP_DVRPLAYER handle, float volume)
+{
+    sptr<AmlDVRPlayer> dvrPlayer = aml_handle_cast<AmlDVRPlayer>(handle);
+    RETURN_IF(-1, dvrPlayer == nullptr);
 
+    int ret = dvrPlayer->setADVolume(volume);
+
+    return ret;
+}
+
+int Aml_MP_DVRPlayer_GetADVolume(AML_MP_DVRPLAYER handle, float* volume)
+{
+    sptr<AmlDVRPlayer> dvrPlayer = aml_handle_cast<AmlDVRPlayer>(handle);
+    RETURN_IF(-1, dvrPlayer == nullptr);
+
+    int ret = dvrPlayer->getADVolume(volume);
+
+    return ret;
+}

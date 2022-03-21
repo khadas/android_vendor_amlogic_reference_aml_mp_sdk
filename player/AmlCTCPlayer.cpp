@@ -681,6 +681,18 @@ int AmlCTCPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) 
     return -1;
 }
 
+int AmlCTCPlayer::setADVolume(float volume) {
+    AML_MP_UNUSED(volume);
+    MLOGI("%s:%d\n", __FUNCTION__, __LINE__);
+    return -1;
+}
+
+int AmlCTCPlayer::getADVolume(float* volume) {
+    AML_MP_UNUSED(volume);
+    MLOGI("%s:%d\n", __FUNCTION__, __LINE__);
+    return -1;
+}
+
 void AmlCTCPlayer::eventCtcCallback(aml::IPTV_PLAYER_EVT_E event, uint32_t param1, uint32_t param2)
 {
     MLOGI("%s:%d\n", __FUNCTION__, __LINE__);

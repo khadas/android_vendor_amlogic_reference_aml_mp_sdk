@@ -600,6 +600,28 @@ int Aml_MP_Player_StopADDecoding(AML_MP_PLAYER handle);
  */
 int Aml_MP_Player_GetDecodingState(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, AML_MP_DecodingState* decodingState);
 
+/**
+ * \brief Aml_MP_Player_SetADVolume
+ * Set ad volume
+ *
+ * \param [in]  player handle
+ * \param [in]  volume [0.0 ~ 100.0]
+ *
+ * \return 0 if success
+ */
+int Aml_MP_Player_SetADVolume(AML_MP_PLAYER handle, float volume);
+
+/**
+ * \brief Aml_MP_Player_GetADVolume
+ * Get ad volume
+ *
+ * \param [in]  player handle
+ * \param [in]  volume [0.0 ~ 100.0]
+ *
+ * \return 0 if success
+ */
+int Aml_MP_Player_GetADVolume(AML_MP_PLAYER handle, float* volume);
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                  CAS                                      //
 ///////////////////////////////////////////////////////////////////////////////

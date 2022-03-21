@@ -54,6 +54,8 @@ public:
     int getParameter(Aml_MP_PlayerParameterKey key, void* parameter);
     int setANativeWindow(ANativeWindow* nativeWindow);
     int setVideoWindow(int x, int y, int width, int height);
+    int setADVolume(float volume);
+    int getADVolume(float* volume);
 
 private:
     char mName[50];

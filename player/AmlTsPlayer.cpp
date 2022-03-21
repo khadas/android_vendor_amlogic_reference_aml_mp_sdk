@@ -887,6 +887,13 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             break;
         }
 #endif
+        case AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL:
+        {
+            Aml_MP_ADVolume* ADVolume = (Aml_MP_ADVolume*)parameter;
+            ret = AmTsPlayer_getADMixLevel(mPlayer, (int32_t*)(&ADVolume->masterVolume), (int32_t*)(&ADVolume->slaveVolume));
+            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, value is master %d, slave %d %p, %p", ADVolume->masterVolume, ADVolume->slaveVolume, ADVolume, parameter);
+            break;
+        }
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -1061,6 +1068,50 @@ int AmlTsPlayer::setADParams(const Aml_MP_AudioParams* params, bool enableMix) {
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
+    return 0;
+}
+
+int AmlTsPlayer::setADVolume(float volume) {
+    am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+    int32_t tsplayer_advolume = volume;
+
+    MLOGI("setADVolume, tsplayer_advolume: %d", tsplayer_advolume);
+
+#ifdef ANDROID
+#if ANDROID_PLATFORM_SDK_VERSION >= 30
+    ret = AmTsPlayer_setADVolume(mPlayer, tsplayer_advolume);
+#endif
+#else
+    ret = AmTsPlayer_setADVolume(mPlayer, tsplayer_advolume);
+#endif
+
+    if (ret != AM_TSPLAYER_OK) {
+        return -1;
+    }
+    return 0;
+}
+
+int AmlTsPlayer::getADVolume(float* volume) {
+    am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
+    int32_t tsplayer_advolume = 0;
+
+    if (volume == NULL) {
+        return -1;
+    }
+
+#ifdef ANDROID
+#if ANDROID_PLATFORM_SDK_VERSION >= 30
+    ret = AmTsPlayer_getADVolume(mPlayer, &tsplayer_advolume);
+#endif
+#else
+    ret = AmTsPlayer_getADVolume(mPlayer, &tsplayer_advolume);
+#endif
+
+    MLOGI("getADVolume tsplayer_advolume: %d, ret: %d", tsplayer_advolume, ret);
+    if (ret != AM_TSPLAYER_OK) {
+        return -1;
+    }
+    *volume = tsplayer_advolume;
     return 0;
 }
 
