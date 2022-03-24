@@ -188,7 +188,7 @@ int AmlDVRPlayer::start(bool initialPaused)
 #endif
         } else {
 #ifdef ANDROID
-            ret = mNativeWindowHelper.setSidebandNonTunnelMode(mNativeWindow.get(), mVideoTunnelId);
+            ret = mNativeWindowHelper.setSidebandNonTunnelMode(mNativeWindow.get(), &mVideoTunnelId);
             if (ret == 0) {
                 AmTsPlayer_setSurface(mTsPlayerHandle, (void*)&mVideoTunnelId);
             }
@@ -197,7 +197,7 @@ int AmlDVRPlayer::start(bool initialPaused)
 
     } else {
     #ifdef ANDROID
-        ret = mNativeWindowHelper.setSiebandTunnelMode(mNativeWindow.get());
+        ret = mNativeWindowHelper.setSidebandTunnelMode(mNativeWindow.get());
     #endif
     }
 

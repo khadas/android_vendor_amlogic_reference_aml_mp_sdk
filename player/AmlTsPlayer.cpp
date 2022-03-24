@@ -111,14 +111,7 @@ int AmlTsPlayer::setANativeWindow(ANativeWindow* nativeWindow)
             ret = AmTsPlayer_setSurface(mPlayer, surface);
 #endif
 #endif
-        } else {
-            ret = mNativeWindowHelper.setSidebandNonTunnelMode(nativeWindow, mVideoTunnelId);
-            if (ret == 0) {
-                AmTsPlayer_setSurface(mPlayer, (void*)&mVideoTunnelId);
-            }
         }
-    } else {
-        ret = mNativeWindowHelper.setSiebandTunnelMode(nativeWindow);
     }
 
     return ret;

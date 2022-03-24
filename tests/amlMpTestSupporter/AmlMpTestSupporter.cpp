@@ -515,7 +515,7 @@ int AmlMpTestSupporter::startUIOnly()
     }
 
     int videoTunnelId = -1;
-    ret = mNativeWindowHelper.setSidebandNonTunnelMode(window.get(), videoTunnelId);
+    ret = mNativeWindowHelper.setSidebandNonTunnelMode(window.get(), &videoTunnelId);
     printf("created ui channel id:%d\n", videoTunnelId);
 
 #endif

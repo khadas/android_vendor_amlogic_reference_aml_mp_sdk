@@ -211,11 +211,13 @@ struct NativeWindowHelper
     NativeWindowHelper();
     ~NativeWindowHelper();
 
-    int setSiebandTunnelMode(ANativeWindow* nativeWindow);
-    int setSidebandNonTunnelMode(ANativeWindow* nativeWindow, int& videoTunnelId);
+    int setSidebandTunnelMode(ANativeWindow* nativeWindow);
+    int setSidebandNonTunnelMode(ANativeWindow* nativeWindow, int* videoTunnelId);
+    void clearTunnelId();
 
 private:
     #ifdef ANDROID
+    ANativeWindow* mNativewindow = nullptr;
     android::sp<android::NativeHandle> mSidebandHandle;
     int mTunnelId = -1;
     int mMesonVtFd = -1;

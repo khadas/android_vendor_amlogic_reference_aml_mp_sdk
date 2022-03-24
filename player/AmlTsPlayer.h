@@ -83,7 +83,6 @@ private:
     int mVideoTunnelId = -1;
     ANativeWindow* mNativewindow = nullptr;
     int mBlackOut = 0;
-    NativeWindowHelper mNativeWindowHelper;
     bool mVideoParaSeted;
     bool mAudioParaSeted;
 

@@ -824,11 +824,31 @@ int AmlMpPlayerImpl::setANativeWindow(ANativeWindow* nativeWindow)
 
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         RETURN_IF(-1, mPlayer == nullptr);
-        if (mNativeWindow != nullptr) {
-            mPlayer->setANativeWindow(mNativeWindow.get());
-        }
+        mPlayer->setANativeWindow(mNativeWindow.get());
+        setSidebandIfNeeded_l();
     }
     #endif
+    return 0;
+}
+
+int AmlMpPlayerImpl::setSidebandIfNeeded_l()
+{
+#ifdef ANDROID
+    if (mNativeWindow == nullptr) {
+        return 0;
+    }
+
+    if (AmlMpConfig::instance().mTsPlayerNonTunnel) {
+        if (AmlMpConfig::instance().mUseVideoTunnel == 1) {
+            if (mNativeWindowHelper.setSidebandNonTunnelMode(mNativeWindow.get(), &mVideoTunnelId) == 0) {
+                MLOGI("allocated video tunnel id:%d", mVideoTunnelId);
+            }
+        }
+    } else {
+        mNativeWindowHelper.setSidebandTunnelMode(mNativeWindow.get());
+    }
+#endif
+
     return 0;
 }
 
@@ -1694,7 +1714,9 @@ int AmlMpPlayerImpl::prepare_l()
     MLOGI("mNativeWindow:%p", mNativeWindow.get());
     if (mNativeWindow != nullptr) {
         mPlayer->setANativeWindow(mNativeWindow.get());
+        setSidebandIfNeeded_l();
     }
+
     if (mVideoWindow.width >= 0 && mVideoWindow.height >= 0) {
         mPlayer->setVideoWindow(mVideoWindow.x, mVideoWindow.y, mVideoWindow.width, mVideoWindow.height);
     }

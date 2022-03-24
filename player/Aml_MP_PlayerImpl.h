@@ -132,6 +132,7 @@ private:
     void setState_l(State state);
     void setDecodingState_l(Aml_MP_StreamType streamType, int state);
     AML_MP_DecodingState getDecodingState_l(Aml_MP_StreamType streamType);
+    int setSidebandIfNeeded_l();
     int prepare_l();
     int finishPreparingIfNeeded_l();
     int resetIfNeeded_l(std::unique_lock<std::mutex>& lock);
@@ -223,6 +224,7 @@ private:
     #ifdef ANDROID
     android::sp<ANativeWindow> mNativeWindow;
     #endif
+    NativeWindowHelper mNativeWindowHelper;
     WindowSize mVideoWindow;
     int mVideoTunnelId = -1;
     void* mSurfaceHandle = nullptr;

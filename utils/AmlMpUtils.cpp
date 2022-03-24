@@ -1026,10 +1026,15 @@ NativeWindowHelper::NativeWindowHelper()
 
 NativeWindowHelper::~NativeWindowHelper()
 {
+    clearTunnelId();
+}
+
+void NativeWindowHelper::clearTunnelId()
+{
     #ifdef ANDROID
     if (mMesonVtFd >= 0) {
         if (mTunnelId >= 0) {
-            MLOGI("~NativeWindowHelper: free Id:%d", mTunnelId);
+            MLOGI("%s: free Id:%d", __FUNCTION__, mTunnelId);
             meson_vt_free_id(mMesonVtFd, mTunnelId);
         }
         meson_vt_close(mMesonVtFd);
@@ -1039,7 +1044,7 @@ NativeWindowHelper::~NativeWindowHelper()
     #endif
 }
 
-int NativeWindowHelper::setSiebandTunnelMode(ANativeWindow* nativeWindow)
+int NativeWindowHelper::setSidebandTunnelMode(ANativeWindow* nativeWindow)
 {
     int ret = -1;
 
@@ -1061,7 +1066,7 @@ int NativeWindowHelper::setSiebandTunnelMode(ANativeWindow* nativeWindow)
     return ret;
 }
 
-int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, int& videoTunnelId)
+int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, int* videoTunnelId)
 {
     int ret = -1;
 
@@ -1070,10 +1075,17 @@ int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, in
         return ret;
     }
 
-    if (videoTunnelId != -1) {
-        MLOGW("setANativeWindow mVideoTunnelId:%d", videoTunnelId);
+    if (videoTunnelId && *videoTunnelId != -1) {
+        MLOGW("setANativeWindow mVideoTunnelId:%d", *videoTunnelId);
     }
-    #ifdef ANDROID
+
+#ifdef ANDROID
+    if (mNativewindow != nullptr && mNativewindow != nativeWindow) {
+        MLOGI("window changed, clear tunnel id!");
+        clearTunnelId();
+    }
+    mNativewindow = nativeWindow;
+
     if (mMesonVtFd < 0) {
         int type = AM_FIXED_TUNNEL;
         mMesonVtFd = meson_vt_open();
@@ -1081,20 +1093,25 @@ int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, in
             MLOGE("meson_vt_open failed!");
             return ret;
         }
-        if (meson_vt_alloc_id(mMesonVtFd, &videoTunnelId) < 0) {
+
+        int tunnelId = -1;
+        if (meson_vt_alloc_id(mMesonVtFd, &tunnelId) < 0) {
             MLOGE("meson_vt_alloc_id failed!");
             meson_vt_close(mMesonVtFd);
             mMesonVtFd = -1;
             return ret;
         }
-        MLOGI("setAnativeWindow: allocId: %d", videoTunnelId);
-        mTunnelId = videoTunnelId;
-
-        native_handle_t *sidebandHandle = am_gralloc_create_sideband_handle(type, videoTunnelId);
+        MLOGI("setAnativeWindow: allocId: %d", tunnelId);
+        mTunnelId = tunnelId;
+        native_handle_t *sidebandHandle = am_gralloc_create_sideband_handle(type, mTunnelId);
         mSidebandHandle = android::NativeHandle::create(sidebandHandle, true);
     }
 
-    MLOGI("setAnativeWindow:%p, sidebandHandle:%p", nativeWindow, (native_handle_t*)mSidebandHandle->handle());
+    if (videoTunnelId) {
+        *videoTunnelId = mTunnelId;
+    }
+
+    MLOGI("setAnativeWindow:%p, sidebandHandle:%p, videoTunnelId: %d", nativeWindow, (native_handle_t*)mSidebandHandle->handle(), mTunnelId);
     ret = native_window_set_sideband_stream(nativeWindow, (native_handle_t*)mSidebandHandle->handle());
     if (ret < 0) {
         MLOGE("set sideband stream failed!");
