@@ -216,6 +216,10 @@ const char* mpPlayerEventType2Str(Aml_MP_PlayerEventType eventType) {
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_UNDERFLOW);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_INVALID_TIMESTAMP);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_INVALID_DATA);
+        ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_ERROR_FRAME_COUNT);
+        ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_UNSUPPORT);
+        ENUM_TO_STR(AML_MP_PLAYER_EVENT_VIDEO_INPUT_BUFFER_DONE);
+
         // Audio event
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_BASE);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_CHANGED);
@@ -225,6 +229,8 @@ const char* mpPlayerEventType2Str(Aml_MP_PlayerEventType eventType) {
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_UNDERFLOW);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_INVALID_TIMESTAMP);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_INVALID_DATA);
+        ENUM_TO_STR(AML_MP_PLAYER_EVENT_AUDIO_INPUT_BUFFER_DONE);
+
         // Subtitle event
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_SUBTITLE_BASE);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_SUBTITLE_DATA);
@@ -238,9 +244,14 @@ const char* mpPlayerEventType2Str(Aml_MP_PlayerEventType eventType) {
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_SUBTITLE_TIMEOUT);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_SUBTITLE_INVALID_TIMESTAMP);
         ENUM_TO_STR(AML_MP_PLAYER_EVENT_SUBTITLE_INVALID_DATA);
-        default:
-            return "unknown player event type";
+
+        //mediaplayer
+        ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_BASE);
+        ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE);
+        ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_PREPARED);
     }
+
+    return "unknown player event type";
 }
 
 const char* mpPlayerWorkMode2Str(Aml_MP_PlayerWorkMode workmode) {
@@ -1235,4 +1246,48 @@ int setTSNSourceToDemod() {
     }
     return ret;
 }
+
+void hexdump(const uint8_t* data, size_t size, std::string& result)
+{
+    size_t offset = 0;
+    while (offset < size) {
+        std::string line;
+        char tmp[32];
+
+        snprintf(tmp, sizeof(tmp), "%08lx: ", (unsigned long)offset);
+        line.append(tmp);
+
+        for (size_t i = 0; i < 16; ++i) {
+            if (i == 8) {
+                line.append(" ");
+            }
+
+            if (offset + i >= size) {
+                line.append("   ");
+            } else {
+                snprintf(tmp, sizeof(tmp), "%02x ", data[offset+i]);
+                line.append(tmp);
+            }
+        }
+
+        line.append(" ");
+        for (size_t i = 0; i < 16; ++i) {
+            if (offset +i >= size) {
+                break;
+            }
+
+            if (isprint(data[offset+i])) {
+                line.append(1, (char)data[offset + i]);
+            } else {
+                line.append(".");
+            }
+        }
+
+        result.append(line);
+        result.append("\n");
+
+        offset += 16;
+    }
+}
+
 }

@@ -15,6 +15,7 @@
 #include <cutils/properties.h>
 #include <vector>
 #include <string>
+#include <fcntl.h>
 
 static const char* mName = LOG_TAG;
 
@@ -209,10 +210,298 @@ int CasPlugin::stopIPTVDescrambling()
 
     return 0;
 }
+////////////////////////////////////////////////////////////////////////////////
+TsDemuxer::TsDemuxer(Aml_MP_DemuxType demuxType, Aml_MP_DemuxId demuxId)
+{
+    mDemux = AmlDemuxBase::create(demuxType);
+    mDemux->open(false, demuxId, false);
+    mDemux->start();
+}
+
+TsDemuxer::~TsDemuxer()
+{
+    MLOG();
+
+    for (int i = AML_MP_STREAM_TYPE_UNKNOWN+1; i < AML_MP_STREAM_TYPE_UNKNOWN; ++i) {
+        stopStream((Aml_MP_StreamType)i);
+        closeStream((Aml_MP_StreamType)i);
+    }
+
+    mPids.clear();
+
+    if (mDemux) {
+        mDemux->stop();
+        mDemux->close();
+        mDemux.clear();
+    }
+
+    MLOGI("TsDemuxer destructor end.");
+}
+
+int TsDemuxer::feedTs(const uint8_t* data, size_t size)
+{
+    int ret = -1;
+
+    if (mDemux == nullptr) {
+        return -1;
+    }
+
+    ret = mDemux->feedTs(data, size);
+
+    return ret;
+}
+
+void TsDemuxer::getFlowStatus(bool* underflow, bool* overflow)
+{
+    bool streamUnderflow = false;
+    bool streamOverflow = false;
+
+    for (auto& stream: mStreams) {
+        stream.second.bufferQueue->getFlowStatus(&streamUnderflow, &streamOverflow);
+
+        if (underflow) {
+            *underflow |= streamUnderflow;
+        }
+
+        if (overflow) {
+            *overflow |= streamOverflow;
+        }
+    }
+}
+
+int TsDemuxer::openStream(Aml_MP_StreamType streamType, size_t bufferCount, size_t bufferSize, bool isSVP, const std::function<StreamConsumer>& consumerCb)
+{
+    Stream& stream = mStreams[streamType];
+    stream.consumerCb = consumerCb;
+
+    if (stream.bufferQueue == nullptr) {
+        stream.bufferQueue = new BufferQueue(streamType, bufferCount, bufferSize, isSVP);
+    }
+
+    if (stream.bufferQueueConsumer == nullptr) {
+        const char* streamName = mpStreamType2Str(streamType);
+        stream.bufferQueueConsumer = new BufferQueue::Consumer(streamType, streamName);
+        stream.bufferQueueConsumer->connectQueue(stream.bufferQueue.get());
+        stream.bufferQueueConsumer->connectSink([this, streamType](const uint8_t* data, size_t size, int64_t pts) {
+            Stream& stream = mStreams[streamType];
+            return stream.consumerCb(streamType, data, size, pts);
+        });
+    }
+
+    stream.dumpFd = -1;
+
+    stream.streamParser = new StreamParser(streamType, StreamParser::PES);
+    stream.filterCbCount = 0;
+
+    return 0;
+}
+
+int TsDemuxer::closeStream(Aml_MP_StreamType streamType)
+{
+    MLOG();
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        return -1;
+    }
+
+    MLOG();
+    if (stream->bufferQueueConsumer) {
+        stream->bufferQueueConsumer->stop();
+        stream->bufferQueueConsumer.clear();
+    }
+    MLOG();
+
+    stream->bufferQueue.clear();
+
+    if (stream->dumpFd >= 0) {
+        ::close(stream->dumpFd);
+        stream->dumpFd = -1;
+    }
+
+    stream->streamParser.clear();
+    stream->filterCbCount = 0;
+
+    MLOG();
+
+    return 0;
+}
+
+int TsDemuxer::startStream(Aml_MP_StreamType streamType, int pid, Aml_MP_CodecID codec)
+{
+    int ret = 0;
+
+    if (mPids.find(pid) != mPids.end()) {
+        MLOGW("stream(%d) started already!", pid);
+        return -1;
+    }
+
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        MLOGW("stream hasn't been open! type:%s", mpStreamType2Str(streamType));
+        return -1;
+    }
+
+    Aml_MP_DemuxFilterParams params;
+    memset(&params, 0, sizeof(params));
+    if (streamType == AML_MP_STREAM_TYPE_AUDIO) {
+        params.type =  AML_MP_DEMUX_FILTER_AUDIO;
+    } else if (streamType == AML_MP_STREAM_TYPE_VIDEO) {
+        params.type = AML_MP_DEMUX_FILTER_VIDEO;
+    }
+    params.codecType = codec;
+    stream->channel = mDemux->createChannel(pid, &params);
+    ret = mDemux->openChannel(stream->channel);
+    if (ret < 0) {
+        MLOGE("openChannel failed!");
+        return ret;
+    }
+
+    stream->filter = mDemux->createFilter([](int pid, size_t size, const uint8_t* data, void* userData) -> int {
+        int ret = 0;
+        TsDemuxer* demuxer = (TsDemuxer*)userData;
+        Aml_MP_StreamType streamType = demuxer->mPids[pid];
+        Stream* stream = demuxer->getStream(streamType);
+        if (stream->bufferQueue) {
+            MLOGV("filter(%d) size:%zu(%zu), cbCount:%zu", pid, size, size-14, ++stream->filterCbCount);
+            stream->streamParser->append(data, size);
+
+            int ret = 0;
+            StreamParser::Frame frame;
+            while (true) {
+                BufferQueue::Buffer* buffer;
+                ret = stream->bufferQueue->dequeueBuffer(&buffer);
+                if (ret < 0) {
+                    MLOGI("[%s] filter dequeueBuffer failed, streamParser current BufferSize:%zu", mpStreamType2Str(streamType), stream->streamParser->totalBufferSize());
+                    return -1;
+                }
+
+                ret = stream->streamParser->lockFrame(&frame);
+                if (ret < 0) {
+                    stream->bufferQueue->cancelBuffer(buffer);
+                    break;
+                }
+
+                if (stream->dumpFd >= 0) {
+                    int wlen = ::write(stream->dumpFd, frame.data, frame.size);
+                    if (wlen != (int)frame.size) {
+                        MLOGE("write dump file failed!");
+                    }
+                }
+
+                buffer->append(frame.data, frame.size);
+                buffer->setPts(frame.pts);
+                stream->bufferQueue->queueBuffer(buffer);
+
+                stream->streamParser->unlockFrame(&frame);
+            }
+        }
+
+        return 0;
+    }, this);
+
+    ret = mDemux->attachFilter(stream->filter, stream->channel);
+    if (ret < 0) {
+        MLOGE("attachFilter failed, pid:%#x, stream:%s", pid, mpStreamType2Str(streamType));
+    }
+
+    stream->pid = pid;
+    mPids.emplace(pid, streamType);
+
+#if 0
+    std::string filename = "/data/dump_stream_";
+    filename.append(std::to_string(pid));
+    filename.append(".es");
+    stream->dumpFd = ::open(filename.c_str(), O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (stream->dumpFd < 0) {
+        MLOGE("open dumpFd %s failed!", filename.c_str());
+    }
+#endif
+
+    stream->bufferQueueConsumer->start();
+
+    return 0;
+}
+
+int TsDemuxer::stopStream(Aml_MP_StreamType streamType)
+{
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        return -1;
+    }
+
+    stream->bufferQueueConsumer->pause();
+    stream->bufferQueueConsumer->flush();
+
+    mPids.erase(stream->pid);
+    stream->pid = AML_MP_INVALID_PID;
+
+    if (stream->filter != AML_MP_INVALID_HANDLE) {
+        mDemux->detachFilter(stream->filter, stream->channel);
+        mDemux->destroyFilter(stream->filter);
+        stream->filter = AML_MP_INVALID_HANDLE;
+    }
+
+    if (stream->channel != AML_MP_INVALID_HANDLE) {
+        mDemux->closeChannel(stream->channel);
+        mDemux->destroyChannel(stream->channel);
+        stream->channel = AML_MP_INVALID_HANDLE;
+    }
+
+    MLOG();
+
+    return 0;
+}
+
+int TsDemuxer::pauseStream(Aml_MP_StreamType streamType)
+{
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        return -1;
+    }
+
+    stream->bufferQueueConsumer->pause();
+
+    return 0;
+}
+
+int TsDemuxer::resumeStream(Aml_MP_StreamType streamType)
+{
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        return -1;
+    }
+
+    stream->bufferQueueConsumer->start();
+
+    return 0;
+}
+
+int TsDemuxer::notifyStreamInputBufferDone(Aml_MP_StreamType streamType, int64_t handle)
+{
+    Stream* stream = getStream(streamType);
+    if (stream == nullptr) {
+        return -1;
+    }
+
+    stream->bufferQueueConsumer->notifyBufferReleased(handle);
+
+    return 0;
+}
+
+TsDemuxer::Stream* TsDemuxer::getStream(Aml_MP_StreamType streamType)
+{
+    auto it = mStreams.find(streamType);
+    if (it != mStreams.end()) {
+        return &it->second;
+    }
+
+    return nullptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType, uint64_t options)
+Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType inputStreamType, uint64_t options)
 : mDemuxId(demuxId)
+, mDrmMode(inputStreamType)
 , mOptions(options)
 {
     MLOGI("Playback structure,sourceType:%d\n", sourceType);
@@ -221,12 +510,16 @@ Playback::Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Am
     createParams.channelId = AML_MP_CHANNEL_ID_AUTO;
     createParams.demuxId = demuxId;
     createParams.sourceType = sourceType;
-    createParams.drmMode = streamType;
+    createParams.drmMode = inputStreamType;
     createParams.options = options;
     int ret = Aml_MP_Player_Create(&createParams, &mPlayer);
     if (ret < 0) {
         MLOGE("create player failed!");
         return;
+    }
+
+    if (sourceType == AML_MP_INPUT_SOURCE_ES_MEMORY) {
+        mDemuxer = new TsDemuxer(AML_MP_DEMUX_TYPE_SOFTWARE, demuxId);
     }
 }
 
@@ -234,6 +527,10 @@ Playback::~Playback()
 {
     MLOGI("~Playback\n");
     stop();
+
+    if (mDemuxer) {
+        mDemuxer.clear();
+    }
 
     if (mPlayer != AML_MP_INVALID_HANDLE) {
         Aml_MP_Player_Destroy(mPlayer);
@@ -299,13 +596,13 @@ void Playback::playerRegisterEventCallback(Aml_MP_PlayerEventCallback cb, void* 
 
 void Playback::eventCallback(Aml_MP_PlayerEventType eventType, int64_t param)
 {
-    ALOGI("Playback eventCallback event: %d, %s, param %" PRId64 "\n", eventType, mpPlayerEventType2Str(eventType), param);
+    MLOGD("Playback eventCallback event: %d, %s, param %" PRIx64 "\n", eventType, mpPlayerEventType2Str(eventType), param);
     switch (eventType) {
         case AML_MP_PLAYER_EVENT_VIDEO_OVERFLOW:
         {
             uint32_t video_overflow_num;
             video_overflow_num = *(uint32_t*)param;
-            ALOGI("%s %d\n", mpPlayerEventType2Str(eventType), video_overflow_num);
+            MLOGI("%s %d\n", mpPlayerEventType2Str(eventType), video_overflow_num);
         }
         break;
 
@@ -313,7 +610,7 @@ void Playback::eventCallback(Aml_MP_PlayerEventType eventType, int64_t param)
         {
             uint32_t video_underflow_num;
             video_underflow_num = *(uint32_t*)param;
-            ALOGI("%s %d\n", mpPlayerEventType2Str(eventType), video_underflow_num);
+            MLOGI("%s %d\n", mpPlayerEventType2Str(eventType), video_underflow_num);
         }
         break;
 
@@ -321,7 +618,7 @@ void Playback::eventCallback(Aml_MP_PlayerEventType eventType, int64_t param)
         {
             uint32_t audio_overflow_num;
             audio_overflow_num = *(uint32_t*)param;
-            ALOGI("%s %d\n", mpPlayerEventType2Str(eventType), audio_overflow_num);
+            MLOGI("%s %d\n", mpPlayerEventType2Str(eventType), audio_overflow_num);
         }
         break;
 
@@ -329,12 +626,32 @@ void Playback::eventCallback(Aml_MP_PlayerEventType eventType, int64_t param)
         {
             uint32_t audio_underflow_num;
             audio_underflow_num = *(uint32_t*)param;
-            ALOGI("%s %d\n", mpPlayerEventType2Str(eventType), audio_underflow_num);
+            MLOGI("%s %d\n", mpPlayerEventType2Str(eventType), audio_underflow_num);
         }
         break;
 
+        case AML_MP_PLAYER_EVENT_VIDEO_INPUT_BUFFER_DONE:
+        {
+            if (mDemuxer) {
+                mDemuxer->notifyStreamInputBufferDone(AML_MP_STREAM_TYPE_VIDEO, param);
+            }
+            break;
+        }
+
+        case AML_MP_PLAYER_EVENT_AUDIO_INPUT_BUFFER_DONE:
+        {
+            if (mDemuxer) {
+                mDemuxer->notifyStreamInputBufferDone(AML_MP_STREAM_TYPE_AUDIO, param);
+            }
+            break;
+        }
+
         default:
             break;
+    }
+
+    if (mEventCallback) {
+        mEventCallback(mUserData, eventType, param);
     }
 }
 
@@ -355,15 +672,9 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
     bool useTif = false;
     Aml_MP_Player_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_USE_TIF, &useTif);
 
-    if (mEventCallback != nullptr) {
-        Aml_MP_Player_RegisterEventCallBack(mPlayer,mEventCallback, mUserData);
-    } else {
-        ALOGI("use Playback self eventCallback\n");
-        Aml_MP_Player_RegisterEventCallBack(mPlayer, [](void* userData, Aml_MP_PlayerEventType eventType, int64_t param) {
+    Aml_MP_Player_RegisterEventCallBack(mPlayer, [](void* userData, Aml_MP_PlayerEventType eventType, int64_t param) {
         static_cast<Playback*>(userData)->eventCallback(eventType, param);
     }, this);
-        //Aml_MP_Player_RegisterEventCallBack(mPlayer,eventCallback, mUserData);
-    }
 
     if (mProgramInfo->scrambled) {
         Aml_MP_Player_SetCasSession(mPlayer, casSession);
@@ -418,6 +729,24 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
         ret |= Aml_MP_Player_StartSubtitleDecoding(mPlayer);
     } else {
         MLOGE("unknown playmode:%d", mPlayMode);
+    }
+
+    if (mDemuxer) {
+        if (mProgramInfo->videoPid != AML_MP_INVALID_PID) {
+            mDemuxer->openStream(AML_MP_STREAM_TYPE_VIDEO, 16, 3 * 1024 * 1024, mDrmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY,
+                [this](Aml_MP_StreamType streamType, const uint8_t* data, size_t size, int64_t pts) {
+                    return Aml_MP_Player_WriteEsData(mPlayer, streamType, data, size, pts);
+                });
+            mDemuxer->startStream(AML_MP_STREAM_TYPE_VIDEO, mProgramInfo->videoPid, mProgramInfo->videoCodec);
+        }
+
+        if (mProgramInfo->audioPid != AML_MP_INVALID_PID) {
+            mDemuxer->openStream(AML_MP_STREAM_TYPE_AUDIO, 16, 4 * 1024, false,
+                [this](Aml_MP_StreamType streamType, const uint8_t* data, size_t size, int64_t pts) {
+                    return Aml_MP_Player_WriteEsData(mPlayer, streamType, data, size, pts);
+            });
+            mDemuxer->startStream(AML_MP_STREAM_TYPE_AUDIO, mProgramInfo->audioPid, mProgramInfo->audioCodec);
+        }
     }
 
     if (ret != 0) {
@@ -487,6 +816,11 @@ int Playback::stop()
 {
     int ret = 0;
 
+    if (mDemuxer) {
+        mDemuxer->stopStream(AML_MP_STREAM_TYPE_VIDEO);
+        mDemuxer->stopStream(AML_MP_STREAM_TYPE_AUDIO);
+    }
+
     if (mPlayMode == PlayMode::START_ALL_STOP_ALL || mPlayMode == PlayMode::START_SEPARATELY_STOP_ALL) {
         ret = Aml_MP_Player_Stop(mPlayer);
         if (ret < 0) {
@@ -517,7 +851,22 @@ void Playback::signalQuit()
 
 int Playback::writeData(const uint8_t* buffer, size_t size)
 {
-    int wlen = Aml_MP_Player_WriteData(mPlayer, buffer, size);
+    int wlen = -1;
+
+    if (mDemuxer) {
+        bool overflow;
+        mDemuxer->getFlowStatus(nullptr, &overflow);
+        if (overflow) {
+            //MLOGI("overflow!");
+            return -1;
+        }
+        wlen = mDemuxer->feedTs(buffer, size);
+        if (wlen != (int)size) {
+            MLOGW("feedTs return %d, expected:%zu", wlen, size);
+        }
+    } else {
+        wlen = Aml_MP_Player_WriteData(mPlayer, buffer, size);
+    }
 
     return wlen;
 }

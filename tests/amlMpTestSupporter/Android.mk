@@ -7,6 +7,7 @@ AML_MP_TEST_SUPPORTER_SRCS := \
 	DVRPlayback.cpp \
 	DVRRecord.cpp \
 	Playback.cpp \
+	BufferQueue.cpp \
 	TestUtils.cpp \
 	source/Source.cpp \
 	source/DvbSource.cpp \

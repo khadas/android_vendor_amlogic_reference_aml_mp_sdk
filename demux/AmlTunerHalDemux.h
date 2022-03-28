@@ -19,13 +19,12 @@ class AmlTunerHalDemux;
 class TunerHalTsParser : public AmlDemuxBase::ITsParser
 {
 public:
-    TunerHalTsParser(const std::function<SectionCallback>& cb);
+    TunerHalTsParser(const std::function<FilterCallback>& cb);
     ~TunerHalTsParser();
     virtual int feedTs(const uint8_t* buffer, size_t size);
     virtual void reset();
-    virtual int addPSISection(int pid, bool checkCRC = true);
-    virtual int getPSISectionData(int pid);
-    virtual void removePSISection(int pid);
+    virtual int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params);
+    virtual void removeDemuxFilter(int pid);
 
 private:
     TunerHalTsParser(const TunerHalTsParser&) = delete;
@@ -55,8 +54,8 @@ public:
     virtual int stop() override;
     virtual int close() override;
 
-    virtual int addPSISection(int pid, bool checkCRC = true) override;
-    virtual int removePSISection(int pid) override;
+    virtual int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) override;
+    virtual int removeDemuxFilter(int pid) override;
     virtual bool isStopped() const override;
     void notifyDataWrapper(int pid, const sptr<AmlMpBuffer>& data, int version);
 

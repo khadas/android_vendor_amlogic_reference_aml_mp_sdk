@@ -69,6 +69,7 @@ public:
     void setDisplayParam(const DisplayParam& displayParam);
     void addOptions(uint64_t options);
     void setVideoErrorRecoveryMode(int recoveryMode);
+    void setSourceMode(bool esMode, bool clearTVP);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true);
     int startRecord(bool isSetStreams = true, bool isTimeShift = false);
     int startDVRPlayback(bool isSetStreams=true, bool isTimeShift=false);
@@ -144,6 +145,8 @@ private:
     int mPcrPid = AML_MP_INVALID_PID;
 
     int mpVideoErrorRecoveryMode = 0;
+    bool mEsMode = false;
+    bool mClearTVP = false;
 
     AmlMpTestSupporter(const AmlMpTestSupporter&) = delete;
     AmlMpTestSupporter& operator=(const AmlMpTestSupporter&) = delete;

@@ -19,13 +19,39 @@ namespace aml_mp {
 struct AmlMpBuffer;
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef int (*Aml_MP_Demux_SectionFilterCb)(int pid, size_t size, const uint8_t* data, void* userData);
+typedef int (*Aml_MP_Demux_FilterCb)(int pid, size_t size, const uint8_t* data, void* userData);
 
 typedef enum {
-    AML_MP_HARDWARE_DEMUX,
-    AML_MP_SOFTWARE_DEMUX,
-    AML_MP_TUNERHAL_DEMUX,
+    AML_MP_DEMUX_TYPE_HARDWARE,
+    AML_MP_DEMUX_TYPE_SOFTWARE,
+    AML_MP_DEMUX_TYPE_TUNERHAL,
 } Aml_MP_DemuxType;
+
+typedef enum {
+    AML_MP_DEMUX_FILTER_PSI,
+    AML_MP_DEMUX_FILTER_VIDEO,
+    AML_MP_DEMUX_FILTER_AUDIO,
+    AML_MP_DEMUX_FILTER_PCR,
+} Aml_MP_DemuxFilterType;
+
+typedef struct {
+    Aml_MP_DemuxFilterType type;
+    Aml_MP_CodecID codecType;
+    uint32_t flags;
+
+#define DMX_CHECK_CRC   1
+#define DMX_ONESHOT     2
+#define DMX_IMMEDIATE_START 4
+#define DMX_KERNEL_CLIENT   0x8000
+#define DMX_MEM_SEC_LEVEL1   (1 << 10)
+#define DMX_MEM_SEC_LEVEL2   (1 << 11)
+#define DMX_MEM_SEC_LEVEL3   (1 << 12)
+/*bit 16~23 for output */
+#define DMX_ES_OUTPUT        (1 << 16)
+/*set raw mode, it will send the struct dmx_sec_es_data, not es data*/
+#define DMX_OUTPUT_RAW_MODE  (1 << 17)
+#define DMX_OUTPUT_SECTION_MODE (1<<18)
+} Aml_MP_DemuxFilterParams;
 
 class AmlDemuxBase : public AmlMpRefBase
 {
@@ -46,28 +72,27 @@ public:
         return size;
     }
 
-    CHANNEL createChannel(int pid, bool checkCRC = true);
+    CHANNEL createChannel(int pid, const Aml_MP_DemuxFilterParams* params);
     int destroyChannel(CHANNEL channel);
     int openChannel(CHANNEL channel);
     int closeChannel(CHANNEL channel);
-    FILTER createFilter(Aml_MP_Demux_SectionFilterCb cb, void* userData);
+    FILTER createFilter(Aml_MP_Demux_FilterCb cb, void* userData);
     int destroyFilter(FILTER filter);
     int attachFilter(FILTER filter, CHANNEL channel);
     int detachFilter(FILTER filter, CHANNEL channel);
 
     struct ITsParser : virtual public AmlMpRefBase {
-        using SectionCallback = void(int pid, const sptr<AmlMpBuffer>& data, int version);
+        using FilterCallback = void(int pid, const sptr<AmlMpBuffer>& data, int version);
 
-        explicit ITsParser(const std::function<SectionCallback>& cb);
+        explicit ITsParser(const std::function<FilterCallback>& cb);
         virtual ~ITsParser() =default;
         virtual int feedTs(const uint8_t* buffer, size_t size) = 0;
         virtual void reset() = 0;
-        virtual int addPSISection(int pid, bool checkCRC = true) = 0;
-        virtual int getPSISectionData(int pid) = 0;
-        virtual void removePSISection(int pid) = 0;
+        virtual int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) = 0;
+        virtual void removeDemuxFilter(int pid) = 0;
 
     protected:
-        std::function<SectionCallback> mSectionCallback;
+        std::function<FilterCallback> mFilterCallback;
 
     private:
         ITsParser(const ITsParser&) = delete;
@@ -79,8 +104,8 @@ protected:
     struct Filter;
 
     AmlDemuxBase();
-    virtual int addPSISection(int pid, bool checkCRC = true) = 0;
-    virtual int removePSISection(int pid) = 0;
+    virtual int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) = 0;
+    virtual int removeDemuxFilter(int pid) = 0;
     virtual bool isStopped() const = 0;
 
     void notifyData(int pid, const sptr<AmlMpBuffer>& data, int version);

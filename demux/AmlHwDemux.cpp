@@ -7,7 +7,7 @@
  * Description:
  */
 
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 #define LOG_TAG "AmlMpPlayerDemo_AmlHwDemux"
 #include <utils/AmlMpLog.h>
 #include <Aml_MP/Aml_MP.h>
@@ -31,18 +31,19 @@ extern "C" {
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
+static const int kPesFilterBufferSize = 2 * 1024 * 1024;
+
 class HwTsParser : public AmlDemuxBase::ITsParser, public LooperCallback
 {
 public:
-    HwTsParser(const std::function<SectionCallback>& cb, const std::string& name);
+    HwTsParser(const std::function<FilterCallback>& cb, const std::string& name);
     ~HwTsParser();
     int dvr_open(int demuxId, bool isHardwareSource, bool isSecureBuffer);
     int feedTs(const uint8_t* buffer, size_t size);
     int dvr_close();
     void reset();
-    int addPSISection(int pid, bool checkCRC);
-    int getPSISectionData(int pid);
-    void removePSISection(int pid);
+    int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) override;
+    void removeDemuxFilter(int pid) override;
 
 private:
     virtual int handleEvent(int fd, int events, void* data);
@@ -53,6 +54,7 @@ private:
     std::mutex mLock;
     std::map<int, int> mChannelFds; //pid, fd
     int mDvrFd;
+    sptr<AmlMpBuffer> mCallbackBuffer;
 
 private:
     HwTsParser(const HwTsParser&) = delete;
@@ -101,6 +103,8 @@ int AmlHwDemux::close()
 
 int AmlHwDemux::start()
 {
+    MLOGI("start");
+
     mTsParser->dvr_open(mDemuxId, mIsHardwareSource, mIsSecureBuffer);
     if (mLooper == nullptr) {
         mLooper = new Looper(Looper::PREPARE_ALLOW_NON_CALLBACKS);
@@ -157,33 +161,48 @@ int AmlHwDemux::feedTs(const uint8_t* buffer, size_t size)
     return mTsParser->feedTs(buffer, size);
 }
 
-int AmlHwDemux::addPSISection(int pid, bool checkCRC)
+int AmlHwDemux::addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params)
 {
-    int channelFd = mTsParser->addPSISection(pid, checkCRC);
+    int channelFd = mTsParser->addDemuxFilter(pid, params);
+
+    std::unique_ptr<FilterParams> filterParams(new FilterParams);
+    filterParams->pid = pid;
+    filterParams->fd = channelFd;
+    filterParams->params = *params;
 
     int ret = mLooper->addFd(
             channelFd,
             Looper::POLL_CALLBACK,
             Looper::EVENT_ERROR|Looper::EVENT_INPUT,
             mTsParser,
-            (void*)(long)pid);
+            filterParams.get());
 
     if (ret <= 0) {
         MLOGE("addFd failed! fd:%d", channelFd);
+    } else {
+        mFilterParams.emplace(pid, std::move(filterParams));
     }
 
     return ret;
 }
 
-int AmlHwDemux::removePSISection(int pid)
+int AmlHwDemux::removeDemuxFilter(int pid)
 {
-    int channelFd = mTsParser->getPSISectionData(pid);
+    auto it = mFilterParams.find(pid);
+    if (it == mFilterParams.end()) {
+        MLOGE("removeFd failed! invalid pid:%d", pid);
+        return -1;
+    }
+    std::unique_ptr<FilterParams> filterParams = std::move(it->second);
+    mFilterParams.erase(it);
+
+    int channelFd = filterParams->fd;
     int ret = mLooper->removeFd(channelFd);
     if (ret <= 0) {
         MLOGE("removeFd failed! fd:%d", channelFd);
     }
 
-    mTsParser->removePSISection(pid);
+    mTsParser->removeDemuxFilter(pid);
 
     return ret;
 }
@@ -222,7 +241,7 @@ void AmlHwDemux::threadLoop()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-HwTsParser::HwTsParser(const std::function<SectionCallback>& cb, const std::string& name)
+HwTsParser::HwTsParser(const std::function<FilterCallback>& cb, const std::string& name)
 : ITsParser(cb)
 , mDemuxName(name)
 {
@@ -311,35 +330,64 @@ int HwTsParser::feedTs(const uint8_t* buffer, size_t size)
     return (size - left);
 }
 
-int HwTsParser::addPSISection(int pid, bool checkCRC)
+int HwTsParser::addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params)
 {
     int fd = -1;
+    int ret = 0;
     fd = ::open(mDemuxName.c_str(), O_RDWR);
     if (fd < 0) {
         MLOG("open %s failed! %s", mDemuxName.c_str(), strerror(errno));
         return -1;
     }
 
-    struct dmx_sct_filter_params filter_param;
-    memset(&filter_param, 0, sizeof(filter_param));
-    filter_param.pid = pid;
-    if (checkCRC) {
-        filter_param.flags = DMX_CHECK_CRC;
-    }
+    if (params->type == AML_MP_DEMUX_FILTER_PSI) {
+        int buffersize = 32 * 1024;
+        ret = ioctl(fd, DMX_SET_BUFFER_SIZE, buffersize);
+        if (ret < 0) {
+            MLOG("set buffer size failed!");
+            ::close(fd);
+            return -1;
+        }
 
-    int ret = ioctl(fd, DMX_SET_FILTER, &filter_param);
-    if (ret < 0) {
-        MLOG("set filter failed!");
-        ::close(fd);
-        return -1;
-    }
+        struct dmx_sct_filter_params filter_param;
+        memset(&filter_param, 0, sizeof(filter_param));
+        filter_param.pid = pid;
+        filter_param.flags = params->flags;
 
-    int buffersize = 32 * 1024;
-    ret = ioctl(fd, DMX_SET_BUFFER_SIZE, buffersize);
-    if (ret < 0) {
-        MLOG("set buffer size failed!");
-        ::close(fd);
-        return -1;
+        ret = ioctl(fd, DMX_SET_FILTER, &filter_param);
+        if (ret < 0) {
+            MLOG("set filter failed!");
+            ::close(fd);
+            return -1;
+        }
+    } else {
+        int buffersize = kPesFilterBufferSize;
+        ret = ioctl(fd, DMX_SET_BUFFER_SIZE, buffersize);
+        if (ret < 0) {
+            MLOG("set pes buffer size failed!");
+            ::close(fd);
+            return -1;
+        }
+
+        struct dmx_pes_filter_params filter_param;
+        memset(&filter_param, 0, sizeof(filter_param));
+        filter_param.pid = pid;
+        filter_param.flags = params->flags;
+        filter_param.input = DMX_IN_FRONTEND;
+        filter_param.output = DMX_OUT_TAP;
+        if (params->type == AML_MP_DEMUX_FILTER_AUDIO) {
+            filter_param.pes_type = DMX_PES_AUDIO;
+        } else if (params->type == AML_MP_DEMUX_FILTER_VIDEO) {
+            filter_param.pes_type = DMX_PES_VIDEO0;
+        }
+
+        MLOGI("create pes filter, pid:%d, type:%d, fd:%d, flags:%#x", pid, params->type, fd, params->flags);
+        ret = ioctl(fd, DMX_SET_PES_FILTER, &filter_param);
+        if (ret < 0) {
+            MLOG("set pes filter failed! %d", ret);
+            ::close(fd);
+            return -1;
+        }
     }
 
     ret = ioctl(fd, DMX_START);
@@ -357,14 +405,14 @@ int HwTsParser::addPSISection(int pid, bool checkCRC)
     return fd;
 }
 
-int HwTsParser::getPSISectionData(int pid)
-{
-    std::unique_lock<std::mutex> _l(mLock);
-    auto it = mChannelFds.find(pid);
-    return it != mChannelFds.end() ? it->second : -1;
-}
+//int HwTsParser::getDemuxFilterPrivateData(int pid)
+//{
+    //std::unique_lock<std::mutex> _l(mLock);
+    //auto it = mChannelFds.find(pid);
+    //return it != mChannelFds.end() ? it->second : -1;
+//}
 
-void HwTsParser::removePSISection(int pid)
+void HwTsParser::removeDemuxFilter(int pid)
 {
     int fd = -1;
     {
@@ -372,6 +420,7 @@ void HwTsParser::removePSISection(int pid)
         auto it = mChannelFds.find(pid);
         if (it != mChannelFds.end()) {
             fd = it->second;
+            mChannelFds.erase(it);
         }
     }
 
@@ -396,9 +445,13 @@ void HwTsParser::reset()
 
 int HwTsParser::handleEvent(int fd, int events, void* data)
 {
-    sptr<AmlMpBuffer> buffer = new AmlMpBuffer(1024);
+    sptr<AmlMpBuffer>& buffer = mCallbackBuffer;
+    if (mCallbackBuffer == nullptr) {
+        mCallbackBuffer = new AmlMpBuffer(kPesFilterBufferSize);
+    }
+
     if (events & Looper::EVENT_INPUT) {
-        int len = ::read(fd, buffer->base(), buffer->size());
+        int len = ::read(fd, buffer->base(), buffer->capacity());
         if (len < 0) {
             MLOGE("read failed, %s", strerror(errno));
             return 0;
@@ -407,10 +460,16 @@ int HwTsParser::handleEvent(int fd, int events, void* data)
         buffer->setRange(0, len);
     }
 
-    int version = buffer->data()[5]>>1 & 0x1F;
-    int pid = (int)(long)data;
-    if (mSectionCallback) {
-        mSectionCallback(pid, buffer, version);
+    int version = -1;
+
+    AmlHwDemux::FilterParams* filterParams = (AmlHwDemux::FilterParams*)data;
+    if (filterParams->params.type == AML_MP_DEMUX_FILTER_PSI) {
+        version = buffer->data()[5]>>1 & 0x1F;
+    }
+    int pid = filterParams->pid;
+    MLOGV("fd:%d, pid:%d, size:%zu", fd, pid, buffer->size());
+    if (mFilterCallback) {
+        mFilterCallback(pid, buffer, version);
     }
 
     return 1;

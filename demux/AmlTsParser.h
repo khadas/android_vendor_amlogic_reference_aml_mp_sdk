@@ -172,7 +172,7 @@ public:
 class Parser : public AmlMpRefBase
 {
 public:
-    Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX, bool isSecureBuffer = false);
+    Parser(Aml_MP_DemuxId demuxId, bool isHardwareSource, Aml_MP_DemuxType demuxType = AML_MP_DEMUX_TYPE_HARDWARE, bool isSecureBuffer = false);
     ~Parser();
     int open();
     void selectProgram(int programNumber);
@@ -181,8 +181,19 @@ public:
     int waitProgramInfoParsed();
     sptr<ProgramInfo> parseProgramInfo();
     sptr<ProgramInfo> getProgramInfo() const;
-    int addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, void* userData, bool checkCRC = true);
-    int removeSectionFilter(int pid);
+    int addFilter(int pid, Aml_MP_Demux_FilterCb cb, void* userData, const Aml_MP_DemuxFilterParams* params);
+    int removeFilter(int pid);
+
+    int addSectionFilter(int pid, Aml_MP_Demux_FilterCb cb, void* userData, bool checkCRC = true) {
+        Aml_MP_DemuxFilterParams params;
+        params.type = AML_MP_DEMUX_FILTER_PSI;
+        params.flags = checkCRC;
+        return addFilter(pid, cb, userData, &params);
+    }
+
+    int removeSectionFilter(int pid) {
+        return removeFilter(pid);
+    }
 
     int close();
     void signalQuit();
@@ -232,15 +243,15 @@ private:
         int bufferIndex = 0;
     };
 
-    struct SectionFilterContext : public AmlMpRefBase {
+    struct FilterContext : public AmlMpRefBase {
     public:
-        SectionFilterContext(int pid)
+        FilterContext(int pid)
         : mPid(pid)
         {
 
         }
 
-        ~SectionFilterContext() {
+        ~FilterContext() {
         }
 
         int mPid;
@@ -248,7 +259,7 @@ private:
         void* filter = nullptr;
     };
 
-    void clearAllSectionFilters();
+    void clearAllFilters();
     void notifyParseDone_l();
 
     static int patCb(int pid, size_t size, const uint8_t* data, void* userData);
@@ -271,7 +282,7 @@ private:
     int mAPid = AML_MP_INVALID_PID;
 
     bool mIsHardwareSource = false;
-    Aml_MP_DemuxType mDemuxType = AML_MP_HARDWARE_DEMUX;
+    Aml_MP_DemuxType mDemuxType = AML_MP_DEMUX_TYPE_HARDWARE;
     bool mIsSecureBuffer = false;
     Aml_MP_DemuxId mDemuxId = AML_MP_HW_DEMUX_ID_0;
 
@@ -285,7 +296,7 @@ private:
     mutable std::mutex mLock;
     std::condition_variable mCond;
     bool mParseDone = false;
-    std::map<int, sptr<SectionFilterContext>> mSectionFilters;  //pid, section
+    std::map<int, sptr<FilterContext>> mFilters;  //pid, filter
 
     std::atomic_bool mRequestQuit{false};
 

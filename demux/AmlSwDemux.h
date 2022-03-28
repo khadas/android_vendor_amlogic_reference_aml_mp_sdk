@@ -42,8 +42,8 @@ private:
         kWhatDumpInfo = 'dmpI',
     };
 
-    virtual int addPSISection(int pid, bool checkCRC) override;
-    virtual int removePSISection(int pid) override;
+    virtual int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) override;
+    virtual int removeDemuxFilter(int pid) override;
     virtual bool isStopped() const override;
 
     void onMessageReceived(const sptr<AmlMpMessage>& msg);
@@ -51,7 +51,7 @@ private:
     void onFeedData(const sptr<AmlMpBuffer>& data);
     int resync(const sptr<AmlMpBuffer>& buffer);
     void onFlush();
-    void onAddFilterPid(int pid, bool checkCRC = true);
+    void onAddFilterPid(int pid, Aml_MP_DemuxFilterParams* params);
     void onRemoveFilterPid(int pid);
 
     sptr<AmlMpEventLooper> mLooper;
@@ -64,6 +64,8 @@ private:
     std::mutex mLock;
     sptr<SwTsParser> mTsParser;
     sptr<AmlMpBuffer> mRemainingBytesBuffer;
+
+    int mDumpFd = -1;
 
 private:
     AmlSwDemux(const AmlSwDemux&) = delete;

@@ -116,7 +116,7 @@ int Parser::open()
 {
     Aml_MP_DemuxType demuxType = mDemuxType;
     if (mIsHardwareSource) {
-        demuxType = AML_MP_HARDWARE_DEMUX;
+        demuxType = AML_MP_DEMUX_TYPE_HARDWARE;
     }
 
     mDemux = AmlDemuxBase::create(demuxType);
@@ -184,7 +184,7 @@ void Parser::setEventCallback(const std::function<ProgramEventCallback>& cb)
 
 int Parser::close()
 {
-    clearAllSectionFilters();
+    clearAllFilters();
     sptr<AmlDemuxBase> dmxTemp;
     {
         std::lock_guard<std::mutex> _l(mLock);
@@ -226,9 +226,13 @@ int Parser::writeData(const uint8_t* buffer, size_t size)
 {
     int wlen = -1;
     //MLOGV("writeData:%p, size:%d", buffer, size);
-    std::lock_guard<std::mutex> _l(mLock);
-    sptr<AmlDemuxBase> demux = mDemux;
-    if(demux){
+    sptr<AmlDemuxBase> demux;
+    {
+        std::lock_guard<std::mutex> _l(mLock);
+        demux = mDemux;
+    }
+
+    if (demux) {
         wlen = demux->feedTs(buffer, size);
     }
 
@@ -560,7 +564,7 @@ int Parser::ecmCb(int pid, size_t size, const uint8_t* data, void* userData)
 void Parser::onPatParsed(const PATSection& result)
 {
     MLOGI("PATSection parsed: version:%d", result.version_number);
-    removeSectionFilter(0);
+    removeFilter(0);
 
     int programCount = 0;
     mPidProgramMap.clear();
@@ -925,16 +929,16 @@ bool Parser::checkPidChange(PMTSection oldPmt, PMTSection newPmt, std::vector<Am
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int Parser::addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, void* userData, bool checkCRC)
+int Parser::addFilter(int pid, Aml_MP_Demux_FilterCb cb, void* userData, const Aml_MP_DemuxFilterParams* params)
 {
     int ret = 0;
 
-    sptr<SectionFilterContext> context = new SectionFilterContext(pid);
+    sptr<FilterContext> context = new FilterContext(pid);
     if (context == nullptr) {
         return -1;
     }
 
-    context->channel = mDemux->createChannel(pid, checkCRC);
+    context->channel = mDemux->createChannel(pid, params);
     ret = mDemux->openChannel(context->channel);
     if (ret < 0) {
         MLOGE("open channel pid:%d failed!", pid);
@@ -961,19 +965,19 @@ int Parser::addSectionFilter(int pid, Aml_MP_Demux_SectionFilterCb cb, void* use
 
     {
         std::lock_guard<std::mutex> _l(mLock);
-        mSectionFilters.emplace(pid, context);
+        mFilters.emplace(pid, context);
     }
 
     return ret;
 }
 
-int Parser::removeSectionFilter(int pid)
+int Parser::removeFilter(int pid)
 {
     std::lock_guard<std::mutex> _l(mLock);
-    sptr<SectionFilterContext> context;
+    sptr<FilterContext> context;
 
-    auto it = mSectionFilters.find(pid);
-    if (it == mSectionFilters.end()) {
+    auto it = mFilters.find(pid);
+    if (it == mFilters.end()) {
         return 0;
     }
     context = it->second;
@@ -990,17 +994,17 @@ int Parser::removeSectionFilter(int pid)
         context->channel = AML_MP_INVALID_HANDLE;
     }
 
-    int ret = mSectionFilters.erase(context->mPid);
+    int ret = mFilters.erase(context->mPid);
     MLOGI("pid:%d, %d sections removed!", pid, ret);
 
     return 0;
 }
 
-void Parser::clearAllSectionFilters()
+void Parser::clearAllFilters()
 {
     std::lock_guard<std::mutex> _l(mLock);
-    for (auto p : mSectionFilters) {
-        sptr<SectionFilterContext> context = p.second;
+    for (auto p : mFilters) {
+        sptr<FilterContext> context = p.second;
         if (context->filter != AML_MP_INVALID_HANDLE) {
             mDemux->detachFilter(context->filter, context->channel);
             mDemux->destroyFilter(context->filter);
@@ -1014,7 +1018,7 @@ void Parser::clearAllSectionFilters()
         }
     }
 
-    mSectionFilters.clear();
+    mFilters.clear();
 }
 
 void Parser::notifyParseDone_l()

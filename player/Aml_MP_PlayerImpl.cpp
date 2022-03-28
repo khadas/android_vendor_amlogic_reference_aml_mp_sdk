@@ -794,6 +794,8 @@ exit:
 
 int AmlMpPlayerImpl::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts)
 {
+    MLOGD("[%s_%s] buffer:%p, size:%zu, pts:%#" PRIx64 "(%.3fs)", __FUNCTION__, mpStreamType2Str(type), buffer, size, pts, pts/9e4);
+
     //audio isn`t supoort non-blocking mode, must different threads to write av es
     //std::unique_lock<std::mutex> _l(mLock);
     RETURN_IF(-1, mPlayer == nullptr);
@@ -830,8 +832,8 @@ int AmlMpPlayerImpl::setANativeWindow(ANativeWindow* nativeWindow)
     std::unique_lock<std::mutex> _l(mLock);
 
     #ifdef ANDROID
-    mNativeWindow = nativeWindow;
     MLOGI("setAnativeWindow: %p, mNativewindow: %p", nativeWindow, mNativeWindow.get());
+    mNativeWindow = nativeWindow;
 
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         RETURN_IF(-1, mPlayer == nullptr);
@@ -1784,7 +1786,7 @@ int AmlMpPlayerImpl::prepare_l()
     }
 
     if (mParser == nullptr && (mPrepareWaitingType != kPrepareWaitingNone || (mCreateParams.options & AML_MP_OPTION_MONITOR_PID_CHANGE))) {
-        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_HARDWARE_DEMUX, mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY);
+        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_DEMUX_TYPE_HARDWARE, mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY);
         mParser->open();
         mParser->selectProgram(mVideoParams.pid, mAudioParams.pid);
         mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {

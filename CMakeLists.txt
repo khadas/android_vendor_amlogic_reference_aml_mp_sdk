@@ -60,6 +60,7 @@ SET(AML_MP_DEMUX_SRC
     demux/AmlHwDemux.cpp
     demux/AmlSwDemux.cpp
     demux/AmlTsParser.cpp
+    demux/AmlESQueue.cpp
 )
 
 #OPTION SETTING START

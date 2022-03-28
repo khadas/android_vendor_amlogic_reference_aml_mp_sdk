@@ -129,13 +129,13 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     Aml_MP_DemuxSource sourceId = mSource->getSourceId();
     Aml_MP_Initialize();
 
-    Aml_MP_DemuxType demuxType = AML_MP_HARDWARE_DEMUX;
+    Aml_MP_DemuxType demuxType = AML_MP_DEMUX_TYPE_HARDWARE;
     if (mOptions & AML_MP_OPTION_PREFER_TUNER_HAL) {
-        demuxType = AML_MP_TUNERHAL_DEMUX;
+        demuxType = AML_MP_DEMUX_TYPE_TUNERHAL;
     } else if(mSource->getFlags()&Source::kIsHardwareSource) {
-        demuxType = AML_MP_HARDWARE_DEMUX;
+        demuxType = AML_MP_DEMUX_TYPE_HARDWARE;
     } else {
-        demuxType = AML_MP_SOFTWARE_DEMUX;
+        demuxType = AML_MP_DEMUX_TYPE_SOFTWARE;
     }
 
     //set default demux source
@@ -232,6 +232,13 @@ void AmlMpTestSupporter::setVideoErrorRecoveryMode(int videoErrorRecoveryMode)
     MLOGI("mpVideoErrorRecoveryMode: %d\n", mpVideoErrorRecoveryMode);
 }
 
+void AmlMpTestSupporter::setSourceMode(bool esMode, bool clearTVP)
+{
+    mEsMode = esMode;
+    mClearTVP = clearTVP;
+    MLOGI("mEsMode:%d, mClearTVP:%d", mEsMode, mClearTVP);
+}
+
 int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceReceiver)
 {
     int ret = 0;
@@ -250,6 +257,11 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
         sourceType = AML_MP_INPUT_SOURCE_TS_DEMOD;
     }
 
+    if (mEsMode) {
+        sourceType = AML_MP_INPUT_SOURCE_ES_MEMORY;
+        mSyncSource = AML_MP_AVSYNC_SOURCE_AUDIO;
+    }
+
     if (mProgramInfo->scrambled && mCasPlugin == nullptr) {
         mCasPlugin = new CasPlugin(demuxId, sourceType, mProgramInfo);
         if (mCasPlugin->start() < 0) {
@@ -258,6 +270,10 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
             casSession = mCasPlugin->casSession();
             inputStreamType = mCasPlugin->inputStreamType();
         }
+    }
+
+    if (mClearTVP) {
+        inputStreamType = AML_MP_INPUT_STREAM_SECURE_MEMORY;
     }
 
     if (mPlayback == nullptr) {

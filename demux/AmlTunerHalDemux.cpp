@@ -89,11 +89,16 @@ int AmlTunerHalDemux::close() {
     return 0;
 }
 
-int AmlTunerHalDemux::addPSISection(int pid, bool checkCRC) {
+int AmlTunerHalDemux::addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) {
     MLOGI("AmlTunerHalDemux::addPSISection: pid: %d", pid);
     if (mTunerFilterMap.find(pid) != mTunerFilterMap.end()) {
         return 0;
     }
+
+    if (params->type != AML_MP_DEMUX_FILTER_PSI) {
+        return 0;
+    }
+
     DemuxFilterType filterType;
     memset(&filterType, 0, sizeof(filterType));
     filterType.mainType = DemuxFilterMainType::TS;
@@ -106,6 +111,7 @@ int AmlTunerHalDemux::addPSISection(int pid, bool checkCRC) {
     sectionCallback->mPid = pid;
 
     DemuxFilterSettings filterSettings;
+    bool checkCRC = params->flags & DMX_CHECK_CRC;
     tunerFilter->getDefTsSectionFilterSettings(filterSettings, pid, checkCRC);
     tunerFilter->configure(filterSettings);
     tunerFilter->start();
@@ -114,7 +120,7 @@ int AmlTunerHalDemux::addPSISection(int pid, bool checkCRC) {
     return 0;
 }
 
-int AmlTunerHalDemux::removePSISection(int pid) {
+int AmlTunerHalDemux::removeDemuxFilter(int pid) {
     MLOGI("AmlTunerHalDemux::removePSISection: pid: %d", pid);
     auto it = mTunerFilterMap.find(pid);
     if (it != mTunerFilterMap.end()) {
@@ -156,7 +162,7 @@ void SectionFilterCallback::onFilterStatus(const DemuxFilterStatus filterEvent) 
 /**
  * TunerHalTsParser
 */
-TunerHalTsParser::TunerHalTsParser(const std::function<SectionCallback>& cb)
+TunerHalTsParser::TunerHalTsParser(const std::function<FilterCallback>& cb)
 : ITsParser(cb) {
 
 }
@@ -174,18 +180,13 @@ void TunerHalTsParser::reset() {
 
 }
 
-int TunerHalTsParser::addPSISection(int pid, bool checkCRC) {
+int TunerHalTsParser::addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) {
     AML_MP_UNUSED(pid);
-    AML_MP_UNUSED(checkCRC);
+    AML_MP_UNUSED(params);
     return 0;
 }
 
-int TunerHalTsParser::getPSISectionData(int pid) {
-    AML_MP_UNUSED(pid);
-    return 0;
-}
-
-void TunerHalTsParser::removePSISection(int pid) {
+void TunerHalTsParser::removeDemuxFilter(int pid) {
     AML_MP_UNUSED(pid);
 
 }

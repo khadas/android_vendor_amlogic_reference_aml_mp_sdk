@@ -27,7 +27,7 @@ namespace aml_mp {
 ////////////////////////////////////////////////////////////////////////////////
 struct AmlDemuxBase::Filter : public AmlMpHandle
 {
-    Filter(Aml_MP_Demux_SectionFilterCb cb, void* userData, int id);
+    Filter(Aml_MP_Demux_FilterCb cb, void* userData, int id);
     ~Filter();
 
     void notifyListener(int pid, const sptr<AmlMpBuffer>& data, int version);
@@ -42,7 +42,7 @@ struct AmlDemuxBase::Filter : public AmlMpHandle
     }
 
 private:
-    Aml_MP_Demux_SectionFilterCb mCb;
+    Aml_MP_Demux_FilterCb mCb;
     void* pUserData;
     const int mId;
     int mVersion;
@@ -82,7 +82,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-AmlDemuxBase::Filter::Filter(Aml_MP_Demux_SectionFilterCb cb, void* userData, int id)
+AmlDemuxBase::Filter::Filter(Aml_MP_Demux_FilterCb cb, void* userData, int id)
 : mCb(cb)
 , pUserData(userData)
 , mId(id)
@@ -204,14 +204,14 @@ sptr<AmlDemuxBase> AmlDemuxBase::create(Aml_MP_DemuxType demuxType)
 {
     sptr<AmlDemuxBase> demux;
     switch (demuxType) {
-        case AML_MP_HARDWARE_DEMUX:
+        case AML_MP_DEMUX_TYPE_HARDWARE:
             demux = new AmlHwDemux();
             break;
-        case AML_MP_SOFTWARE_DEMUX:
+        case AML_MP_DEMUX_TYPE_SOFTWARE:
             demux = new AmlSwDemux();
             break;
         #ifdef HAVE_TUNER_HAL
-        case AML_MP_TUNERHAL_DEMUX:
+        case AML_MP_DEMUX_TYPE_TUNERHAL:
             demux = new AmlTunerHalDemux();
             break;
         #endif
@@ -233,7 +233,7 @@ AmlDemuxBase::~AmlDemuxBase()
 
 }
 
-AmlDemuxBase::CHANNEL AmlDemuxBase::createChannel(int pid, bool checkCRC)
+AmlDemuxBase::CHANNEL AmlDemuxBase::createChannel(int pid, const Aml_MP_DemuxFilterParams* params)
 {
     sptr<Channel> channel;
 
@@ -251,7 +251,7 @@ AmlDemuxBase::CHANNEL AmlDemuxBase::createChannel(int pid, bool checkCRC)
             goto exit;
         }
 
-        if (addPSISection(pid, checkCRC) < 0) {
+        if (addDemuxFilter(pid, params) < 0) {
             MLOGE("openHardwareChannel failed!");
             return nullptr;
         }
@@ -284,7 +284,7 @@ int AmlDemuxBase::destroyChannel(CHANNEL _channel)
         return -1;
     }
 
-    removePSISection(pid);
+    removeDemuxFilter(pid);
 
     std::lock_guard<std::mutex> _l(mLock);
     auto it = mChannels.find(pid);
@@ -319,7 +319,7 @@ int AmlDemuxBase::closeChannel(CHANNEL _channel)
     return 0;
 }
 
-AmlDemuxBase::FILTER AmlDemuxBase::createFilter(Aml_MP_Demux_SectionFilterCb cb, void* userData)
+AmlDemuxBase::FILTER AmlDemuxBase::createFilter(Aml_MP_Demux_FilterCb cb, void* userData)
 {
     sptr<Filter> filter(new Filter(cb, userData, mFilterId++));
 
@@ -397,8 +397,8 @@ void AmlDemuxBase::notifyData(int pid, const sptr<AmlMpBuffer>& data, int versio
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AmlDemuxBase::ITsParser::ITsParser(const std::function<SectionCallback>& cb)
-: mSectionCallback(cb)
+AmlDemuxBase::ITsParser::ITsParser(const std::function<FilterCallback>& cb)
+: mFilterCallback(cb)
 {
     MLOG();
 }

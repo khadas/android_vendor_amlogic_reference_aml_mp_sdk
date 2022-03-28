@@ -247,5 +247,6 @@ void split(const std::string& s, std::vector<std::string>& tokens, const std::st
 std::string trim(std::string& s, const std::string& chars = " \n");
 int setTSNSourceToLocal();
 int setTSNSourceToDemod();
+void hexdump(const uint8_t* data, size_t size, std::string& result);
 }
 #endif

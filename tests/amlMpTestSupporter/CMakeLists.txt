@@ -8,6 +8,7 @@ SET(AML_MP_TESTSUPPORTER_SRC
     ParserReceiver.cpp
     ParserReceiver.h
     Playback.cpp
+    BufferQueue.cpp
     TestModule.cpp
     TestUtils.cpp
     source/Source.cpp

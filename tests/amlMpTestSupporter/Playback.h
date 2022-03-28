@@ -19,6 +19,7 @@
 #include <Aml_MP/Aml_MP.h>
 #include "TestModule.h"
 #include "AmlMpTestSupporter.h"
+#include "BufferQueue.h"
 
 namespace aml_mp {
 class CasPlugin : public AmlMpRefBase
@@ -57,13 +58,58 @@ private:
     CasPlugin& operator=(const CasPlugin&) = delete;
 };
 
+class TsDemuxer : public AmlMpRefBase
+{
+public:
+    using StreamConsumer = int(Aml_MP_StreamType type, const uint8_t* data, size_t size, int64_t pts);
+
+    TsDemuxer(Aml_MP_DemuxType demuxType, Aml_MP_DemuxId demuxId);
+    ~TsDemuxer();
+    int feedTs(const uint8_t* data, size_t size);
+    void getFlowStatus(bool* underflow, bool* overflow);
+    int openStream(Aml_MP_StreamType streamType, size_t bufferCount, size_t bufferSize, bool isSVP, const std::function<StreamConsumer>& consumerCb);
+    int closeStream(Aml_MP_StreamType streamType);
+    int startStream(Aml_MP_StreamType streamType, int pid, Aml_MP_CodecID codec);
+    int stopStream(Aml_MP_StreamType streamType);
+    int pauseStream(Aml_MP_StreamType streamType);
+    int resumeStream(Aml_MP_StreamType streamType);
+
+    int notifyStreamInputBufferDone(Aml_MP_StreamType streamType, int64_t handle);
+
+private:
+    sptr<AmlDemuxBase> mDemux;
+
+    struct Stream {
+        sptr<BufferQueue> bufferQueue;
+        sptr<BufferQueue::Consumer> bufferQueueConsumer;
+        std::function<StreamConsumer> consumerCb;
+
+        int pid;
+        AmlDemuxBase::CHANNEL channel;
+        AmlDemuxBase::FILTER filter;
+        int dumpFd;
+
+        sptr<StreamParser> streamParser;
+        size_t filterCbCount;
+    };
+
+    Stream* getStream(Aml_MP_StreamType streamType);
+
+    std::map<Aml_MP_StreamType, Stream> mStreams;
+    std::map<int, Aml_MP_StreamType> mPids;
+
+private:
+    TsDemuxer(const TsDemuxer&) = delete;
+    TsDemuxer& operator=(const TsDemuxer&) = delete;
+};
+
 // for iptv (encrypt) playback, dvb (encrypt) playback
 class Playback : public TestModule, public ISourceReceiver
 {
 public:
     using PlayMode = AmlMpTestSupporter::PlayMode;
 
-    Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType streamType, uint64_t options);
+    Playback(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, Aml_MP_InputStreamType inputStreamType, uint64_t options);
     ~Playback();
 #ifdef ANDROID
     void setANativeWindow(const android::sp<ANativeWindow>& window);
@@ -103,6 +149,7 @@ private:
 private:
     void eventCallback(Aml_MP_PlayerEventType eventType, int64_t param);
     const Aml_MP_DemuxId mDemuxId;
+    Aml_MP_InputStreamType mDrmMode;
     sptr<ProgramInfo> mProgramInfo;
     AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;
@@ -111,6 +158,7 @@ private:
     uint64_t mOptions = 0;
 
     PlayMode mPlayMode = PlayMode::START_ALL_STOP_ALL;
+    sptr<TsDemuxer> mDemuxer;
 
 private:
     Playback(const Playback&) = delete;

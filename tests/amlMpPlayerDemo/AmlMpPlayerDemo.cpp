@@ -34,6 +34,8 @@ struct Argument
     int channelId = -1;
     int videoErrorRecoveryMode = 0;
     uint64_t options = 0;
+    bool esMode = false;
+    bool clearTVP = false;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -51,6 +53,8 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"id",          required_argument,  nullptr, 'd'},
         {"video-error-recovery-mode",    required_argument,  nullptr, 'e'},
         {"options",     required_argument,  nullptr, 'o'},
+        {"esmode",      no_argument,        nullptr, 'esmd'},
+        {"cleartvp",    no_argument,        nullptr, 't'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -156,6 +160,21 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 'esmd':
+        {
+            printf("esmode!\n");
+            argument->esMode = true;
+        }
+        break;
+
+
+        case 't':
+        {
+            printf("clearTVP\n");
+            argument->clearTVP = true;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -202,6 +221,10 @@ static void showUsage()
             "   --options     set options, eg: 3, 3 equals with 0b0011, so it means \"prefer tunerhal\" and \"monitor pid change\"\n"
             "                 0-bit set 1 means prefer tunerhal:       AML_MP_OPTION_PREFER_TUNER_HAL\n"
             "                 1-bit set 1 means monitor pid change:    AML_MP_OPTION_MONITOR_PID_CHANGE\n"
+            "   --esmode      enable es mode playback\n"
+#ifdef HAVE_SECMEM
+            "   --cleartvp    enable cleartvp for es mode playback\n"
+#endif
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -254,6 +277,7 @@ int main(int argc, char *argv[])
         if (!argument.record) {
             MLOGI(">>>> AmlMpPlayerDemo Start\n");
             mpTestSupporter->setVideoErrorRecoveryMode(argument.videoErrorRecoveryMode);
+            mpTestSupporter->setSourceMode(argument.esMode, argument.clearTVP);
             ret = mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode);
             if (ret < 0) {
                 return -1;

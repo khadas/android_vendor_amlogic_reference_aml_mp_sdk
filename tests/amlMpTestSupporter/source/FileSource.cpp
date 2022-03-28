@@ -150,8 +150,9 @@ void FileSource::threadLoop()
                 usleep(10*1000);
             } else if (written == 0) {
                 written = size;
+            } else if (written < size) {
+                usleep(1*1000);
             }
-            usleep(20*1000);
 
             data += written;
             size -= written;

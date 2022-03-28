@@ -22,6 +22,12 @@ class HwTsParser;
 class AmlHwDemux : public AmlDemuxBase
 {
 public:
+    struct FilterParams {
+        int pid;
+        int fd;
+        Aml_MP_DemuxFilterParams params;
+    };
+
     AmlHwDemux();
     ~AmlHwDemux();
     int open(bool isHardwareSource, Aml_MP_DemuxId demuxId, bool isSecureBuffer = false) override;
@@ -33,8 +39,8 @@ public:
 
 private:
     void threadLoop();
-    int addPSISection(int pid, bool checkCRC) override;
-    int removePSISection(int pid) override;
+    int addDemuxFilter(int pid, const Aml_MP_DemuxFilterParams* params) override;
+    int removeDemuxFilter(int pid) override;
     bool isStopped() const override;
 
     Aml_MP_DemuxId mDemuxId = AML_MP_DEMUX_ID_DEFAULT;
@@ -46,6 +52,8 @@ private:
     bool mIsSecureBuffer;
 
     std::atomic<bool> mStopped{};
+
+    std::map<int, std::unique_ptr<FilterParams>> mFilterParams;
 
 private:
     AmlHwDemux(const AmlHwDemux&) = delete;

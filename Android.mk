@@ -82,6 +82,7 @@ AML_MP_DEMUX_SRC := \
 	demux/AmlDemuxBase.cpp \
 	demux/AmlHwDemux.cpp \
 	demux/AmlSwDemux.cpp \
+	demux/AmlESQueue.cpp \
 	demux/AmlTsParser.cpp
 
 ifeq ($(HAVE_TUNER_HAL), true)
