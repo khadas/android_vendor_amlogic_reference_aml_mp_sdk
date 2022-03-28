@@ -58,6 +58,7 @@ void AmlMpConfig::reset()
     mUseVideoTunnel = 1;
 #endif
     mCasPipSupport = 0;
+    mCasFCCSupport = 0;
     mSecMemSize = 0;
     mCasType = "none";
 }
@@ -72,7 +73,8 @@ void AmlMpConfig::init()
     initProperty("vendor.amlmp.write-buffer-size", mWriteBufferSize);
     initProperty("vendor.enable.dump.packts", mDumpPackts);
     initProperty("vendor.cas.support.pip.function", mCasPipSupport);
-    initProperty("vendor.pip.secmem.size", mSecMemSize);
+    initProperty("vendor.cas.support.fcc.function", mCasFCCSupport);
+    initProperty("vendor.secmem.size", mSecMemSize);
     initProperty("vendor.cas.type", mCasType);
 #endif
 

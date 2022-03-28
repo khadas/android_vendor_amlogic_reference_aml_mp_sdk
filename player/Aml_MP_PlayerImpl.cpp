@@ -44,7 +44,8 @@ namespace aml_mp {
 
 #define DEFAULT_DEMUX_MEM_SEC_LEVEL     AML_MP_DEMUX_MEM_SEC_LEVEL2
 #define DEFAULT_DEMUX_MEM_SEC_SIZE      (20<<20)//20M
-#define PIP_DEMUX_MEM_SEC_SIZE          (40<<20)//40M
+#define PIP_DEMUX_MEM_SEC_SIZE          (36<<20)//36M
+#define FCC_DEMUX_MEM_SEC_SIZE          (54<<20)//54M
 
 ///////////////////////////////////////////////////////////////////////////////
 AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
@@ -2086,23 +2087,36 @@ int AmlMpPlayerImpl::getDecodingState(Aml_MP_StreamType streamType, AML_MP_Decod
 }
 
 void AmlMpPlayerImpl::increaseDmxSecMemSize() {
-    MLOGI("suportPIP=%d secMemSize=%d isCasProject=%d", AmlMpConfig::instance().mCasPipSupport,
-        AmlMpConfig::instance().mSecMemSize, AmlMpConfig::instance().mCasType != "none");
-    if (AmlMpConfig::instance().mCasPipSupport && AmlMpConfig::instance().mCasType != "none") {
-        char valuebuf[64] = {0};
-        if (AmlMpConfig::instance().mSecMemSize < DEFAULT_DEMUX_MEM_SEC_SIZE
-            || AmlMpConfig::instance().mSecMemSize > PIP_DEMUX_MEM_SEC_SIZE)
-            AmlMpConfig::instance().mSecMemSize = PIP_DEMUX_MEM_SEC_SIZE;
-        sprintf(valuebuf, "%d %d", DEFAULT_DEMUX_MEM_SEC_LEVEL>>10, AmlMpConfig::instance().mSecMemSize);
+    MLOGI("supportPIP=%d supportFCC=%d secMemSize=%d isCasProject=%d", AmlMpConfig::instance().mCasPipSupport,
+        AmlMpConfig::instance().mCasFCCSupport, AmlMpConfig::instance().mSecMemSize, AmlMpConfig::instance().mCasType != "none");
 
-        int ret = amsysfs_set_sysfs_str("/sys/class/stb/dmc_mem", valuebuf);
-        MLOGI("dmc mem ret=%d level=%d value=%d", ret, DEFAULT_DEMUX_MEM_SEC_LEVEL,
-            AmlMpConfig::instance().mSecMemSize);
+    if (AmlMpConfig::instance().mCasType == "none") {
+        return ;
     }
+
+    if (AmlMpConfig::instance().mCasFCCSupport) {
+        if (AmlMpConfig::instance().mSecMemSize < FCC_DEMUX_MEM_SEC_SIZE)
+            AmlMpConfig::instance().mSecMemSize = FCC_DEMUX_MEM_SEC_SIZE;
+    } else if (AmlMpConfig::instance().mCasPipSupport) {
+        if (AmlMpConfig::instance().mSecMemSize < PIP_DEMUX_MEM_SEC_SIZE)
+            AmlMpConfig::instance().mSecMemSize = PIP_DEMUX_MEM_SEC_SIZE;
+    } else {
+        return ;
+    }
+
+    char valuebuf[64] = {0};
+    sprintf(valuebuf, "%d %d", DEFAULT_DEMUX_MEM_SEC_LEVEL>>10, AmlMpConfig::instance().mSecMemSize);
+
+    int ret = amsysfs_set_sysfs_str("/sys/class/stb/dmc_mem", valuebuf);
+    MLOGI("dmc mem ret=%d level=%d value=%d", ret, DEFAULT_DEMUX_MEM_SEC_LEVEL,
+        AmlMpConfig::instance().mSecMemSize);
+
+    return;
 }
 
 void AmlMpPlayerImpl::recoverDmxSecMemSize() {
-    if (AmlMpConfig::instance().mCasPipSupport && AmlMpConfig::instance().mCasType != "none") {
+    if (AmlMpConfig::instance().mCasType != "none"
+        && (AmlMpConfig::instance().mCasFCCSupport || AmlMpConfig::instance().mCasPipSupport)) {
         char valuebuf[64] = {0};
         sprintf(valuebuf, "%d %d", DEFAULT_DEMUX_MEM_SEC_LEVEL>>10, DEFAULT_DEMUX_MEM_SEC_SIZE);
         int ret = amsysfs_set_sysfs_str("/sys/class/stb/dmc_mem", valuebuf);

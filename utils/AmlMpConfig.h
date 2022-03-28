@@ -33,6 +33,7 @@ public:
     int mWriteBufferSize;
     int mDumpPackts;
     int mCasPipSupport;
+    int mCasFCCSupport;
     int mSecMemSize;
     std::string mCasType;
 private:
