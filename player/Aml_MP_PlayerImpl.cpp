@@ -97,6 +97,16 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
 
     mPlayer = AmlPlayerBase::create(&mCreateParams, mInstanceId);
 
+    //Set tsn source according to mpInputSource
+    int ret = 0;
+    if (createParams->sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD) {
+        ret = setTSNSourceToDemod();
+    } else {
+        ret = setTSNSourceToLocal();
+    }
+    if (ret)
+        MLOGI("Error set tsn source, ret 0x%x\n", ret);
+
     // in CAS PIP case we need increase the sec buffer size
     increaseDmxSecMemSize();
 }

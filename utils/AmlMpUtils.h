@@ -237,5 +237,7 @@ Aml_MP_CodecID convertToMpCodecId(std::string mimeStr);
 
 void split(const std::string& s, std::vector<std::string>& tokens, const std::string& delimiters = " ");
 std::string trim(std::string& s, const std::string& chars = " \n");
+int setTSNSourceToLocal();
+int setTSNSourceToDemod();
 }
 #endif

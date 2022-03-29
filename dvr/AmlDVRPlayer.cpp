@@ -48,6 +48,7 @@ AmlDVRPlayer::AmlDVRPlayer(Aml_MP_DVRPlayerBasicParams* basicParams, Aml_MP_DVRP
         setDecryptParams(decryptParams);
     }
 
+    setTSNSourceToLocal();
     createTsPlayerIfNeeded();
 }
 
@@ -264,6 +265,9 @@ int AmlDVRPlayer::stop()
         AmTsPlayer_release(mTsPlayerHandle);
         mTsPlayerHandle = 0;
     }
+
+    setTSNSourceToDemod();
+
     return 0;
 }
 

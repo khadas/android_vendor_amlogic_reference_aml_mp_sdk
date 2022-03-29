@@ -11,6 +11,7 @@
 #include <utils/Log.h>
 #include "AmlMpUtils.h"
 #include <unistd.h>
+#include "utils/Amlsysfsutils.h"
 #ifdef HAVE_SUBTITLE
 #include <SubtitleNativeAPI.h>
 #endif
@@ -1140,4 +1141,27 @@ std::string trim(std::string& s, const std::string& chars) {
     return s;
 }
 
+int setTSNSourceToLocal() {
+    if (!isSupportMultiHwDemux())
+        return 0;
+
+    int ret = 0;
+    ret = amsysfs_set_sysfs_str("/sys/class/stb/tsn_source", "local");
+    if (ret) {
+        MLOGI("Error set tsn source, ret 0x%x\n", ret);
+    }
+    return ret;
+}
+
+int setTSNSourceToDemod() {
+    if (!isSupportMultiHwDemux())
+        return 0;
+
+    int ret = 0;
+    ret = amsysfs_set_sysfs_str("/sys/class/stb/tsn_source", "demod");
+    if (ret) {
+        MLOGI("Error set tsn source, ret 0x%x\n", ret);
+    }
+    return ret;
+}
 }
