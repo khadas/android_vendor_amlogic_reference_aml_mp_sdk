@@ -294,6 +294,21 @@ typedef enum {
     AML_MP_STREAM_TYPE_NB,
 } Aml_MP_StreamType;
 
+/* information acquisition flags for audio and video */
+typedef enum {
+    AML_MP_STREAM_TYPE_MASK_VIDEO    = 1 << AML_MP_STREAM_TYPE_VIDEO,
+    AML_MP_STREAM_TYPE_MASK_AUDIO    = 1 << AML_MP_STREAM_TYPE_AUDIO,
+    AML_MP_STREAM_TYPE_MASK_AD       = 1 << AML_MP_STREAM_TYPE_AD,
+    AML_MP_STREAM_TYPE_MASK_SUBTITLE = 1 << AML_MP_STREAM_TYPE_SUBTITLE,
+}Aml_MP_StreamTypeMask;
+
+typedef struct {
+    uint8_t *data;      // Caller to provide buffer pointer
+    size_t dataLength;    // The length of the buffer.
+    size_t actualLength;  // Copy the length of the actual json
+    uint32_t streamTypeMask;  // value from Aml_MP_StreamTypeMask
+} Aml_MP_AvInfo;
+
 typedef enum  {
     AML_MP_DECODING_STATE_STOPPED           = 0,
     AML_MP_DECODING_STATE_START_PENDING     = 1,
@@ -361,7 +376,8 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_AD_DECODE_STAT,                 //getADDecodeStat(Aml_MP_AdecStat*)
     AML_MP_PLAYER_PARAMETER_INSTANCE_ID,                    //getInstanceId(uint32_t*)
     AML_MP_PLAYER_PARAMETER_SYNC_ID,                        //getSyncId(int32_t*)
-    AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE                //getVideoShowState(bool*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE,               //getVideoShowState(bool*)
+    AML_MP_PLAYER_PARAMETER_AV_INFO_JSON,                   //getAVInfo(Aml_MP_AvInfo*)
 } Aml_MP_PlayerParameterKey;
 
 ////////////////////////////////////////
@@ -502,6 +518,7 @@ typedef struct {
     uint32_t av_resynch_counter;
 #endif
 } Aml_MP_VdecStat;
+
 
 ////////////////////////////////////////
 //AML_MP_PLAYER_PARAMETER_AUDIO_INFO
@@ -756,6 +773,7 @@ typedef struct {
 typedef struct {
     uint32_t sample_rate;
     uint32_t channels;
+    uint32_t channel_mask;
 } Aml_MP_PlayerEventAudioFormat;
 
 //AML_MP_PLAYER_EVENT_SCRAMBLING,

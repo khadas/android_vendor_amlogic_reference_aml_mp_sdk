@@ -55,6 +55,7 @@ public:
     int hideVideo() override;
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter) override;
     int getParameter(Aml_MP_PlayerParameterKey key, void* parameter) override;
+
     int setAVSyncSource(Aml_MP_AVSyncSource syncSource) override;
     int setPcrPid(int pid) override;
 
