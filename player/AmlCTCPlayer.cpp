@@ -365,6 +365,13 @@ int AmlCTCPlayer::getCurrentPts(Aml_MP_StreamType type, int64_t* pts) {
     return 0;
 }
 
+int AmlCTCPlayer::getFirstPts(Aml_MP_StreamType type, int64_t* pts) {
+    RETURN_IF(-1, mCtcPlayer == nullptr);
+
+    MLOGI("TODO: AmlCTCPlayer::getFirstPts");
+    return 0;
+}
+
 int AmlCTCPlayer::getBufferStat(Aml_MP_BufferStat* bufferStat) {
     RETURN_IF(-1, mCtcPlayer == nullptr);
 

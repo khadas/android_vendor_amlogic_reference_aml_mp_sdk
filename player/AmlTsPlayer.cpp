@@ -554,6 +554,16 @@ int AmlTsPlayer::getCurrentPts(Aml_MP_StreamType type, int64_t* pts) {
     return 0;
 }
 
+int AmlTsPlayer::getFirstPts(Aml_MP_StreamType type, int64_t* pts) {
+    am_tsplayer_result ret;
+
+    ret = AmTsPlayer_getFirstPts(mPlayer, convertToTsplayerStreamType(type), (uint64_t*)pts);
+    if (ret != AM_TSPLAYER_OK) {
+        return -1;
+    }
+    return 0;
+}
+
 int AmlTsPlayer::getBufferStat(Aml_MP_BufferStat* bufferStat) {
     am_tsplayer_result ret;
     am_tsplayer_buffer_stat buffer_stat;

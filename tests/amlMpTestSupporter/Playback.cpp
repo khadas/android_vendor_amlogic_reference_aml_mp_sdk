@@ -676,6 +676,18 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "gFPts", 0, "get FPts",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int64_t pts;
+            int ret = Aml_MP_Player_GetFirstPts(player, AML_MP_STREAM_TYPE_VIDEO, &pts);
+            printf("first video pts: 0x%" PRIx64 ", ret: %d\n", pts, ret);
+            ret = Aml_MP_Player_GetFirstPts(player, AML_MP_STREAM_TYPE_AUDIO, &pts);
+            printf("first audio pts: 0x%" PRIx64 ", ret: %d\n", pts, ret);
+            return ret;
+        }
+    },
+
+    {
         "gVolume", 0, "get volume",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             float volume;

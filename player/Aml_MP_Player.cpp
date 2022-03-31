@@ -219,6 +219,14 @@ int Aml_MP_Player_GetCurrentPts(AML_MP_PLAYER handle, Aml_MP_StreamType streamTy
     return player->getCurrentPts(streamType, pts);
 }
 
+int Aml_MP_Player_GetFirstPts(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, int64_t* pts)
+{
+    sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);
+    RETURN_IF(-1, player == nullptr);
+
+    return player->getFirstPts(streamType, pts);
+}
+
 int Aml_MP_Player_GetBufferStat(AML_MP_PLAYER handle, Aml_MP_BufferStat* bufferStat)
 {
     sptr<AmlMpPlayerImpl> player = aml_handle_cast<AmlMpPlayerImpl>(handle);

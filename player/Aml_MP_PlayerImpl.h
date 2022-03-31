@@ -65,6 +65,7 @@ public:
     int writeData(const uint8_t* buffer, size_t size);
     int writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts);
     int getCurrentPts(Aml_MP_StreamType, int64_t* pts);
+    int getFirstPts(Aml_MP_StreamType, int64_t* pts);
     int getBufferStat(Aml_MP_BufferStat* bufferStat);
     int setANativeWindow(ANativeWindow* nativeWindow);
     int setVideoWindow(int x, int y, int width, int height);

@@ -809,6 +809,14 @@ int AmlMpPlayerImpl::getCurrentPts(Aml_MP_StreamType streamType, int64_t* pts)
     return mPlayer->getCurrentPts(streamType, pts);
 }
 
+int AmlMpPlayerImpl::getFirstPts(Aml_MP_StreamType streamType, int64_t* pts)
+{
+    std::unique_lock<std::mutex> _l(mLock);
+    RETURN_IF(-1, mPlayer == nullptr);
+
+    return mPlayer->getFirstPts(streamType, pts);
+}
+
 int AmlMpPlayerImpl::getBufferStat(Aml_MP_BufferStat* bufferStat)
 {
     std::unique_lock<std::mutex> _l(mLock);

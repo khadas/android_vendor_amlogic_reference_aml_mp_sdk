@@ -47,6 +47,7 @@ public:
     int writeData(const uint8_t* buffer, size_t size) override;
     int writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts) override;
     int getCurrentPts(Aml_MP_StreamType type, int64_t* pts) override;
+    int getFirstPts(Aml_MP_StreamType type, int64_t* pts) override;
     int getBufferStat(Aml_MP_BufferStat* bufferStat) override;
     int setVideoWindow(int x, int y, int width, int height) override;
     int setVolume(float volume) override;

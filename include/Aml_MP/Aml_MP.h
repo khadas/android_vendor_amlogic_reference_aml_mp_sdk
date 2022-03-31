@@ -319,6 +319,18 @@ int Aml_MP_Player_WriteEsData(AML_MP_PLAYER handle, Aml_MP_StreamType streamType
 int Aml_MP_Player_GetCurrentPts(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, int64_t* pts);
 
 /**
+ * \brief Aml_MP_Player_GetFirstPts
+ * Get first a/v pts
+ *
+ * \param [in]  player handle
+ * \param [in]  stream type
+ * \param [out] first timestamp
+ *
+ * \return 0 if success
+ */
+int Aml_MP_Player_GetFirstPts(AML_MP_PLAYER handle, Aml_MP_StreamType streamType, int64_t* pts);
+
+/**
  * \brief Aml_MP_Player_GetBufferStat
  * Get buffer status
  *
