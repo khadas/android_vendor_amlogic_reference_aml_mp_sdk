@@ -1781,7 +1781,13 @@ int AmlMpPlayerImpl::prepare_l()
         mCreateParams.drmMode == AML_MP_INPUT_STREAM_ENCRYPTED &&
         mWaitingEcmMode == kWaitingEcmASynchronous &&
         mCasHandle) {
-        mPrepareWaitingType |= kPrepareWaitingEcm;
+        for (size_t i = 0; i < mEcmPids.size(); ++i) {
+            int ecmPid = mEcmPids[i];
+            if (ecmPid > 0 && ecmPid < AML_MP_INVALID_PID) {
+                mPrepareWaitingType |= kPrepareWaitingEcm;
+                break;
+            }
+        }
     }
 
     if (mCreateParams.sourceType != AML_MP_INPUT_SOURCE_ES_MEMORY &&
