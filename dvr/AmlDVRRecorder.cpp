@@ -40,6 +40,8 @@ AmlDVRRecorder::AmlDVRRecorder(Aml_MP_DVRRecorderBasicParams* basicParams, Aml_M
     }
 
     memset(&mRecordPids, 0, sizeof(mRecordPids));
+
+    setTSNSourceToDemod();
 }
 
 AmlDVRRecorder::~AmlDVRRecorder()

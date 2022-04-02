@@ -98,6 +98,9 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     mPlayer = AmlPlayerBase::create(&mCreateParams, mInstanceId);
 
     //Set tsn source according to mpInputSource
+    //1.dvrrecord and liveplay should set tsn_source to demod,
+    //2.iptv should set tsn_source to local
+    //3.tsd used when dvrplay, no need to consider tsn_source
     int ret = 0;
     if (createParams->sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD) {
         ret = setTSNSourceToDemod();
