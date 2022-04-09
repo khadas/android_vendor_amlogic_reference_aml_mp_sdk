@@ -220,7 +220,9 @@ int CommandProcessor::fetchAndProcessCommands()
         fds.fd = STDIN_FILENO;
         fds.events = POLL_IN;
         fds.revents = 0;
-        int ret = ::poll(&fds, 1, 1000);
+        // change the wait time from 1s to 100ms to avoid
+        // the situation that the signal change is not detected in time
+        int ret = ::poll(&fds, 1, 100);
         if (ret < 0) {
             //printf("poll STDIN_FILENO failed! %d\n", -errno);
         } else if (ret > 0) {
