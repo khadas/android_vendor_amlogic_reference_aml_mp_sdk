@@ -33,6 +33,7 @@ public:
     void signalQuit();
     int setParameter(Aml_MP_PlayerParameterKey key, void* parameter);
     int setStreams();
+    int getMpPlayerHandle(AML_MP_PLAYER* handle);
 
 protected:
     virtual const Command* getCommandTable() const override;
@@ -48,6 +49,7 @@ private:
     bool mCryptoMode;
     Aml_MP_DemuxId mDemuxId;
     AML_MP_DVRPLAYER mPlayer = AML_MP_INVALID_HANDLE;
+    AML_MP_PLAYER mHandle = AML_MP_INVALID_HANDLE;
     Aml_MP_PlayerEventCallback mEventCallback = nullptr;
     void* mUserData = nullptr;
 

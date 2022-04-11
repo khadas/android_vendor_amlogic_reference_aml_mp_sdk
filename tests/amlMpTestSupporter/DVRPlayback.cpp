@@ -42,6 +42,11 @@ DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId
         MLOGE("create dvr player failed!");
         return;
     }
+    ret = Aml_MP_DVRPlayer_GetMpPlayerHandle(mPlayer, &mHandle);
+    if (ret < 0) {
+        MLOGE("get mp player failed!");
+        return;
+    }
 }
 
 DVRPlayback::~DVRPlayback()
@@ -109,6 +114,19 @@ int DVRPlayback::setStreams()
             streams.streams[AML_MP_DVR_AUDIO_INDEX].type = AML_MP_STREAM_TYPE_AUDIO;
             streams.streams[AML_MP_DVR_AUDIO_INDEX].codecId = segmentInfo.streams.streams[i].codecId;
             streams.streams[AML_MP_DVR_AUDIO_INDEX].pid = segmentInfo.streams.streams[i].pid;
+            break;
+
+        case AML_MP_STREAM_TYPE_AD:
+            streams.streams[AML_MP_DVR_AD_INDEX].type = AML_MP_STREAM_TYPE_AD;
+            streams.streams[AML_MP_DVR_AD_INDEX].codecId = segmentInfo.streams.streams[i].codecId;
+            streams.streams[AML_MP_DVR_AD_INDEX].pid = segmentInfo.streams.streams[i].pid;
+            break;
+
+        case AML_MP_STREAM_TYPE_SUBTITLE:
+        case AML_MP_STREAM_TYPE_TELETEXT:
+            streams.streams[AML_MP_DVR_SUBTITLE_INDEX].type = AML_MP_STREAM_TYPE_SUBTITLE;
+            streams.streams[AML_MP_DVR_SUBTITLE_INDEX].codecId = segmentInfo.streams.streams[i].codecId;
+            streams.streams[AML_MP_DVR_SUBTITLE_INDEX].pid = segmentInfo.streams.streams[i].pid;
             break;
 
         default:
@@ -184,6 +202,7 @@ int DVRPlayback::start(bool isSetStream)
     bool useTif = false;
     Aml_MP_DVRPlayer_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_USE_TIF, &useTif);
     Aml_MP_DVRPlayer_RegisterEventCallback(mPlayer, mEventCallback, mUserData);
+
     if (isSetStream) {
         setStreams();
     }
@@ -316,6 +335,13 @@ int DVRPlayback::uninitDVRDecryptPlayback()
     return 0;
 }
 
+int DVRPlayback::getMpPlayerHandle(AML_MP_PLAYER* handle)
+{
+    int ret = -1;
+    ret = Aml_MP_DVRPlayer_GetMpPlayerHandle(mPlayer, handle);
+    return ret;
+}
+
 void DVRPlayback::signalQuit()
 {
     MLOGI("signalQuit!");
@@ -323,6 +349,65 @@ void DVRPlayback::signalQuit()
 
 ///////////////////////////////////////////////////////////////////////////////
 static struct TestModule::Command g_commandTable[] = {
+    {
+        "help", 0, "help",
+        [](AML_MP_DVRPLAYER handle __unused, const std::vector<std::string>& args __unused) -> int {
+            TestModule::printCommands(g_commandTable, true);
+            return 0;
+        }
+    },
+
+    {
+        "pause", 0, "pause player",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            return Aml_MP_DVRPlayer_Pause(handle);
+        }
+    },
+
+    {
+        "resume", 0, "resume player",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            return Aml_MP_DVRPlayer_Resume(handle);
+        }
+    },
+
+    {
+        "seek", 0, "call seek",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            int ret = Aml_MP_DVRPlayer_Seek(handle, 0);
+            printf("call seek ret: %d\n", ret);
+            return ret;
+        }
+    },
+
+    {
+        "start", 0, "call start",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            int ret = Aml_MP_DVRPlayer_Start(handle, 0);
+            printf("call start ret: %d\n", ret);
+            return ret;
+        }
+    },
+
+    {
+        "stop", 0, "call stop",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            int ret = Aml_MP_DVRPlayer_Stop(handle);
+            printf("call stop ret: %d\n", ret);
+            return ret;
+        }
+    },
+
+    {
+        "destory", 0, "call destroy",
+        [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
+            int ret = -1;
+            ret = Aml_MP_DVRPlayer_Stop(handle);
+            ret = Aml_MP_DVRPlayer_Destroy(handle);
+            printf("call destroy ret: %d\n", ret);
+            return ret;
+        }
+    },
 
     {nullptr, 0, nullptr, nullptr}
 };

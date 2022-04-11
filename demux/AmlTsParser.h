@@ -85,6 +85,7 @@ struct PMTStream {
 
     int compositionPageId{}; //dvb subtitle
     int ancillaryPageId{}; //dvb subtitle
+    bool isAD{false};
 };
 
 struct PMTSection {
@@ -140,9 +141,11 @@ struct ProgramInfo : public AmlMpRefBase
     Aml_MP_CodecID audioCodec    = AML_MP_CODEC_UNKNOWN;
     Aml_MP_CodecID videoCodec    = AML_MP_CODEC_UNKNOWN;
     Aml_MP_CodecID subtitleCodec = AML_MP_CODEC_UNKNOWN;
+    Aml_MP_CodecID adCodec       = AML_MP_CODEC_UNKNOWN;
     int audioPid                    = AML_MP_INVALID_PID;
     int videoPid                    = AML_MP_INVALID_PID;
     int subtitlePid                 = AML_MP_INVALID_PID;
+    int adPid                       = AML_MP_INVALID_PID;
     int compositionPageId;
     int ancillaryPageId;
 

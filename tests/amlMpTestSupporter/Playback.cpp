@@ -682,10 +682,15 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
     Aml_MP_Player_SetAVSyncSource(mPlayer, mSyncSource);
     if (mSyncSource == AML_MP_AVSYNC_SOURCE_PCR && mPcrPid != AML_MP_INVALID_PID) {
         Aml_MP_Player_SetPcrPid(mPlayer, mPcrPid);
-        }
+    }
+
     if (mPlayMode == PlayMode::START_AUDIO_START_VIDEO) {
         if (setAudioParams()) {
             ret |= Aml_MP_Player_StartAudioDecoding(mPlayer);
+        }
+
+        if (setADParams()) {
+            ret |= Aml_MP_Player_StartADDecoding(mPlayer);
         }
 
         if (setVideoParams()) {
@@ -704,11 +709,16 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
             ret |= Aml_MP_Player_StartAudioDecoding(mPlayer);
         }
 
+        if (setADParams()) {
+            ret |= Aml_MP_Player_StartADDecoding(mPlayer);
+        }
+
         if (setSubtitleParams()) {
             ret |= Aml_MP_Player_StartSubtitleDecoding(mPlayer);
         }
     } else if (mPlayMode == PlayMode::START_ALL_STOP_ALL || mPlayMode == PlayMode::START_ALL_STOP_SEPARATELY) {
         setAudioParams();
+        setADParams();
         setVideoParams();
         setSubtitleParams();
         MLOGI(">>> Aml_MP_Player_Start\n");
@@ -717,13 +727,16 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
             mPlayMode == PlayMode::START_SEPARATELY_STOP_SEPARATELY ||
             playMode == PlayMode::START_SEPARATELY_STOP_SEPARATELY_V2) {
         setAudioParams();
+        setADParams();
         setVideoParams();
         setSubtitleParams();
         if (playMode == PlayMode::START_SEPARATELY_STOP_SEPARATELY_V2) {
             ret |= Aml_MP_Player_StartVideoDecoding(mPlayer);
             ret |= Aml_MP_Player_StartAudioDecoding(mPlayer);
+            ret |= Aml_MP_Player_StartADDecoding(mPlayer);
         } else {
             ret |= Aml_MP_Player_StartAudioDecoding(mPlayer);
+            ret |= Aml_MP_Player_StartADDecoding(mPlayer);
             ret |= Aml_MP_Player_StartVideoDecoding(mPlayer);
         }
         ret |= Aml_MP_Player_StartSubtitleDecoding(mPlayer);
@@ -752,6 +765,7 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
     if (ret != 0) {
         MLOGE("player start failed!");
     }
+
     MLOGI("<<<< Playback start\n");
     usleep(350 * 1000);
     return ret;
@@ -767,6 +781,24 @@ bool Playback::setAudioParams()
     Aml_MP_Player_SetAudioParams(mPlayer, &audioParams);
 
     return audioParams.pid != AML_MP_INVALID_PID;
+}
+
+bool Playback::setADParams()
+{
+
+    Aml_MP_AudioParams adParams;
+    memset(&adParams, 0, sizeof(adParams));
+    adParams.audioCodec = mProgramInfo->adCodec;
+    adParams.pid = mProgramInfo->adPid;
+    MLOGI("setADParams apid:%d\n", adParams.pid);
+    Aml_MP_Player_SetADParams(mPlayer, &adParams);
+
+    Aml_MP_Player_SetADVolume(mPlayer, 100);
+
+    Aml_MP_ADVolume adVolume{50, 50};
+    Aml_MP_Player_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume);
+
+    return adParams.pid != AML_MP_INVALID_PID;
 }
 
 bool Playback::setVideoParams()
@@ -830,8 +862,10 @@ int Playback::stop()
         if (mPlayMode == PlayMode::START_VIDEO_START_AUDIO) {
             ret |= Aml_MP_Player_StopVideoDecoding(mPlayer);
             ret |= Aml_MP_Player_StopAudioDecoding(mPlayer);
+            ret |= Aml_MP_Player_StopADDecoding(mPlayer);
         } else {
             ret |= Aml_MP_Player_StopAudioDecoding(mPlayer);
+            ret |= Aml_MP_Player_StopADDecoding(mPlayer);
             ret |= Aml_MP_Player_StopVideoDecoding(mPlayer);
         }
         ret |= Aml_MP_Player_StopSubtitleDecoding(mPlayer);

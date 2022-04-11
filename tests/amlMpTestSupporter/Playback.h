@@ -141,6 +141,7 @@ private:
     int stopIPTVDescrambling();
 
     bool setAudioParams();
+    bool setADParams();
     bool setVideoParams();
     bool setSubtitleParams();
 

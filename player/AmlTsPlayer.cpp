@@ -899,6 +899,15 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, value is master %d, slave %d %p, %p", ADVolume->masterVolume, ADVolume->slaveVolume, ADVolume, parameter);
             break;
         }
+
+        case AML_MP_PLAYER_PARAMETER_TSPLAYER_HANDLE:
+        {
+            am_tsplayer_handle* handle = (am_tsplayer_handle*)parameter;
+            *handle = mPlayer;
+            ret = AM_TSPLAYER_OK;
+        }
+        break;
+
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }

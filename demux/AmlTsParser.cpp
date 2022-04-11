@@ -434,6 +434,23 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                 }
                 break;
 
+                case 0x0A:
+                {
+                    int count = descriptor_length / 4;
+                    const uint8_t* p3 = p2 + 2;
+                    while (count-- > 0) {
+                        int language_code = p3[0]<<16 | p3[1]<<8 | p[2];
+                        int audio_type = p3[3];
+                        p3 += 4;
+
+                        MLOGI("language_code:%#x, audio_type:%d", language_code, audio_type);
+                        if (audio_type == 0x03) {
+                            esStream.isAD = true;
+                        }
+                    }
+                }
+                break;
+
                 case 0x59:
                 {
                     int language_count = descriptor_length / 8;
@@ -455,7 +472,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                 break;
 
                 default:
-                    MLOGI("unhandled stream descriptor_tag:%#x, length:%d", descriptor_tag, descriptor_length);
+                    //MLOGI("unhandled stream descriptor_tag:%#x, length:%d", descriptor_tag, descriptor_length);
                     break;
                 }
 
@@ -694,7 +711,12 @@ void Parser::onPmtParsed(const PMTSection& results)
         switch (typeInfo->mpStreamType) {
         case AML_MP_STREAM_TYPE_AUDIO:
         {
-            if (programInfo->audioPid == AML_MP_INVALID_PID) {
+            if (stream->isAD) {
+                if (programInfo->adPid == AML_MP_INVALID_PID) {
+                    programInfo->adPid = stream->streamPid;
+                    programInfo->adCodec = typeInfo->codecId;
+                }
+            } else if (programInfo->audioPid == AML_MP_INVALID_PID) {
                 programInfo->audioPid = stream->streamPid;
                 programInfo->audioCodec = typeInfo->codecId;
                 if (stream->ecmPid != AML_MP_INVALID_PID) {
@@ -706,7 +728,7 @@ void Parser::onPmtParsed(const PMTSection& results)
             streamInfo.pid = stream->streamPid;
             streamInfo.codecId = typeInfo->codecId;
             programInfo->audioStreams.push_back(streamInfo);
-            MLOGI("audio pid:%d(%#x), codec:%s", streamInfo.pid, streamInfo.pid, mpCodecId2Str(streamInfo.codecId));
+            MLOGI("audio pid:%d(%#x), codec:%s, isAD:%d", streamInfo.pid, streamInfo.pid, mpCodecId2Str(streamInfo.codecId), stream->isAD);
             break;
         }
 

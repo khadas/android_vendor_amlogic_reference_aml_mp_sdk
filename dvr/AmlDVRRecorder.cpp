@@ -91,14 +91,16 @@ int AmlDVRRecorder::setStreams(Aml_MP_DVRStreamArray* streams)
             break;
 
         case AML_MP_STREAM_TYPE_SUBTITLE:
-            pids[count].type = (DVR_StreamType_t)(convertToDVRStreamType(streams->streams[i].type) << 24);
+            pids[count].type = (DVR_StreamType_t)(convertToDVRStreamType(streams->streams[i].type) << 24 |
+                streams->streams[i].codecId);
             pids[count].pid = streams->streams[i].pid;
             count++;
             MLOGI("  SUBTITLE 0x%x", streams->streams[i].pid);
             break;
 
         case AML_MP_STREAM_TYPE_TELETEXT:
-            pids[count].type = (DVR_StreamType_t)(convertToDVRStreamType(streams->streams[i].type) << 24);
+            pids[count].type = (DVR_StreamType_t)(convertToDVRStreamType(streams->streams[i].type) << 24 |
+                streams->streams[i].codecId);
             pids[count].pid = streams->streams[i].pid;
             count++;
             MLOGI("  TELETEXT 0x%x", streams->streams[i].pid);

@@ -85,9 +85,29 @@ int DVRRecord::setStreams()
         st->codecId = mProgramInfo->audioCodec;
     }
 
+    st = &streams.streams[index++];
+    if (mProgramInfo->adPid != AML_MP_INVALID_PID) {
+        st->type = AML_MP_STREAM_TYPE_AD;
+        st->pid = mProgramInfo->adPid;
+        st->codecId = mProgramInfo->adCodec;
+    }
+
+    st = &streams.streams[index++];
+    if (mProgramInfo->subtitlePid != AML_MP_INVALID_PID) {
+        st->type = AML_MP_STREAM_TYPE_SUBTITLE;
+        st->pid = mProgramInfo->subtitlePid;
+        st->codecId = mProgramInfo->subtitleCodec;
+    }
+
     streams.nbStreams = index;
-    //printf("videoPid: %d", mProgramInfo->videoPid, "codecId: %d", mProgramInfo->videoCodec, "audioPid: %d", mProgramInfo->audioPid, "audioCodecId: %d", mProgramInfo->audioCodec);
-    //printf("nbstreams: %d", streams.nbStreams);
+#if 1
+    MLOGI("videoPid: %d, videocodecId: %d, audioPid: %d, audioCodecId: %d, adPid: %d, adCodecId: %d, subPid: %d, subCodecId: %d",
+          mProgramInfo->videoPid, mProgramInfo->videoCodec,
+          mProgramInfo->audioPid, mProgramInfo->audioCodec,
+          mProgramInfo->adPid, mProgramInfo->adCodec,
+          mProgramInfo->subtitlePid, mProgramInfo->subtitleCodec);
+    MLOGI("nbstreams: %d", streams.nbStreams);
+#endif
     int ret = Aml_MP_DVRRecorder_SetStreams(mRecorder, &streams);
     if (ret < 0) {
         MLOGE("set streams failed with %d", ret);

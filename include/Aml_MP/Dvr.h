@@ -577,6 +577,15 @@ int Aml_MP_DVRPlayer_SetADVolume(AML_MP_DVRPLAYER handle, float volume);
  */
 int Aml_MP_DVRPlayer_GetADVolume(AML_MP_DVRPLAYER handle, float* volume);
 
+/**
+ * \brief Get mp player handle
+ *
+ * \param [in]  DVR player
+ * \param [out] mp player handle
+ *
+ * \return 0 if success
+ */
+int Aml_MP_DVRPlayer_GetMpPlayerHandle(AML_MP_DVRPLAYER player, AML_MP_PLAYER* handle);
 
 #ifdef __cplusplus
 }

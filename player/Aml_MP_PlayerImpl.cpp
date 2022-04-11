@@ -102,10 +102,14 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     //2.iptv should set tsn_source to local
     //3.tsd used when dvrplay, no need to consider tsn_source
     int ret = 0;
-    if (createParams->sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD) {
-        ret = setTSNSourceToDemod();
+    if (mCreateParams.options & AML_MP_OPTION_DVR_PLAYBACK) {
+        MLOGI("tsd used when dvrplay, no need to consider tsn_source");
     } else {
-        ret = setTSNSourceToLocal();
+        if (createParams->sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD) {
+            ret = setTSNSourceToDemod();
+        } else {
+            ret = setTSNSourceToLocal();
+        }
     }
     if (ret)
         MLOGI("Error set tsn source, ret 0x%x\n", ret);
@@ -313,11 +317,14 @@ int AmlMpPlayerImpl::start_l()
         return 0;
     }
 
-    if (mVideoParams.pid != AML_MP_INVALID_PID) {
+    // dvr play case need set secury level to tsplayer
+    if (mVideoParams.pid != AML_MP_INVALID_PID ||
+        mCreateParams.options & AML_MP_OPTION_DVR_PLAYBACK) {
         mPlayer->setVideoParams(&mVideoParams);
     }
 
-    if (mAudioParams.pid != AML_MP_INVALID_PID) {
+    if (mAudioParams.pid != AML_MP_INVALID_PID ||
+        mCreateParams.options & AML_MP_OPTION_DVR_PLAYBACK) {
         mPlayer->setAudioParams(&mAudioParams);
         if (mAudioPresentationId >= 0) {
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
@@ -1110,12 +1117,14 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
 
     case AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID:
     {
+        RETURN_IF(-1, parameter == nullptr);
         mVideoTunnelId = *(int*)parameter;
     }
     break;
 
     case AML_MP_PLAYER_PARAMETER_SURFACE_HANDLE:
     {
+        RETURN_IF(-1, parameter == nullptr);
         MLOGI("set surface handle: %p", parameter);
         mSurfaceHandle = parameter;
     }
@@ -1123,6 +1132,7 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
 
     case AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID:
     {
+        RETURN_IF(-1, parameter == nullptr);
         mAudioPresentationId = *(int*)parameter;
     }
     break;

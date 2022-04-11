@@ -12,6 +12,7 @@
 #include <utils/AmlMpUtils.h>
 #include "AmlPlayerBase.h"
 #include "AmlTsPlayer.h"
+#include "AmlDummyTsPlayer.h"
 #ifdef HAVE_TUNER_HAL
 #include "AmlTvPlayer.h"
 #endif
@@ -49,7 +50,9 @@ sptr<AmlPlayerBase> AmlPlayerBase::create(Aml_MP_PlayerCreateParams* createParam
         player = new AmlCTCPlayer(createParams, instanceId);
     } else
 #endif
-        if (createParams->channelId == AML_MP_CHANNEL_ID_MAIN ||
+        if (createParams->options & AML_MP_OPTION_DVR_PLAYBACK) {
+            player = new AmlDummyTsPlayer(createParams, instanceId);
+        } else if (createParams->channelId == AML_MP_CHANNEL_ID_MAIN ||
         !AmlMpPlayerRoster::instance().isAmTsPlayerExist() ||
         isSupportMultiHwDemux() ||
         AmlMpConfig::instance().mTsPlayerNonTunnel) {

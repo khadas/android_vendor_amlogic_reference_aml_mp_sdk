@@ -33,6 +33,7 @@ AML_MP_PLAYER_SRC := \
 	player/AmlPlayerBase.cpp \
 	player/AmlTsPlayer.cpp \
 	player/AmlCTCPlayer.cpp \
+	player/AmlDummyTsPlayer.cpp \
 
 #AML_MP_PLAYER_SYSTEM_SRC_29 := \
 	player/AmlCTCPlayer.cpp \

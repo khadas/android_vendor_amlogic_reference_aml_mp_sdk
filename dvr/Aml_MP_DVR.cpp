@@ -409,6 +409,13 @@ int Aml_MP_DVRPlayer_GetADVolume(AML_MP_DVRPLAYER handle, float* volume)
     RETURN_IF(-1, dvrPlayer == nullptr);
 
     int ret = dvrPlayer->getADVolume(volume);
+    return ret;
+}
 
+int Aml_MP_DVRPlayer_GetMpPlayerHandle(AML_MP_DVRPLAYER player, AML_MP_PLAYER* handle)
+{
+    sptr<AmlDVRPlayer> dvrPlayer = aml_handle_cast<AmlDVRPlayer>(player);
+    RETURN_IF(-1, dvrPlayer == nullptr);
+    int ret = dvrPlayer->getMpPlayerHandle(handle);
     return ret;
 }

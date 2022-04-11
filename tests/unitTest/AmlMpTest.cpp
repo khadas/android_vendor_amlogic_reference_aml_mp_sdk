@@ -99,7 +99,7 @@ void AmlMpBase::createMpTestSupporter(bool isPlayer)
 {
     if (mpTestSupporter == nullptr)
     {
-        mpTestSupporter     = new AmlMpTestSupporter;
+        mpTestSupporter = new AmlMpTestSupporter;
         if (isPlayer) {
             mpTestSupporter->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
         } else {
@@ -112,7 +112,7 @@ void AmlMpBase::createMpTestSupporter2(bool isPlayer)
 {
     if (mpTestSupporter2 == nullptr)
     {
-        mpTestSupporter2     = new AmlMpTestSupporter;
+        mpTestSupporter2 = new AmlMpTestSupporter;
         if (isPlayer) {
             mpTestSupporter2->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
         } else {

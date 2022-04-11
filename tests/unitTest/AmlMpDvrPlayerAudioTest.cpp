@@ -19,7 +19,7 @@ using namespace aml_mp;
 void AmlMpBase::DVRPlayback_SetGetVolume(std::string url __unused, float volume)
 {
     void* dvrplayer = getDVRPlayer();
-    float volume2;
+    float volume2 = 0;
     EXPECT_EQ(Aml_MP_DVRPlayer_SetVolume(dvrplayer, volume), AML_MP_OK);
     EXPECT_EQ(Aml_MP_DVRPlayer_GetVolume(dvrplayer, &volume2), AML_MP_OK);
     printf("Set volume: %f, get volume: %f \n", volume, volume2);

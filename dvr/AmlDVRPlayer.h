@@ -56,21 +56,17 @@ public:
     int setVideoWindow(int x, int y, int width, int height);
     int setADVolume(float volume);
     int getADVolume(float* volume);
+    int getMpPlayerHandle(AML_MP_PLAYER* handle);
 
 private:
     char mName[50];
 
     DVR_WrapperPlayback_t mDVRPlayerHandle{0};
-    am_tsplayer_handle mTsPlayerHandle{0};
     DVR_WrapperPlaybackOpenParams_t mPlaybackOpenParams{};
     DVR_PlaybackPids_t mPlayPids{};
     int mVendorID{};
-    Aml_MP_DemuxMemSecLevel mVideoSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
-    Aml_MP_DemuxMemSecLevel mAudioSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
-    Aml_MP_DemuxMemSecLevel mADSecureLevel = AML_MP_DEMUX_MEM_SEC_NONE;
 
     bool mIsEncryptStream;
-    am_tsplayer_input_buffer_type mAmTsBufType;
     uint8_t* mSecureBuffer = nullptr;
     size_t mSecureBufferSize = 0;
 
@@ -82,16 +78,21 @@ private:
 
     int setBasicParams(Aml_MP_DVRPlayerBasicParams* basicParams);
     int setDecryptParams(Aml_MP_DVRPlayerDecryptParams* decryptParams);
-    int createTsPlayerIfNeeded();
     DVR_Result_t eventHandlerLibDVR(DVR_PlaybackEvent_t event, void* params);
-    DVR_Result_t eventHandlerPlayer(am_tsplayer_event* event);
 #ifdef ANDROID
     android::sp<ANativeWindow> mNativeWindow = nullptr;
     NativeWindowHelper mNativeWindowHelper;
 #endif
-    int mVideoTunnelId = -1;
-    int mUseTif = -1;
-    int mSPDIFStatus = -1;
+
+    int createMpPlayerIfNeeded();
+    AML_MP_PLAYER mMpPlayerHandle = AML_MP_INVALID_HANDLE;
+    Aml_MP_InputStreamType mInputStreamType = AML_MP_INPUT_STREAM_NORMAL;
+    Aml_MP_VideoParams mVideoParams;
+    Aml_MP_AudioParams mAudioParams;
+    Aml_MP_AudioParams mADParams;
+    Aml_MP_SubtitleParams mSubtitleParams;
+
+    int setStreamsCommon(Aml_MP_DVRStreamArray* streams);
 
 private:
     AmlDVRPlayer(const AmlDVRPlayer&) = delete;

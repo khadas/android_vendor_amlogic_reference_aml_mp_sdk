@@ -683,7 +683,13 @@ void convertToMpDVRStream(Aml_MP_DVRStream* mpDvrStream, DVR_StreamPid_t* dvrStr
         break;
 
     case DVR_STREAM_TYPE_AUDIO:
+    case DVR_STREAM_TYPE_AD:
         mpDvrStream->codecId = convertToMpCodecId((DVR_AudioFormat_t)format);
+        break;
+
+    case DVR_STREAM_TYPE_SUBTITLE:
+    case DVR_STREAM_TYPE_TELETEXT:
+        mpDvrStream->codecId = (Aml_MP_CodecID)format;
         break;
 
     default:
@@ -701,7 +707,13 @@ void convertToMpDVRStream(Aml_MP_DVRStream* mpDvrStream, DVR_StreamInfo_t* dvrSt
         break;
 
     case AML_MP_STREAM_TYPE_AUDIO:
+    case AML_MP_STREAM_TYPE_AD:
         mpDvrStream->codecId = convertToMpCodecId((DVR_AudioFormat_t)dvrStreamInfo->format);
+        break;
+
+    case AML_MP_STREAM_TYPE_SUBTITLE:
+    case AML_MP_STREAM_TYPE_TELETEXT:
+        //mpDvrStream->codecId = (Aml_MP_CodecID)(dvrStreamInfo->format);
         break;
 
     default:

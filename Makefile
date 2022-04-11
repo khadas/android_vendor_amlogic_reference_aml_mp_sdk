@@ -7,6 +7,7 @@ AML_MP_PLAYER_SRC := \
     player/Aml_MP_PlayerImpl.cpp \
     player/AmlPlayerBase.cpp \
     player/AmlTsPlayer.cpp \
+    player/AmlDummyTsPlayer.cpp \
 
 AML_MP_CAS_SRC := \
     cas/Aml_MP_CAS.cpp \

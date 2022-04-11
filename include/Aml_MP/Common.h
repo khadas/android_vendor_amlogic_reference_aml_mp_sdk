@@ -119,11 +119,14 @@ typedef enum {
  *      AML_MP_PLAYER_EVENT_PID_CHANGED when pid changed
  * \param AML_MP_OPTION_PREFER_CTC
  *      choose liveplayer internally
+ * \param AML_MP_OPTION_DVR_PLAYBACK
+ *      playing pvr case
  */
 typedef enum {
     AML_MP_OPTION_PREFER_TUNER_HAL      = 1 << 0,
     AML_MP_OPTION_MONITOR_PID_CHANGE    = 1 << 1,
     AML_MP_OPTION_PREFER_CTC            = 1 << 2,
+    AML_MP_OPTION_DVR_PLAYBACK          = 1 << 31,
 } Aml_MP_Option;
 
 typedef enum {
@@ -398,6 +401,7 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_SYNC_ID,                        //getSyncId(int32_t*)
     AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE,               //getVideoShowState(bool*)
     AML_MP_PLAYER_PARAMETER_AV_INFO_JSON,                   //getAVInfo(Aml_MP_AvInfo*)
+    AML_MP_PLAYER_PARAMETER_TSPLAYER_HANDLE,                //getTsPlayerHandle(am_tsplayer_handle*)
 } Aml_MP_PlayerParameterKey;
 
 ////////////////////////////////////////
