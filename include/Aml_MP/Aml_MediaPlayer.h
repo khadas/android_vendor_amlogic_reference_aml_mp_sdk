@@ -122,7 +122,7 @@ typedef enum {
     AML_MP_MEDIAPLAYER_PARAMETER_SET_BASE  = 0x6000,
     AML_MP_MEDIAPLAYER_PARAMETER_ONLYHINT_TYPE,                        //setOnlyHintType(Aml_MP_MediaPlayerOnlyHintType*)
     AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID,                      //setVideoTunnelID(int*)
-
+    AML_MP_MEDIAPLAYER_PARAMETER_CHANNEL_ID,                           //0:main,others:pip
 } Aml_MP_MediaPlayerParameterKey;
 
 //AML_MP_MEDIAPLAYER_PARAMETER_ONLYHINT_TYPE

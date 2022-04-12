@@ -569,6 +569,7 @@ struct Argument
     int y = 0;
     int viewWidth = -1;
     int viewHeight = -1;
+    int channelId = -1;
     bool onlyVideo = false;
     bool onlyAudio = false;
 };
@@ -579,6 +580,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"help",        no_argument,        nullptr, 'h'},
         {"size",        required_argument,  nullptr, 's'},
         {"pos",         required_argument,  nullptr, 'p'},
+        {"channelId",   required_argument,  nullptr, 'c'},
         {"onlyVideo",   no_argument,        nullptr, 'V'},
         {"onlyAudio",   no_argument,        nullptr, 'A'},
         {nullptr,       no_argument,        nullptr, 0},
@@ -613,6 +615,13 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
                 }
             }
             break;
+        case 'c':
+        {
+            int channelId = strtol(optarg, nullptr, 0);
+            printf("channel id:%d\n", channelId);
+            argument->channelId = channelId;
+        }
+        break;
         case 'V':
              {
                  argument->onlyVideo = true;
@@ -645,8 +654,9 @@ static void showUsage()
 {
     printf("Usage: amlMpMediaPlayerDemo <options> <url>\n"
             "options:\n"
-            "    --size:      eg: 1920x1080\n"
-            "    --pos:       eg: 0x0\n"
+            "    --size:       eg: 1920x1080\n"
+            "    --pos:        eg: 0x0\n"
+            "    --channelId:  eg: 0 main, others: pip\n"
             "    --onlyVideo         \n"
             "    --onlyAudio         \n"
             "\n"
@@ -697,6 +707,10 @@ int main(int argc, char *argv[])
     Aml_MP_MediaPlayer_Create(&mPlayer);
 
     //only settings
+    // channelid is used for pip function whick start the demo in a different process.
+    // it means different play channels,0 : main, else pip
+    if (argument.channelId != -1)
+        Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_CHANNEL_ID, (void*)(&argument.channelId));
     Aml_MP_MediaPlayerOnlyHintType type = AML_MP_MEDIAPLAYER_ONLYNONE;
     if (argument.onlyVideo)
         type = AML_MP_MEDIAPLAYER_VIDEO_ONLYHIT;
@@ -720,10 +734,10 @@ int main(int argc, char *argv[])
     commandsProcess->waitPreparedEvent();
 
 #ifndef ANDROID
-        //set videotunnel id = 0 on yocto
-        //must before prepare
-        int iD = 0;
-        Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID, (void*)(&iD));
+    //set videotunnel id = 0 on yocto
+    //must before prepare
+    int iD = argument.channelId == -1 ? 0 : argument.channelId;
+    Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID, (void*)(&iD));
 #endif
 
     //start
