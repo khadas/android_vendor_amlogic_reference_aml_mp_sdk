@@ -91,6 +91,12 @@ typedef struct {
     uint32_t nbPackets;
 } Aml_MP_DVRSegmentInfo;
 
+typedef struct {
+  time_t              time;       /**< time duration, unit on ms*/
+  loff_t              size;       /**< size*/
+  uint32_t            pkts;       /**< number of ts packets*/
+} Aml_MP_DVRRecodFileInfo;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -225,6 +231,27 @@ int Aml_MP_DVRRecorder_GetSegmentInfo(const char* location, uint64_t segmentId, 
  * \return 0 if success
  */
 int Aml_MP_DVRRecorder_DeleteSegment(const char* location, uint64_t segmentId);
+
+/**
+ * \brief Aml_MP_DVRRecorder_DeleteRecordFile
+ * Delete all info of segment whose location is "*location"
+ *
+ * \param[in] location The record of need del file's location
+ *
+ * \return DVR_SUCCESS if success
+ */
+int Aml_MP_DVRRecorder_DeleteRecordFile (const char *location);
+
+/**
+ * \brief Aml_MP_DVRRecorder_GetRecordFileInfo
+ * Get the info of segment whose location is "*location"
+ *
+ * \param[in] location The record file's location
+ *
+ * \return DVR_SUCCESS if success
+ */
+int Aml_MP_DVRRecorder_GetRecordFileInfo (const char *location, Aml_MP_DVRRecodFileInfo *p_info);
+
 #ifdef __cplusplus
 }
 #endif

@@ -15,6 +15,8 @@
 #include "utils/AmlMpUtils.h"
 #include "utils/AmlMpHandle.h"
 #include <dvr_segment.h>
+#include <dvr_wrapper.h>
+#include <dvr_utils.h>
 
 using namespace aml_mp;
 using namespace android;
@@ -148,6 +150,32 @@ int Aml_MP_DVRRecorder_GetSegmentInfo(const char* location, uint64_t segmentId, 
 int Aml_MP_DVRRecorder_DeleteSegment(const char* location, uint64_t segmentId)
 {
     return dvr_segment_delete(location, segmentId);
+}
+
+int Aml_MP_DVRRecorder_DeleteRecordFile (const char *location)
+{
+    if (location == NULL) {
+        MLOGE("Aml_MP_DVRRecorder_DeleteRecordFile location was NULL!");
+        return -1;
+    }
+    int ret = dvr_wrapper_segment_del_by_location(location);
+    if (ret < 0) {
+        MLOGE("Aml_MP_DVRRecorder_DeleteRecordFile failed!");
+    }
+    return ret;
+}
+
+int Aml_MP_DVRRecorder_GetRecordFileInfo (const char *location, Aml_MP_DVRRecodFileInfo *p_info)
+{
+    if (location == NULL || p_info == NULL) {
+        MLOGE("Aml_MP_DVRRecorder_GetRecordFileInfo parameters was NULL!");
+        return -1;
+    }
+    int ret = dvr_wrapper_segment_get_info_by_location(location, (DVR_WrapperInfo_t *)p_info);
+    if (ret < 0) {
+        MLOGE("Aml_MP_DVRRecorder_GetRecordFileInfo failed!");
+    }
+    return ret;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
