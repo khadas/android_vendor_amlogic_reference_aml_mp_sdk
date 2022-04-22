@@ -8,7 +8,6 @@
  */
 
 #define LOG_TAG "AmlWVIptvCas_V2"
-#include <utils/Log.h>
 #include <utils/AmlMpUtils.h>
 #include "AmlWVIptvCas_V2.h"
 #include <dlfcn.h>

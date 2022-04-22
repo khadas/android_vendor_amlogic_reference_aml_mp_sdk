@@ -16,8 +16,7 @@
 
 //#define LOG_NDEBUG 0
 #define LOG_TAG "AmlMpAHandler"
-#include <utils/Log.h>
-
+#include <utils/AmlMpLog.h>
 #include "AmlMpEventHandler.h"
 #include "AmlMpMessage.h"
 

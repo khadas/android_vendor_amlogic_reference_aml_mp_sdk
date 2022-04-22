@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlMpConfig"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlMpConfig.h"
 #include <cutils/properties.h>
 #include <string>

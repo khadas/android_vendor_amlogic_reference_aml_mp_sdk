@@ -9,7 +9,7 @@
 
 #define LOG_NDEBUG 0
 #define LOG_TAG "AmlMpPlayerDemo_Parser"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlTsParser.h"
 #include <vector>
 #include <utils/AmlMpUtils.h>

@@ -19,7 +19,6 @@
 #include <dvr_utils.h>
 
 using namespace aml_mp;
-using namespace android;
 
 static const char* mName = LOG_TAG;
 

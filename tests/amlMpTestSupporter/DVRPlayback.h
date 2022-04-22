@@ -12,9 +12,9 @@
 #include "TestModule.h"
 #ifdef ANDROID
 #include <system/window.h>
+#include <utils/RefBase.h>
 #endif
 #include <Aml_MP/Aml_MP.h>
-#include <utils/RefBase.h>
 
 namespace aml_mp {
 

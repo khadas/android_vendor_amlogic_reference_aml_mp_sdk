@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlMpPlayerDemo_TestModule"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include <vector>
 #include "TestModule.h"
 

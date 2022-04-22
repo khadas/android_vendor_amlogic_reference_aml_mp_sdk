@@ -17,7 +17,6 @@
 static const char* mName = LOG_TAG;
 
 using namespace aml_mp;
-using namespace android;
 
 int Aml_MP_Player_Create(Aml_MP_PlayerCreateParams* createParams, AML_MP_PLAYER* handle)
 {

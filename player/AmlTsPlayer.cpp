@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlTsPlayer"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlTsPlayer.h"
 #include <AmTsPlayer.h>
 #include <utils/AmlMpUtils.h>

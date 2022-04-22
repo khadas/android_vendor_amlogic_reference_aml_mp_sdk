@@ -27,8 +27,9 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
+#ifdef ANDROID
 using namespace android;
-
+#endif
 AmlMpTestSupporter::AmlMpTestSupporter()
 {
     ALOGI("AmlMpTestSupporter structure\n");

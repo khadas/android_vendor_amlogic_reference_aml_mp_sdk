@@ -9,8 +9,7 @@
 
 #ifndef _AML_MP_FIFO_H_
 #define _AML_MP_FIFO_H_
-
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include <stdint.h>
 #include <mutex>
 #include <string.h>

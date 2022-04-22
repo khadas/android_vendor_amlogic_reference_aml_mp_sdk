@@ -31,10 +31,10 @@ struct list_head {
 #include <dvr_wrapper.h>
 #include <dvb_utils.h>
 
-#include <utils/RefBase.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #ifdef ANDROID
+#include <utils/RefBase.h>
 #include <media/stagefright/foundation/ADebug.h>
 namespace android {
 class NativeHandle;

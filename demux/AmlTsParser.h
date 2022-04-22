@@ -11,7 +11,7 @@
 #define _AML_TS_PARSER_H_
 
 #include <utils/AmlMpRefBase.h>
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include <map>
 #include <vector>
 #include <set>

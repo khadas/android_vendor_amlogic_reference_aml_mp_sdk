@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlVMXWebCas"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include <utils/AmlMpUtils.h>
 #include "AmlVMXWebCas.h"
 #include <dlfcn.h>

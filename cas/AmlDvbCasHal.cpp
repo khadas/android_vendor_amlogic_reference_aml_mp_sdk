@@ -8,7 +8,6 @@
  */
 
 #define LOG_TAG "AmlDvbCasHal"
-#include <utils/Log.h>
 #include "AmlDvbCasHal.h"
 #include <pthread.h>
 #include <utils/AmlMpUtils.h>

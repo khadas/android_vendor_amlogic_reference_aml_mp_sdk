@@ -14,11 +14,11 @@
 #include "source/Source.h"
 #ifdef ANDROID
 #include <system/window.h>
+#include <utils/RefBase.h>
 #endif
 #include <Aml_MP/Aml_MP.h>
 #include "TestModule.h"
 #include "AmlMpTestSupporter.h"
-#include <utils/RefBase.h>
 
 namespace aml_mp {
 class CasPlugin : public AmlMpRefBase

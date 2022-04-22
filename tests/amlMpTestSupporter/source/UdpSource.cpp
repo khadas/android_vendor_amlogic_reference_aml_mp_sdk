@@ -11,16 +11,17 @@
 #define LOG_TAG "AmlMpPlayerDemo_UdpSource"
 #include <utils/AmlMpLog.h>
 #include "UdpSource.h"
+
 #include <sys/socket.h>
 #include <netdb.h>
 #include <errno.h>
 #include <netinet/in.h>
-#include <utils/Looper.h>
 #include <cutils/properties.h>
 #include <utils/AmlMpEventLooper.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #define UDP_FIFO_SIZE (4 * 1024 * 1024)
 

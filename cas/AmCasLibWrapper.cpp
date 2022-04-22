@@ -11,7 +11,7 @@
 #include "cas/AmCasLibWrapper.h"
 #include <dlfcn.h>
 #include <utils/AmlMpUtils.h>
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 
 namespace aml_mp
 {

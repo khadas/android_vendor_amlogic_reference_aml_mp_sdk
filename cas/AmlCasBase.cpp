@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlCasBase"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlCasBase.h"
 #include "AmlDvbCasHal.h"
 #include "wv_iptvcas/AmlWVIptvCas.h"

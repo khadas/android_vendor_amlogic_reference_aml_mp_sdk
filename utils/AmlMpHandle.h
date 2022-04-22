@@ -9,8 +9,7 @@
 
 #ifndef _AML_MP_HANDLE_H_
 #define _AML_MP_HANDLE_H_
-
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlMpRefBase.h"
 #include <Aml_MP/Common.h>
 

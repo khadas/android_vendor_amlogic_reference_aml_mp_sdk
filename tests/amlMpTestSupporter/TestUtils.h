@@ -16,12 +16,12 @@
 #include <gui/SurfaceComposerClient.h>
 #endif
 //#include <ui/DisplayInfo.h>
+#include <utils/RefBase.h>
 #include <system/window.h>
 #endif
 
 #include <string>
 #include <vector>
-#include <utils/RefBase.h>
 #include <utils/AmlMpRefBase.h>
 
 namespace aml_mp {

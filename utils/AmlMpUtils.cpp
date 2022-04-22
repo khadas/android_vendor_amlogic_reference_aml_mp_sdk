@@ -8,7 +8,7 @@
  */
 
 #define LOG_TAG "AmlMpUtils"
-#include <utils/Log.h>
+#include <utils/AmlMpLog.h>
 #include "AmlMpUtils.h"
 #include <unistd.h>
 #include "utils/Amlsysfsutils.h"
