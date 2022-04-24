@@ -220,6 +220,12 @@ int AmlTvPlayer::getCurrentPts(Aml_MP_StreamType type, int64_t* pts) {
     return 0;
 }
 
+int AmlTvPlayer::getFirstPts(Aml_MP_StreamType type, int64_t* pts) {
+    AML_MP_UNUSED(type);
+    AML_MP_UNUSED(pts);
+    return 0;
+}
+
 int AmlTvPlayer::getBufferStat(Aml_MP_BufferStat* bufferStat) {
     AML_MP_UNUSED(bufferStat);
     return 0;
