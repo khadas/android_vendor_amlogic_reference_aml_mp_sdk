@@ -57,7 +57,6 @@ DVRPlayback::~DVRPlayback()
 }
 
 #ifdef ANDROID
-
 void DVRPlayback::setANativeWindow(const android::sp<ANativeWindow>& window)
 {
     MLOG("setANativeWindow %p", window.get());
@@ -249,7 +248,6 @@ std::string DVRPlayback::stripUrlIfNeeded(const std::string& url) const
 
 int DVRPlayback::initDVRDecryptPlayback(Aml_MP_DVRPlayerDecryptParams& decryptParams)
 {
-    #ifdef ANDROID
     MLOG();
 
     Aml_MP_CAS_Initialize();
@@ -296,13 +294,11 @@ int DVRPlayback::initDVRDecryptPlayback(Aml_MP_DVRPlayerDecryptParams& decryptPa
 
     decryptParams.secureBuffer = secBuf;
     decryptParams.secureBufferSize = secBufSize;
-    #endif
     return 0;
 }
 
 int DVRPlayback::uninitDVRDecryptPlayback()
 {
-    #ifdef ANDROID
     MLOG("mCasSession:%p", mCasSession);
     if (mCasSession == AML_MP_INVALID_HANDLE) {
         return 0;
@@ -317,7 +313,6 @@ int DVRPlayback::uninitDVRDecryptPlayback()
     mCasSession = nullptr;
 
     mDvrReplayInited = false;
-    #endif
     return 0;
 }
 

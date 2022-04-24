@@ -134,7 +134,6 @@ void DVRRecord::signalQuit()
 
 int DVRRecord::initDVREncryptRecord(Aml_MP_DVRRecorderEncryptParams& encryptParams)
 {
-    #ifdef ANDROID
     MLOG();
 
     Aml_MP_CAS_Initialize();
@@ -178,13 +177,12 @@ int DVRRecord::initDVREncryptRecord(Aml_MP_DVRRecorderEncryptParams& encryptPara
 
     encryptParams.secureBuffer = secBuf;
     encryptParams.secureBufferSize = secBufSize;
-    #endif
+
     return 0;
 }
 
 int DVRRecord::uninitDVREncryptRecord()
 {
-    #ifdef ANDROID
     MLOG("mCasSession:%p", mCasSession);
     if (mCasSession == AML_MP_INVALID_HANDLE) {
         return 0;
@@ -197,7 +195,6 @@ int DVRRecord::uninitDVREncryptRecord()
 
     Aml_MP_CAS_CloseSession(mCasSession);
     mCasSession = nullptr;
-    #endif
     return 0;
 }
 

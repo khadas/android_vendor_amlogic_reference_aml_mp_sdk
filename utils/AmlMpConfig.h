@@ -42,6 +42,8 @@ private:
     template <typename T>
     void initProperty(const char* propertyName, T& value);
 
+    void initLinux();
+
 private:
     AmlMpConfig();
     AmlMpConfig(const AmlMpConfig&) = delete;

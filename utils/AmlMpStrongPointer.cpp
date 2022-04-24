@@ -15,13 +15,9 @@
  */
 
 #define LOG_TAG "sp"
-#ifdef ANDROID
-#include <log/log.h>
-#else
-#include <cutils/log.h>
-#endif
+#include "AmlMpUtils.h"
 
 namespace aml_mp {
 
-void sptr_report_race() { LOG_ALWAYS_FATAL("sptr<> assignment detected data race"); }
+void sptr_report_race() { AML_MP_LOG_ALWAYS_FATAL("sptr<> assignment detected data race"); }
 }

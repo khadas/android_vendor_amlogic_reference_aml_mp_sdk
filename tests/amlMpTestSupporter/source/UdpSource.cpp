@@ -122,11 +122,7 @@ int UdpSource::start()
     }
 
     int actualBufferSize = 0;
-    #ifdef ANDROID
     socklen_t len = sizeof(actualBufferSize);
-    #else
-    socklen_t len = sizeof(actualBufferSize);
-    #endif
     getsockopt(mSocket, SOL_SOCKET, SO_RCVBUF, &actualBufferSize, &len);
     if (actualBufferSize != bufferSize) {
         MLOGE("actual set buffer size:%d", actualBufferSize);

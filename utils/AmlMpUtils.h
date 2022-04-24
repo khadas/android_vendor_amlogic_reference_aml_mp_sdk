@@ -35,24 +35,65 @@ struct list_head {
 #include <unistd.h>
 #ifdef ANDROID
 #include <utils/RefBase.h>
-#include <media/stagefright/foundation/ADebug.h>
 namespace android {
 class NativeHandle;
 }
-#else
-#include <assert.h>
-#define CHECK(condition)  assert(condition)
 #endif
 
 namespace aml_mp {
-#ifndef LOG_ALWAYS_FATAL
-  #define LOG_ALWAYS_FATAL(...) \
-      ( (void)(android_printAssert(NULL, LOG_TAG, ## __VA_ARGS__)) )
-  #endif
-#define LITERAL_TO_STRING_INTERNAL(x)    #x
-#define LITERAL_TO_STRING(x) LITERAL_TO_STRING_INTERNAL(x)
-
 #define AML_MP_UNUSED(x) (void)(x)
+
+////////////////////////////////////////////////////////////////////////////////
+#define AML_MP_LITERAL_TO_STRING_INTERNAL(x)    #x
+#define AML_MP_LITERAL_TO_STRING(x) AML_MP_LITERAL_TO_STRING_INTERNAL(x)
+
+#define AML_MP_CHECK(condition)                                     \
+    AML_MP_LOG_ALWAYS_FATAL_IF(                                     \
+            !(condition),                                           \
+            "%s",                                                   \
+            __FILE__ ":" AML_MP_LITERAL_TO_STRING(__LINE__)         \
+            " CHECK(" #condition ") failed.")
+
+#define AML_MP_CHECK_OP(x,y,suffix,op)                              \
+    do {                                                            \
+        const auto &a = x;                                          \
+        const auto &b = y;                                          \
+        if (!(a op b)) {                                            \
+            std::string ___full =                                   \
+                __FILE__ ":" AML_MP_LITERAL_TO_STRING(__LINE__)     \
+                    " CHECK_" #suffix "( " #x "," #y ") failed: ";  \
+            ___full.append(std::to_string(a));                      \
+            ___full.append(" vs. ");                                \
+            ___full.append(std::to_string(b));                      \
+            AML_MP_LOG_ALWAYS_FATAL("%s", ___full.c_str());         \
+        }                                                           \
+    } while (false)
+
+#define AML_MP_CHECK_EQ(x,y)   AML_MP_CHECK_OP(x,y,EQ,==)
+#define AML_MP_CHECK_NE(x,y)   AML_MP_CHECK_OP(x,y,NE,!=)
+#define AML_MP_CHECK_LE(x,y)   AML_MP_CHECK_OP(x,y,LE,<=)
+#define AML_MP_CHECK_LT(x,y)   AML_MP_CHECK_OP(x,y,LT,<)
+#define AML_MP_CHECK_GE(x,y)   AML_MP_CHECK_OP(x,y,GE,>=)
+#define AML_MP_CHECK_GT(x,y)   AML_MP_CHECK_OP(x,y,GT,>)
+
+void Aml_MP_PrintAssert(const char*fmt, ...);
+
+#ifndef AML_MP_LOG_ALWAYS_FATAL_IF
+#define AML_MP_LOG_ALWAYS_FATAL_IF(cond, fmt, ...) \
+    ( (cond) \
+    ? ((void)Aml_MP_PrintAssert(fmt, ## __VA_ARGS__)) \
+    : (void)0 )
+#endif
+
+#ifndef AML_MP_LOG_ALWAYS_FATAL
+#define AML_MP_LOG_ALWAYS_FATAL(fmt, ...) \
+    ( ((void)Aml_MP_PrintAssert(fmt, ## __VA_ARGS__)) )
+#endif
+
+#define AML_MP_TRESPASS(...) \
+    AML_MP_LOG_ALWAYS_FATAL( \
+        __FILE__ ":" AML_MP_LITERAL_TO_STRING(__LINE__) " Should not be here. " __VA_ARGS__);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #define RETURN_IF(error, cond)                                                       \
@@ -111,41 +152,6 @@ private:
     bool mVerbose;
     std::chrono::steady_clock::time_point mBeginTime;
 };
-
-const char codecMap[][20][30] = {
-    //Video codec
-    {
-        "Not defined codec",
-        "video/mpeg2",          //AML_MP_VIDEO_CODEC_MPEG12
-        "video/mp4v-es",        //AML_MP_VIDEO_CODEC_MPEG4
-        "video/avc",            //AML_MP_VIDEO_CODEC_H264
-        "video/vc1",            //AML_MP_VIDEO_CODEC_VC1
-        "video/avs",            //AML_MP_VIDEO_CODEC_AVS
-        "video/hevc",           //AML_MP_VIDEO_CODEC_HEVC
-        "video/x-vnd.on2.vp9",  //AML_MP_VIDEO_CODEC_VP9
-        "video/avs2",           //AML_MP_VIDEO_CODEC_AVS2
-        "video/x-motion-jpeg",  //AML_MP_VIDEO_CODEC_MJPEG
-        "video/av01",           //AML_MP_VIDEO_CODEC_AV1
-    },
-    //Audio codec
-    {
-        "Not defined codec",
-        "audio/mpeg-L2",    //AML_MP_AUDIO_CODEC_MP2
-        "audio/mpeg",       //AML_MP_AUDIO_CODEC_MP3
-        "audio/ac3",        //AML_MP_AUDIO_CODEC_AC3
-        "audio/eac3",       //AML_MP_AUDIO_CODEC_EAC3
-        "audio/dtshd",      //AML_MP_AUDIO_CODEC_DTS
-        "audio/mp4a-latm",  //AML_MP_AUDIO_CODEC_AAC
-        "audio/aac-latm",   //AML_MP_AUDIO_CODEC_LATM
-        "audio/raw",        //AML_MP_AUDIO_CODEC_PCM
-        "audio/ac4",        //AML_MP_AUDIO_CODEC_AC4
-        "audio/flac",       //AML_MP_AUDIO_CODEC_FLAC
-        "audio/vorbis",     //AML_MP_AUDIO_CODEC_VORBIS
-        "audio/opus",       //AML_MP_AUDIO_CODEC_OPUS
-    },
-};
-
-const char resolutionMap[][10] = {"1920*1080", "3840*2160", "7680*4320",};
 
 ///////////////////////////////////////////////////////////////////////////////
 const char* mpCodecId2Str(Aml_MP_CodecID codecId);
@@ -216,12 +222,12 @@ struct NativeWindowHelper
     void clearTunnelId();
 
 private:
-    #ifdef ANDROID
+#ifdef ANDROID
     ANativeWindow* mNativewindow = nullptr;
     android::sp<android::NativeHandle> mSidebandHandle;
     int mTunnelId = -1;
     int mMesonVtFd = -1;
-    #endif
+#endif
     NativeWindowHelper(const NativeWindowHelper&) = delete;
     NativeWindowHelper& operator= (const NativeWindowHelper&) = delete;
 };

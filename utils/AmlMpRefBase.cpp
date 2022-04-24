@@ -15,7 +15,7 @@
  */
 
 #define LOG_TAG "AmlMpRefBase"
-// #define LOG_NDEBUG 0
+#define LOG_NDEBUG 0
 
 #include <memory>
 

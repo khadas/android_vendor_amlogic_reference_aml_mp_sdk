@@ -46,9 +46,7 @@ int AReplyToken::setReply(const sptr<AmlMpMessage> &reply) {
         MLOGE("trying to post a duplicate reply");
         return -EBUSY;
     }
-#ifndef ANDROID
-    CHECK(mReply == NULL);
-#endif
+    AML_MP_CHECK(mReply == NULL);
     mReply = reply;
     mReplied = true;
     return 0;
@@ -199,7 +197,7 @@ AmlMpMessage::Item *AmlMpMessage::allocateItem(const char *name) {
         item = &mItems[i];
         freeItemValue(item);
     } else {
-        CHECK(mNumItems < kMaxNumItems);
+        AML_MP_CHECK(mNumItems < kMaxNumItems);
         i = mNumItems++;
         item = &mItems[i];
         item->mType = kTypeInt32;
@@ -933,9 +931,7 @@ sptr<AmlMpMessage> AmlMpMessage::changesFrom(const sptr<const AmlMpMessage> &oth
             default:
             {
                 MLOGE("Unknown type %d", item.mType);
-                #ifdef ANDROID
-                TRESPASS();
-                #endif
+                AML_MP_TRESPASS();
             }
         }
     }

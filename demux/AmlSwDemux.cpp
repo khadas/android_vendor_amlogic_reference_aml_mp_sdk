@@ -267,8 +267,8 @@ void AmlSwDemux::onMessageReceived(const sptr<AmlMpMessage>& msg)
     {
         sptr<AmlMpBuffer> data;
         int32_t generation;
-        CHECK(msg->findBuffer("buffer", &data));
-        CHECK(msg->findInt32("generation", &generation));
+        AML_MP_CHECK(msg->findBuffer("buffer", &data));
+        AML_MP_CHECK(msg->findInt32("generation", &generation));
         if (generation != mBufferGeneration) {
             MLOGW("kWhatFeedData break, %d %d", generation, mBufferGeneration.load());
             break;
@@ -301,16 +301,14 @@ void AmlSwDemux::onMessageReceived(const sptr<AmlMpMessage>& msg)
         onFlush();
 
         sptr<AReplyToken> replyID;
-        CHECK(msg->senderAwaitsResponse(&replyID));
+        AML_MP_CHECK(msg->senderAwaitsResponse(&replyID));
         sptr<AmlMpMessage> response = new AmlMpMessage;
         response->postReply(replyID);
     }
     break;
 
     default:
-#ifdef ANDROID
-        TRESPASS();
-#endif
+        AML_MP_TRESPASS();
         break;
     }
 }
@@ -749,7 +747,7 @@ int SwTsParser::parsePID(
             return 0;
         }
 
-        CHECK((br->numBitsLeft() % 8) == 0);
+        AML_MP_CHECK((br->numBitsLeft() % 8) == 0);
         int err = section->append(br->data(), br->numBitsLeft() / 8);
 
         if (err != 0) {

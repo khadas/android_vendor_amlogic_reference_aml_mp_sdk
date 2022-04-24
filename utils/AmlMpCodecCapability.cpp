@@ -151,6 +151,8 @@ void AmlMpCodecCapability::getCodecCapabilityStr(Aml_MP_CodecID codecId, char* c
     }
 }
 
+const char resolutionMap[][10] = {"1920*1080", "3840*2160", "7680*4320",};
+
 const char* AmlMpCodecCapability::convertToResolutionString(Aml_MP_Resolution resolution) {
     if (resolution < AML_MP_RESOLUTION_MAX) {
         return resolutionMap[resolution];

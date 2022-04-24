@@ -511,7 +511,7 @@ void AmlPlayerBase::notifyListener(Aml_MP_PlayerEventType eventType, int64_t par
             case AML_MP_PLAYER_EVENT_VIDEO_DECODE_FIRST_FRAME:
             {
 #ifdef HAVE_SUBTITLE
-                if (AmlMpConfig::instance().mTsPlayerNonTunnel == 1) {
+                if (mSubtitleHandle != nullptr && AmlMpConfig::instance().mTsPlayerNonTunnel == 1) {
                     int mediasyncId = getMediaSyncId();
                     //get the first frame event and set it again
                     MLOGI("nontunnel mode setpip for subtitle when first video decoded,mediasyncId:%d\n",mediasyncId);

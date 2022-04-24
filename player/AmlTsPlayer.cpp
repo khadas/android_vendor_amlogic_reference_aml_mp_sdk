@@ -152,11 +152,7 @@ int AmlTsPlayer::setAudioParams(const Aml_MP_AudioParams* params) {
         MLOGI("amtsplayer audio params seted.\n");
         mAudioParaSeted = true;
     }
-    #ifdef ANDROID
     am_tsplayer_audio_params audio_params = {convertToAudioCodec(params->audioCodec), params->pid, (int32_t)params->secureLevel};
-    #else
-    am_tsplayer_audio_params audio_params = {convertToAudioCodec(params->audioCodec), params->pid};
-    #endif
 #ifdef HAVE_PACKETIZE_ESTOTS
     mApid = params->pid;
 #endif
@@ -855,17 +851,16 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_INSTANCE_ID:
             ret = AmTsPlayer_getInstansNo(mPlayer, (uint32_t*)parameter);
             break;
-        #ifdef ANDROID
         case AML_MP_PLAYER_PARAMETER_SYNC_ID:
             ret = AmTsPlayer_getSyncInstansNo(mPlayer, (int32_t*)parameter);
             break;
-        #endif
         case AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE:
         {
             //TODO: tsplayer not have api now, need add api later
             ret = AM_TSPLAYER_ERROR_INVALID_OPERATION;
         }
         break;
+
 #ifdef ANDROID
         case AML_MP_PLAYER_PARAMETER_AV_INFO_JSON: {
             Aml_MP_AvInfo *mpAvInfo = (Aml_MP_AvInfo*)parameter;

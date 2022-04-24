@@ -27,9 +27,6 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
-#ifdef ANDROID
-using namespace android;
-#endif
 AmlMpTestSupporter::AmlMpTestSupporter()
 {
     ALOGI("AmlMpTestSupporter structure\n");
@@ -52,7 +49,6 @@ void AmlMpTestSupporter::DVRRecorderRegisterEventCallback(Aml_MP_DVRRecorderEven
     mUserData = userData;
 }
 
-#ifdef ANDROID
 sptr<NativeUI> AmlMpTestSupporter::createNativeUI()
 {
     if (mNativeUI == nullptr)
@@ -72,6 +68,7 @@ sptr<NativeUI> AmlMpTestSupporter::createNativeUI()
     return mNativeUI;
 }
 
+#ifdef ANDROID
 sp<ANativeWindow> AmlMpTestSupporter::getSurfaceControl()
 {
     mNativeUI->controlSurface(
@@ -214,9 +211,7 @@ int AmlMpTestSupporter::setParameter(Aml_MP_PlayerParameterKey key, void* parame
 int AmlMpTestSupporter::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
 {
     AML_MP_TRACE(10);
-#ifdef ANDROID
     std::unique_lock<std::mutex> _l(mLock);
-#endif
     mSyncSource = syncSource;
 
     return 0;
@@ -225,9 +220,7 @@ int AmlMpTestSupporter::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
 int AmlMpTestSupporter::setPcrPid(int pid)
 {
     AML_MP_TRACE(10);
-#ifdef ANDROID
     std::unique_lock<std::mutex> _l(mLock);
-#endif
     mPcrPid = pid;
 
     return 0;
@@ -275,11 +268,9 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     if (mEventCallback != nullptr) {
         mPlayback->playerRegisterEventCallback(mEventCallback, mUserData);
     }
-    #ifdef ANDROID
     createNativeUI();
 
     ret = mPlayback->setSubtitleDisplayWindow(mDisplayParam.width, 0, mDisplayParam.width, mDisplayParam.height);
-    #endif
 
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
@@ -658,7 +649,6 @@ bool AmlMpTestSupporter::processCommand(const std::vector<std::string>& args)
         int y = -1;
         int width = -1;
         int height = -1;
-    #ifdef ANDROID
         if (args.size() == 5) {
             x = std::stoi(args[1]);
             y = std::stoi(args[2]);
@@ -666,7 +656,6 @@ bool AmlMpTestSupporter::processCommand(const std::vector<std::string>& args)
             height = std::stoi(args[4]);
             mNativeUI->controlSurface(x, y, width, height);
         }
-    #endif
     } else {
         mTestModule->processCommand(args);
     }

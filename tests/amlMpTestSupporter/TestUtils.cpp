@@ -19,14 +19,12 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
-#ifdef ANDROID
-using namespace android;
-
 NativeUI::NativeUI()
 {
+#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
     mComposerClient = new android::SurfaceComposerClient;
-    CHECK_EQ(mComposerClient->initCheck(), OK);
+    AML_MP_CHECK_EQ(mComposerClient->initCheck(), android::OK);
 
     //sp<android::IBinder> displayToken  = nullptr;
     //displayToken = mComposerClient->getInternalDisplayToken();
@@ -44,7 +42,7 @@ NativeUI::NativeUI()
 
 
     mSurfaceControl = mComposerClient->createSurface(android::String8("AmlMpPlayer"), mSurfaceWidth, mSurfaceHeight, android::PIXEL_FORMAT_RGB_565, 0);
-    CHECK(mSurfaceControl->isValid());
+    AML_MP_CHECK(mSurfaceControl->isValid());
     mSurface = mSurfaceControl->getSurface();
 
     android::SurfaceComposerClient::Transaction()
@@ -58,7 +56,7 @@ NativeUI::NativeUI()
         .apply();
 
     mSurfaceControlUi = mComposerClient->createSurface(android::String8("AmlMpPlayer-ui"), mDisplayWidth, mDisplayHeight, android::PIXEL_FORMAT_RGBA_8888, 0);
-    CHECK(mSurfaceControlUi->isValid());
+    AML_MP_CHECK(mSurfaceControlUi->isValid());
     mSurfaceUi = mSurfaceControlUi->getSurface();
 
     int ret = native_window_api_connect(mSurfaceUi.get(), NATIVE_WINDOW_API_CPU);
@@ -101,6 +99,7 @@ NativeUI::NativeUI()
     graphicBuffer.clear();
     nativeWindow->queueBuffer_DEPRECATED(nativeWindow, buf);
 #endif
+#endif
 }
 
 NativeUI::~NativeUI()
@@ -108,6 +107,7 @@ NativeUI::~NativeUI()
 
 }
 
+#ifdef ANDROID
 sp<ANativeWindow> NativeUI::getNativeWindow() const
 {
 #ifndef __ANDROID_VNDK__
@@ -116,9 +116,11 @@ sp<ANativeWindow> NativeUI::getNativeWindow() const
     return nullptr;
 #endif
 }
+#endif
 
 void NativeUI::controlSurface(int zorder)
 {
+#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
     auto transcation = android::SurfaceComposerClient::Transaction();
 
@@ -129,10 +131,12 @@ void NativeUI::controlSurface(int zorder)
 #else
     AML_MP_UNUSED(zorder);
 #endif
+#endif
 }
 
 void NativeUI::controlSurface(int left, int top, int right, int bottom)
 {
+#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
     auto transcation = android::SurfaceComposerClient::Transaction();
 
@@ -158,6 +162,7 @@ void NativeUI::controlSurface(int left, int top, int right, int bottom)
     AML_MP_UNUSED(right);
     AML_MP_UNUSED(bottom);
 #endif
+#endif
 }
 
 int NativeUI::getDefaultSurfaceWidth() const
@@ -170,7 +175,6 @@ int NativeUI::getDefaultSurfaceHeight() const
     return mSurfaceHeight;
 }
 
-#endif
 CommandProcessor::CommandProcessor(const std::string& prompt)
 : mPrompt(prompt)
 {

@@ -245,9 +245,9 @@ int Parser::patCb(int pid, size_t size, const uint8_t* data, void* userData)
     const uint8_t* p = section.data();
     //int table_id = p[0];
     int section_syntax_indicator = (p[1]&0x80) >> 7;
-    CHECK(section_syntax_indicator == 1);
+    AML_MP_CHECK_EQ(section_syntax_indicator, 1);
     int section_length = (p[1] & 0x0F) << 4 | p[2];
-    CHECK(section_length <= 4093);
+    AML_MP_CHECK_LE(section_length, 4093);
     MLOGI("section_length = %d, size:%zu", section_length, size);
 
     PATSection result;
@@ -292,7 +292,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
         return -1;
     }
     int section_length = (p[1] & 0x0F) << 4 | p[2];
-    CHECK(section_length <= 4093);
+    AML_MP_CHECK_LE(section_length, 4093);
     MLOGI("section_length = %d, size:%zu", section_length, size);
 
     PMTSection results;
@@ -324,7 +324,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
     int pcr_pid = (p[0]&0x1F)<<8 | p[1];
     results.pcrPid = pcr_pid;
     int program_info_length = (p[2]&0x0F) << 8 | p[3];
-    CHECK(program_info_length < 1024);
+    AML_MP_CHECK_LT(program_info_length, 1024);
     p = section.advance(4);
 
     results.privateDataLength = 0;
@@ -487,9 +487,9 @@ int Parser::catCb(int pid, size_t size, const uint8_t* data, void* userData)
 
     //int table_id = p[0];
     int section_syntax_indicator = (p[1]&0x80) >> 7;
-    CHECK(section_syntax_indicator == 1);
+    AML_MP_CHECK_EQ(section_syntax_indicator, 1);
     int section_length = (p[1] & 0x0F) << 4 | p[2];
-    CHECK(section_length <= 4093);
+    AML_MP_CHECK_LE(section_length, 4093);
     MLOGI("section_length = %d, size:%zu", section_length, size);
 
     p = section.advance(3);

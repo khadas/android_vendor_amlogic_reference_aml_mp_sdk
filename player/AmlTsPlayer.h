@@ -22,10 +22,6 @@ class NativeHandle;
 struct ANativeWindow;
 
 namespace aml_mp {
-#ifdef ANDROID
-using android::NativeHandle;
-#endif
-
 class AmlTsPlayer : public aml_mp::AmlPlayerBase
 {
 public:

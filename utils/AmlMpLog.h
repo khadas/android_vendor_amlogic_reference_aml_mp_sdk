@@ -12,16 +12,15 @@
 
 #ifdef __linux__
 #ifndef ANDROID
-    #include <cutils/log.h>
+
 #ifndef LOG_NDEBUG
     #define LOG_NDEBUG 1
 #endif
+
 #endif
 #endif
 
-#ifdef ANDROID
-#include <utils/Log.h>
-#endif
+#include <cutils/log.h>
 #include "AmlMpConfig.h"
 
 #define AML_MP_LOG_TAG  "Aml_MP"
@@ -42,4 +41,3 @@
 #endif
 
 #endif
-

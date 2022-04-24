@@ -17,9 +17,7 @@
 #ifndef __ANDROID_VNDK__
 #include <gui/Surface.h>
 #endif
-#endif
 
-#ifdef ANDROID
 #include <amlogic/am_gralloc_ext.h>
 #endif
 
@@ -173,9 +171,9 @@ int AmlDVRPlayer::start(bool initialPaused)
     }
 #endif
 
+#ifdef ANDROID
     if (AmlMpConfig::instance().mTsPlayerNonTunnel) {
         if (AmlMpConfig::instance().mUseVideoTunnel == 0) {
-#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
         android::Surface* surface = nullptr;
         if (mNativeWindow != nullptr) {
@@ -184,21 +182,16 @@ int AmlDVRPlayer::start(bool initialPaused)
         MLOGI("setANativeWindow nativeWindow: %p, surface: %p", mNativeWindow.get(), surface);
         ret = AmTsPlayer_setSurface(mTsPlayerHandle, surface);
 #endif
-#endif
         } else {
-#ifdef ANDROID
             ret = mNativeWindowHelper.setSidebandNonTunnelMode(mNativeWindow.get(), &mVideoTunnelId);
             if (ret == 0) {
                 AmTsPlayer_setSurface(mTsPlayerHandle, (void*)&mVideoTunnelId);
             }
-#endif
         }
-
     } else {
-    #ifdef ANDROID
         ret = mNativeWindowHelper.setSidebandTunnelMode(mNativeWindow.get());
-    #endif
     }
+#endif
 
     mPlaybackOpenParams.playback_handle = (Playback_DeviceHandle_t)mTsPlayerHandle;
     mPlaybackOpenParams.event_fn = [](DVR_PlaybackEvent_t event, void* params, void* userData) {
@@ -208,9 +201,7 @@ int AmlDVRPlayer::start(bool initialPaused)
     mPlaybackOpenParams.event_userdata = this;
 
     //apply parameters
-    #ifdef ANDROID
     mPlaybackOpenParams.vendor = (DVR_PlaybackVendor_t)mVendorID;
-    #endif
     int error = dvr_wrapper_open_playback(&mDVRPlayerHandle, &mPlaybackOpenParams);
     if (error < 0) {
         MLOGE("open playback failed!");
@@ -576,11 +567,9 @@ int AmlDVRPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         case AML_MP_PLAYER_PARAMETER_INSTANCE_ID:
             ret = AmTsPlayer_getInstansNo(mPlayer, (uint32_t*)parameter);
             break;
-        #ifdef ANDROID
         case AML_MP_PLAYER_PARAMETER_SYNC_ID:
             ret = AmTsPlayer_getSyncInstansNo(mPlayer, (int32_t*)parameter);
             break;
-        #endif
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -593,10 +582,10 @@ int AmlDVRPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter)
 
 int AmlDVRPlayer::setANativeWindow(ANativeWindow* nativeWindow) {
     MLOG();
-    #ifdef ANDROID
+#ifdef ANDROID
     mNativeWindow = nativeWindow;
     MLOGI("PVR setAnativeWindow: %p, mNativewindow: %p", nativeWindow, mNativeWindow.get());
-    #endif
+#endif
     return 0;
 }
 

@@ -21,9 +21,7 @@
 #include <system/window.h>
 #include <video_tunnel.h>
 #include <hardware/gralloc1.h>
-#endif
 
-#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
 #include <gui/Surface.h>
 #endif
@@ -34,6 +32,25 @@ static const char* mName = LOG_TAG;
 namespace aml_mp {
 #define ENUM_TO_STR(e) case e: return TO_STR(e); break
 #define TO_STR(v) #v
+
+void Aml_MP_PrintAssert(const char*fmt, ...)
+{
+    char buf[1024];
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+#ifdef __linux__
+#ifndef ANDROID
+    fprintf(stderr, "%s\n", buf);
+#endif
+#endif
+    __android_log_print(ANDROID_LOG_FATAL, AML_MP_LOG_TAG, "%s", buf);
+
+    __builtin_trap(); /* trap so we have a chance to debug the situation */
+}
 
 const char* mpCodecId2Str(Aml_MP_CodecID codecId)
 {
@@ -1031,7 +1048,7 @@ NativeWindowHelper::~NativeWindowHelper()
 
 void NativeWindowHelper::clearTunnelId()
 {
-    #ifdef ANDROID
+#ifdef ANDROID
     if (mMesonVtFd >= 0) {
         if (mTunnelId >= 0) {
             MLOGI("%s: free Id:%d", __FUNCTION__, mTunnelId);
@@ -1041,7 +1058,7 @@ void NativeWindowHelper::clearTunnelId()
         mTunnelId = -1;
         mMesonVtFd = -1;
     }
-    #endif
+#endif
 }
 
 int NativeWindowHelper::setSidebandTunnelMode(ANativeWindow* nativeWindow)
@@ -1051,14 +1068,14 @@ int NativeWindowHelper::setSidebandTunnelMode(ANativeWindow* nativeWindow)
     if (nativeWindow == nullptr) {
         return ret;
     }
-    #ifdef ANDROID
+#ifdef ANDROID
     native_handle_t* sidebandHandle = am_gralloc_create_sideband_handle(AM_TV_SIDEBAND, AM_VIDEO_DEFAULT);
     mSidebandHandle = android::NativeHandle::create(sidebandHandle, true);
 
     MLOG("setAnativeWindow:%p, sidebandHandle:%p", nativeWindow, sidebandHandle);
 
     ret = native_window_set_sideband_stream(nativeWindow, sidebandHandle);
-    #endif
+#endif
     if (ret < 0) {
         MLOGE("set sideband stream failed!");
     }
@@ -1117,9 +1134,42 @@ int NativeWindowHelper::setSidebandNonTunnelMode(ANativeWindow* nativeWindow, in
         MLOGE("set sideband stream failed!");
         return ret;
     }
-    #endif
+#endif
     return ret;
 }
+
+const char codecMap[][20][30] = {
+    //Video codec
+    {
+        "Not defined codec",
+        "video/mpeg2",          //AML_MP_VIDEO_CODEC_MPEG12
+        "video/mp4v-es",        //AML_MP_VIDEO_CODEC_MPEG4
+        "video/avc",            //AML_MP_VIDEO_CODEC_H264
+        "video/vc1",            //AML_MP_VIDEO_CODEC_VC1
+        "video/avs",            //AML_MP_VIDEO_CODEC_AVS
+        "video/hevc",           //AML_MP_VIDEO_CODEC_HEVC
+        "video/x-vnd.on2.vp9",  //AML_MP_VIDEO_CODEC_VP9
+        "video/avs2",           //AML_MP_VIDEO_CODEC_AVS2
+        "video/x-motion-jpeg",  //AML_MP_VIDEO_CODEC_MJPEG
+        "video/av01",           //AML_MP_VIDEO_CODEC_AV1
+    },
+    //Audio codec
+    {
+        "Not defined codec",
+        "audio/mpeg-L2",    //AML_MP_AUDIO_CODEC_MP2
+        "audio/mpeg",       //AML_MP_AUDIO_CODEC_MP3
+        "audio/ac3",        //AML_MP_AUDIO_CODEC_AC3
+        "audio/eac3",       //AML_MP_AUDIO_CODEC_EAC3
+        "audio/dtshd",      //AML_MP_AUDIO_CODEC_DTS
+        "audio/mp4a-latm",  //AML_MP_AUDIO_CODEC_AAC
+        "audio/aac-latm",   //AML_MP_AUDIO_CODEC_LATM
+        "audio/raw",        //AML_MP_AUDIO_CODEC_PCM
+        "audio/ac4",        //AML_MP_AUDIO_CODEC_AC4
+        "audio/flac",       //AML_MP_AUDIO_CODEC_FLAC
+        "audio/vorbis",     //AML_MP_AUDIO_CODEC_VORBIS
+        "audio/opus",       //AML_MP_AUDIO_CODEC_OPUS
+    },
+};
 
 const char* convertToMIMEString(Aml_MP_CodecID codecId) {
     if (codecId > AML_MP_CODEC_UNKNOWN && codecId < AML_MP_SUBTITLE_CODEC_BASE) {

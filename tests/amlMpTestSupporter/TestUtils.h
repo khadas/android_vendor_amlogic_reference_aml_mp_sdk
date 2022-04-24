@@ -31,19 +31,20 @@ using android::sp;
 
 #define AML_MP_TEST_SUPPORTER_RECORD_FILE   "/data/amlMpRecordFile"
 
-#ifdef ANDROID
-
-struct NativeUI : android::RefBase
+struct NativeUI : AmlMpRefBase
 {
     NativeUI();
     ~NativeUI();
+#ifdef ANDROID
     sp<ANativeWindow> getNativeWindow() const;
+#endif
     void controlSurface(int zorder);
     void controlSurface(int left, int top, int right, int bottom);
     int getDefaultSurfaceWidth() const;
     int getDefaultSurfaceHeight() const;
 
 private:
+#ifdef ANDROID
 #ifndef __ANDROID_VNDK__
     sp<android::SurfaceComposerClient> mComposerClient;
     sp<android::SurfaceControl> mSurfaceControl;
@@ -51,6 +52,7 @@ private:
 
     sp<android::SurfaceControl> mSurfaceControlUi;
     sp<android::Surface> mSurfaceUi;
+#endif
 #endif
 
     int mDisplayWidth = 1920;
@@ -64,14 +66,8 @@ private:
     NativeUI(const NativeUI&) = delete;
     NativeUI& operator=(const NativeUI&);
 };
-#endif
 
-#ifdef ANDROID
-struct CommandProcessor : android::RefBase
-#else
 struct CommandProcessor : AmlMpRefBase
-#endif
-
 {
     using Visitor = bool(const std::vector<std::string>& args);
     using Interrupter = bool();

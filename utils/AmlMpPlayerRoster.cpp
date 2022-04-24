@@ -62,7 +62,7 @@ void AmlMpPlayerRoster::unregisterPlayer(int id)
 {
     std::lock_guard<std::mutex> _l(mLock);
 
-    CHECK(mPlayers[id]);
+    AML_MP_CHECK(mPlayers[id]);
     mPlayers[id] = nullptr;
     (void)--mPlayerNum;
 }

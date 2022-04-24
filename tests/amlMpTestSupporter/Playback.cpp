@@ -860,7 +860,7 @@ static struct TestModule::Command g_commandTable[] = {
             uint32_t instanceId;
             ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_INSTANCE_ID, &instanceId);
             printf("AML_MP_PLAYER_PARAMETER_INSTANCE_ID get instance id: %d\n", instanceId);
-            int32_t syncId;
+            int32_t syncId = -1;
             ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_SYNC_ID, &syncId);
             printf("AML_MP_PLAYER_PARAMETER_SYNC_ID get sync id: %d\n", syncId);
 

@@ -118,8 +118,8 @@ AmlMpPlayerImpl::~AmlMpPlayerImpl()
 {
     MLOG();
 
-    CHECK(mState == STATE_IDLE);
-    CHECK(mStreamState == 0);
+    AML_MP_CHECK(mState == STATE_IDLE);
+    AML_MP_CHECK(mStreamState == 0);
 
     // recover demux sec mem size to default, this value same as DMC_MEM_DEFAULT_SIZE
     recoverDmxSecMemSize();
@@ -1721,22 +1721,18 @@ int AmlMpPlayerImpl::prepare_l()
     if (mSurfaceHandle != nullptr) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_SURFACE_HANDLE, mSurfaceHandle);
     }
-    #ifdef ANDROID
+#ifdef ANDROID
     MLOGI("mNativeWindow:%p", mNativeWindow.get());
     if (mNativeWindow != nullptr) {
         mPlayer->setANativeWindow(mNativeWindow.get());
         setSidebandIfNeeded_l();
     }
+#endif
 
     if (mVideoWindow.width >= 0 && mVideoWindow.height >= 0) {
         mPlayer->setVideoWindow(mVideoWindow.x, mVideoWindow.y, mVideoWindow.width, mVideoWindow.height);
     }
-    #else
-    //direct set in yocto
-    if (mVideoWindow.width >= 0 && mVideoWindow.height >= 0) {
-        mPlayer->setVideoWindow(mVideoWindow.x, mVideoWindow.y, mVideoWindow.width, mVideoWindow.height);
-    }
-    #endif
+
     if (mVideoTunnelId >= 0) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID, &mVideoTunnelId);
     }

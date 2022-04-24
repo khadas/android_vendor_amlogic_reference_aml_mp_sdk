@@ -21,11 +21,6 @@
 #include <mutex>
 #include <Aml_MP/Dvr.h>
 
-
-#ifdef ANDROID
-struct ANativeWindow;
-#endif
-
 namespace aml_mp {
 class Source;
 class Parser;
@@ -36,11 +31,7 @@ class Playback;
 class DVRRecord;
 class DVRPlayback;
 struct ProgramInfo;
-
-#ifdef ANDROID
 struct NativeUI;
-#endif
-
 struct CommandProcessor;
 
 class AmlMpTestSupporter : public AmlMpHandle
@@ -102,8 +93,8 @@ public:
     sptr<TestModule> getRecorder() const;
     sptr<TestModule> getDVRPlayer() const;
 
-#ifdef ANDROID
     sptr<NativeUI> createNativeUI();
+#ifdef ANDROID
     sp<ANativeWindow> getSurfaceControl();
     void setWindow(bool mSurface = true);
 #endif
@@ -137,10 +128,8 @@ private:
     bool mIsDVRPlayback = false;
     bool mCryptoMode = false;
     uint64_t mOptions = 0;
-    #ifdef ANDROID
     sptr<NativeUI> mNativeUI;
     NativeWindowHelper mNativeWindowHelper;
-    #endif
     std::thread mSignalHandleThread;
     sptr<CommandProcessor> mCommandProcessor;
 
@@ -150,9 +139,7 @@ private:
     //AML_MP_PLAYER mPlayer = AML_MP_INVALID_HANDLE;
 
     DisplayParam mDisplayParam;
-#ifdef ANDROID
     mutable std::mutex mLock;
-#endif
     Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
     int mPcrPid = AML_MP_INVALID_PID;
 
