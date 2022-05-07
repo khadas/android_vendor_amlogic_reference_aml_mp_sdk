@@ -38,6 +38,30 @@ AudioTrackWrapper::~AudioTrackWrapper() {
 
 }
 
+int AudioTrackWrapper::threadFunc() {
+    char *audioData = (char *)malloc(256);
+    while (mAudioStarted) {
+        if (!mAudioTrack)
+            break;
+        int written = mAudioTrack->write(audioData, 256,false);
+        // MLOGI("threadFunc written=%d",written);
+         if (written != 256 ) {
+            usleep(100 *1000); //100ms
+         }
+
+    }
+THREADOUT:
+    ALOGI("[%s %d] thread out\n", __FUNCTION__, __LINE__);
+    free(audioData);
+    return 0;
+}
+
+void *AudioTrackWrapper::ThreadWrapper(void *me) {
+    AudioTrackWrapper *Convertor = static_cast<AudioTrackWrapper *>(me);
+    Convertor->threadFunc();
+    return NULL;
+}
+
 void AudioTrackWrapper::configureAudioTrack(int sampleRate, int channelCount, audio_format_t aFormat, int filterId, int hwAvSyncId) {
     audio_offload_info_t offloadInfo;
     offloadInfo = AUDIO_INFO_INITIALIZER;
@@ -65,6 +89,7 @@ void AudioTrackWrapper::configureAudioTrack(int sampleRate, int channelCount, au
 }
 
 int AudioTrackWrapper::configure(const Aml_MP_AudioParams& audioParams, int filterId, int hwAvSyncId) {
+    Mutex::Autolock lock(mMutex);
     int defSampleRate = 48000;
     int defChannelCount = 2;
     audio_format_t aFormat = getAudioFormat(audioParams.audioCodec);
@@ -91,14 +116,26 @@ int AudioTrackWrapper::configure(const Aml_MP_AudioParams& audioParams, int filt
 }
 
 int AudioTrackWrapper::start() {
+    Mutex::Autolock lock(mMutex);
+    MLOGI("AudioTrackWrapper::start");
     if (!mAudioTrackInited) {
         return -1;
     }
     mAudioTrack->start();
+    if (!mAudioStarted) {
+        mAudioStarted =true;
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+        pthread_create(&mThread, &attr, ThreadWrapper, this);
+        pthread_attr_destroy(&attr);
+    }
     return 0;
 }
 
 int AudioTrackWrapper::pause() {
+    Mutex::Autolock lock(mMutex);
+     MLOGI("AudioTrackWrapper::pause");
     if (!mAudioTrackInited) {
         return -1;
     }
@@ -107,6 +144,8 @@ int AudioTrackWrapper::pause() {
 }
 
 int AudioTrackWrapper::resume() {
+    Mutex::Autolock lock(mMutex);
+    MLOGI("AudioTrackWrapper::resume");
     if (!mAudioTrackInited) {
         return -1;
     }
@@ -115,6 +154,8 @@ int AudioTrackWrapper::resume() {
 }
 
 int AudioTrackWrapper::flush() {
+    Mutex::Autolock lock(mMutex);
+    MLOGI("AudioTrackWrapper::flush");
     if (!mAudioTrackInited) {
         return -1;
     }
@@ -123,15 +164,20 @@ int AudioTrackWrapper::flush() {
 }
 
 int AudioTrackWrapper::stop() {
+    MLOGI("AudioTrackWrapper::stop");
+    Mutex::Autolock lock(mMutex);
     if (!mAudioTrackInited) {
         return -1;
     }
+    mAudioStarted =false;
+    pthread_join(mThread,NULL);
     mAudioTrack->stop();
     mAudioTrackInited = false;
     return 0;
 }
 
 void AudioTrackWrapper::release() {
+    MLOGI("AudioTrackWrapper::release");
     mAudioTrack = nullptr;
 }
 

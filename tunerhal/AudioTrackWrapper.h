@@ -8,7 +8,7 @@
 
 using android::AudioTrack;
 using android::sp;
-
+using android::Mutex;
 namespace aml_mp {
 
 class AudioTrackWrapper : public AmlMpRefBase {
@@ -25,8 +25,13 @@ public:
     void release();
 private:
     char mName[50];
+    pthread_t mThread;
     sp<AudioTrack> mAudioTrack = nullptr;
     bool mAudioTrackInited = false;
+    bool mAudioStarted = false;
+    static void *ThreadWrapper(void *me);
+    int threadFunc();
+    mutable Mutex mMutex;
 };
 
 } // namespace aml_mp

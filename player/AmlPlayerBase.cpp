@@ -26,6 +26,8 @@
 #endif
 #include "Aml_MP_PlayerImpl.h"
 
+
+
 namespace aml_mp {
 
 #ifdef HAVE_SUBTITLE
@@ -36,7 +38,8 @@ sptr<AmlPlayerBase> AmlPlayerBase::create(Aml_MP_PlayerCreateParams* createParam
 {
     sptr<AmlPlayerBase> player;
 #ifdef HAVE_TUNER_HAL
-    if (createParams->options & AML_MP_OPTION_PREFER_TUNER_HAL) {
+    if (createParams->options & AML_MP_OPTION_PREFER_TUNER_HAL ||
+            AmlMpConfig::instance().mPreferTunerHal == 1) {
         player = new AmlTvPlayer(createParams, instanceId);
     } else
 #endif

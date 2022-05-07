@@ -31,6 +31,7 @@ public:
     int mUseVideoTunnel;
     int mWaitingEcmMode;
     int mWriteBufferSize;
+    int mPreferTunerHal;
     int mDumpPackts;
     int mCasPipSupport;
     int mCasFCCSupport;

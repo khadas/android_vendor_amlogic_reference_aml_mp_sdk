@@ -55,6 +55,7 @@ void AmlMpConfig::reset()
 #elif ANDROID_PLATFORM_SDK_VERSION >= 30
     mUseVideoTunnel = 1;
 #endif
+    mPreferTunerHal = 0;
     mCasPipSupport = 0;
     mCasFCCSupport = 0;
     mSecMemSize = 0;
@@ -74,6 +75,7 @@ void AmlMpConfig::init()
     initProperty("vendor.amtsplayer.pipeline", mTsPlayerNonTunnel);
     initProperty("vendor.amlmp.waiting-ecm-mode", mWaitingEcmMode);
     initProperty("vendor.amlmp.write-buffer-size", mWriteBufferSize);
+    initProperty("vendor.media.amlmp.prefer.tuner_hal", mPreferTunerHal);
     initProperty("vendor.enable.dump.packts", mDumpPackts);
     initProperty("vendor.cas.support.pip.function", mCasPipSupport);
     initProperty("vendor.cas.support.fcc.function", mCasFCCSupport);

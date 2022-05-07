@@ -182,12 +182,7 @@ int AmlTvPlayer::resume() {
 
 int AmlTvPlayer::flush() {
     MLOGI("Call flush");
-    mTunerDvr->flush();
-    mVideoFilter->flush();
-    mAudioFilter->flush();
-    mAudioTrackWrapper->flush();
-    mVideoCodecWrapper->flush();
-    return 0;
+    return AML_MP_ERROR_DEAD_OBJECT;
 }
 
 int AmlTvPlayer::setPlaybackRate(float rate) {
@@ -203,6 +198,36 @@ int AmlTvPlayer::getPlaybackRate(float* rate) {
 
 int AmlTvPlayer::switchAudioTrack(const Aml_MP_AudioParams* params) {
     AML_MP_UNUSED(params);
+    if (mAudioFilter) {
+        mAudioFilter->flush();
+        mAudioFilter->stop();
+        mAudioFilter->close();
+        mAudioFilter = nullptr;
+    }
+    setAudioParams(params);
+    DemuxFilterType filterType;
+    memset(&filterType, 0, sizeof(filterType));
+    filterType.mainType = DemuxFilterMainType::TS;
+    filterType.subType.tsFilterType() = DemuxTsFilterType::AUDIO;
+    mAudioFilter = mTunerDemux->openFilter(filterType);
+    DemuxFilterSettings filterSettings;
+    mAudioFilter->getDefTsAVFilterSettings(filterSettings, mAudioParams.pid, true);
+    mAudioFilter->configure(filterSettings);
+    int filterId = mAudioFilter->getId();
+    int hwAvSyncId = mTunerDemux->getAvSyncHwId(mAudioFilter);
+    MLOGI("switchAudioTrack: filterId: %x, hwAvSyncId:%x", filterId, hwAvSyncId);
+
+    if (mAudioTrackWrapper) {
+        mAudioTrackWrapper->flush();
+        mAudioTrackWrapper->pause();
+        mAudioTrackWrapper->stop();
+        mAudioTrackWrapper->release();
+        mAudioTrackWrapper = nullptr;
+    }
+
+    mAudioTrackWrapper = new AudioTrackWrapper();
+    mAudioTrackWrapper->configure(mAudioParams, filterId, hwAvSyncId);
+    mAudioTrackWrapper->start();
     return 0;
 }
 
@@ -303,6 +328,8 @@ int AmlTvPlayer::pauseAudioDecoding() {
 }
 
 int AmlTvPlayer::resumeAudioDecoding() {
+    MLOGI("Call resumeAudioDecoding");
+    mAudioTrackWrapper->start();
     return 0;
 }
 
