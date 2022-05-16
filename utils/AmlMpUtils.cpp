@@ -499,6 +499,8 @@ am_tsplayer_avsync_mode convertToAVSyncSourceType(Aml_MP_AVSyncSource avSyncSour
             return TS_SYNC_VMASTER;
         case AML_MP_AVSYNC_SOURCE_AUDIO:
             return TS_SYNC_AMASTER;
+        case AML_MP_AVSYNC_SOURCE_NOSYNC:
+            return TS_SYNC_NOSYNC;
         default:
             return TS_SYNC_PCRMASTER;
     }
@@ -759,6 +761,10 @@ am_tsplayer_video_trick_mode convertToTsplayerVideoTrickMode(Aml_MP_VideoDecodeM
         return AV_VIDEO_TRICK_MODE_NONE;
     case AML_MP_VIDEO_DECODE_MODE_IONLY:
         return AV_VIDEO_TRICK_MODE_IONLY;
+    case AML_MP_VIDEO_DECODE_MODE_PAUSE:
+        return AV_VIDEO_TRICK_MODE_PAUSE;
+    case AML_MP_VIDEO_DECODE_MODE_PAUSE_NEXT:
+        return AV_VIDEO_TRICK_MODE_PAUSE_NEXT;
     default:
         break;
     }

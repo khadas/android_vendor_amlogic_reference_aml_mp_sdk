@@ -218,7 +218,6 @@ private:
     float mADVolume = -1.0;
 
     float mPlaybackRate = 1.0f;
-    float mUserPlaybackRate = 1.0f;
     NativeWindowHelper mNativeWindowHelper;
     WindowSize mVideoWindow;
     int mVideoTunnelId = -1;

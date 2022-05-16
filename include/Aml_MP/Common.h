@@ -423,6 +423,8 @@ typedef enum {
 typedef enum {
     AML_MP_VIDEO_DECODE_MODE_NONE,
     AML_MP_VIDEO_DECODE_MODE_IONLY,
+    AML_MP_VIDEO_DECODE_MODE_PAUSE,
+    AML_MP_VIDEO_DECODE_MODE_PAUSE_NEXT,
 } Aml_MP_VideoDecodeMode;
 
 ////////////////////////////////////////
@@ -667,6 +669,7 @@ typedef enum {
     AML_MP_AVSYNC_SOURCE_VIDEO,
     AML_MP_AVSYNC_SOURCE_AUDIO,
     AML_MP_AVSYNC_SOURCE_PCR,
+    AML_MP_AVSYNC_SOURCE_NOSYNC,
 } Aml_MP_AVSyncSource;
 
 ///////////////////////////////////////////////////////////////////////////////

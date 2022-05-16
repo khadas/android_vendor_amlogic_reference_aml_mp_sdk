@@ -537,6 +537,8 @@ int AmlMpPlayerImpl::flush()
     return ret;
 }
 
+// Smooth playback between 0 and 2x speed (0 < speed <= 2), audio will be resample with play speed
+// I-frmae playback when speed > 2 or speed < 0, audio will not be processed when I-frmae playback
 int AmlMpPlayerImpl::setPlaybackRate(float rate)
 {
     std::unique_lock<std::mutex> lock(mLock);
@@ -546,19 +548,15 @@ int AmlMpPlayerImpl::setPlaybackRate(float rate)
     Aml_MP_VideoDecodeMode newDecodeMode;
     bool decodeModeChanged = false;
 
-    if (rate < 0.0f) {
-        if (rate <= -FAST_PLAY_THRESHOLD) {
-            mPlaybackRate = -rate;
-        } else {
-            return AML_MP_ERROR_BAD_VALUE;
-        }
+    mPlaybackRate = rate;
+
+    //newDecodeMode = (mPlaybackRate > FAST_PLAY_THRESHOLD)?AML_MP_VIDEO_DECODE_MODE_IONLY:AML_MP_VIDEO_DECODE_MODE_NONE;
+    if (mPlaybackRate > FAST_PLAY_THRESHOLD || mPlaybackRate < 0) {
+        newDecodeMode = (mCreateParams.sourceType == AML_MP_INPUT_SOURCE_ES_MEMORY) ?
+                AML_MP_VIDEO_DECODE_MODE_IONLY : AML_MP_VIDEO_DECODE_MODE_PAUSE_NEXT;
     } else {
-        mPlaybackRate = rate;
+        newDecodeMode = AML_MP_VIDEO_DECODE_MODE_NONE;
     }
-
-    mUserPlaybackRate = rate; //save valid user playback rate
-
-    newDecodeMode = (mPlaybackRate >= FAST_PLAY_THRESHOLD)?AML_MP_VIDEO_DECODE_MODE_IONLY:AML_MP_VIDEO_DECODE_MODE_NONE;
     decodeModeChanged = (newDecodeMode != mVideoDecodeMode);
 
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
@@ -577,9 +575,7 @@ int AmlMpPlayerImpl::setPlaybackRate(float rate)
             switchDecodeMode_l(newDecodeMode, lock);
         }
 
-        if (mVideoDecodeMode == AML_MP_VIDEO_DECODE_MODE_NONE) {
-            ret = mPlayer->setPlaybackRate(rate);
-        }
+        ret = mPlayer->setPlaybackRate(rate);
     }
 
     return ret;
@@ -595,11 +591,7 @@ int AmlMpPlayerImpl::getPlaybackRate(float* rate) {
     if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) != AML_MP_DECODING_STATE_STARTED) {
         *rate = 0;
     } else {
-        if (mPlaybackRate >= FAST_PLAY_THRESHOLD) {
-            *rate = mUserPlaybackRate;
-        } else {
-            ret = mPlayer->getPlaybackRate(rate);
-        }
+        ret = mPlayer->getPlaybackRate(rate);
     }
     //MLOG("rate: %f, mPlaybackRate: %f", *rate, mPlaybackRate);
 
@@ -1018,9 +1010,17 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
         break;
 
     case AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_MODE:
+    {
         RETURN_IF(-1, parameter == nullptr);
-        switchDecodeMode_l(*(Aml_MP_VideoDecodeMode*)parameter, lock);
+        Aml_MP_VideoDecodeMode decodeMode = *(Aml_MP_VideoDecodeMode*)parameter;
+        Aml_MP_AVSyncSource originalSyncSource = mSyncSource;
+        if (AML_MP_VIDEO_DECODE_MODE_NONE != decodeMode) {
+            mSyncSource = AML_MP_AVSYNC_SOURCE_NOSYNC;
+        }
+        switchDecodeMode_l(decodeMode, lock);
+        mSyncSource = originalSyncSource;
         break;
+    }
 
     case AML_MP_PLAYER_PARAMETER_VIDEO_PTS_OFFSET:
         RETURN_IF(-1, parameter == nullptr);
@@ -1753,9 +1753,7 @@ int AmlMpPlayerImpl::prepare_l()
         mPlayer->setPcrPid(mPcrPid);
     }
 
-    if (mPlaybackRate > 0.0f && mPlaybackRate < FAST_PLAY_THRESHOLD) {
-        mPlayer->setPlaybackRate(mPlaybackRate);
-    }
+    mPlayer->setPlaybackRate(mPlaybackRate);
 
     if (mVolume >= 0) {
         mPlayer->setVolume(mVolume);
@@ -2077,7 +2075,7 @@ int AmlMpPlayerImpl::switchDecodeMode_l(Aml_MP_VideoDecodeMode decodeMode, std::
 
     ret = stop_l(lock);
     //When start video decoding will set work mode to player, no need to set here
-    if (AML_MP_VIDEO_DECODE_MODE_IONLY == mVideoDecodeMode) {
+    if (AML_MP_VIDEO_DECODE_MODE_NONE != mVideoDecodeMode) {
         ret += startVideoDecoding_l();
     } else {
         ret += start_l();
