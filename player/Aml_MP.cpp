@@ -17,7 +17,7 @@
 
 static const char* mName = LOG_TAG;
 ///////////////////////////////////////////////////////////////////////////////
-#define AML_MP_VERSION_MAJOR   1
+#define AML_MP_VERSION_MAJOR   2
 #define AML_MP_VERSION_MINOR   0
 
 #define AML_MP_VERSION_INT     AML_MP_VERSION_MAJOR << 16 | AML_MP_VERSION_MINOR

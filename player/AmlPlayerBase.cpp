@@ -60,7 +60,7 @@ AmlPlayerBase::AmlPlayerBase(Aml_MP_PlayerCreateParams* createParams, int instan
 :mInstanceId(instanceId)
 , mEventCb(nullptr)
 , mUserData(nullptr)
-, mSubtitleParams{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN, AML_MP_CODEC_UNKNOWN, 0, 0, 0}//default CC
+, mSubtitleParams{AML_MP_INVALID_PID, AML_MP_CODEC_UNKNOWN, AML_MP_CODEC_UNKNOWN, 0, 0, 0, {0}}//default CC
 ,mCreateParams(createParams)
 {
     AML_MP_UNUSED(mCreateParams);

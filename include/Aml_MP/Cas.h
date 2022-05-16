@@ -33,6 +33,7 @@ typedef struct {
     uint32_t stream_num;                    /**< Elementary streams' number.*/
     uint8_t ca_private_data[MAX_DATA_LEN];  /**< Private data.*/
     uint8_t ca_private_data_len;            /**< Private data's length.*/
+    long reserved[8];
 } Aml_MP_CASServiceInfo;
 
 typedef enum {
@@ -84,6 +85,7 @@ typedef struct {
     int key_type;
     int seg_no;
     int iv_reset;/*the start of the each segment need set iv*/
+    long reserved[8];
 } Aml_MP_CASHlsExtData;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -90,6 +90,7 @@ typedef struct {
     Aml_MP_InputSourceType  sourceType;
     Aml_MP_InputStreamType  drmMode;
     uint64_t                options;
+    long                    reserved[8];
 } Aml_MP_PlayerCreateParams;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,10 @@
 #define AML_MP_DEPRECATED __attribute((deprecated))
 #endif
 
+#ifndef __AML_MP_RESERVE_ALIGNED
+#define __AML_MP_RESERVE_ALIGNED __attribute((aligned(sizeof(long))))
+#endif
+
 typedef void* AML_MP_PLAYER;
 typedef void* AML_MP_DVRRECORDER;
 typedef void* AML_MP_DVRPLAYER;
@@ -119,8 +123,14 @@ typedef enum {
     AML_MP_OPTION_MONITOR_PID_CHANGE    = 1 << 1,
 } Aml_MP_Option;
 
+typedef enum {
+    AML_MP_INPUT_BUFFER_TYPE_NORMAL,
+    AML_MP_INPUT_BUFFER_TYPE_SECURE,
+    AML_MP_INPUT_BUFFER_TYPE_TVP,
+} Aml_MP_InputBufferType;
+
 typedef struct {
-    Aml_MP_InputStreamType type;
+    Aml_MP_InputBufferType type;
     uint8_t* address;
     size_t size;
 } Aml_MP_Buffer;
@@ -173,6 +183,7 @@ typedef struct {
     uint8_t                 extraData[512];
     uint32_t                extraDataSize;
     Aml_MP_DemuxMemSecLevel secureLevel;
+    long                   reserved[8];
 } Aml_MP_VideoParams;
 
 typedef struct {
@@ -183,6 +194,7 @@ typedef struct {
     uint8_t                 extraData[512];
     uint32_t                extraDataSize;
     Aml_MP_DemuxMemSecLevel secureLevel;
+    long                    reserved[8];
 } Aml_MP_AudioParams;
 
 ////////////////////////////////////////
@@ -193,6 +205,7 @@ typedef struct {
     int channelId;                     //cc
     int ancillaryPageId;               //dvb
     int compositionPageId;             //dvb
+    long reserved[8];
 } Aml_MP_SubtitleParams;
 
 ////////////////////////////////////////
@@ -244,6 +257,7 @@ typedef struct {
     size_t private_size;
 
     Aml_MP_IptvCasHeaders headers;
+    long reserved[8];
 } Aml_MP_IptvCASParams;
 
 ////////////////////////////////////////
@@ -321,6 +335,7 @@ typedef struct {
     int size;
     int dataLen;
     int bufferedMs;
+    long reserved[8];
 } Aml_MP_BufferItem;
 
 typedef struct {
@@ -462,6 +477,7 @@ typedef struct {
     int frameRate;
     int bitrate;
     Aml_MP_VideoRatio ratio64;
+    long reserved[8];
 } Aml_MP_VideoInfo;
 
 ////////////////////////////////////////
@@ -517,6 +533,7 @@ typedef struct {
     uint32_t b_concealed_frames;
     uint32_t av_resynch_counter;
 #endif
+    long reserved[16];
 } Aml_MP_VdecStat;
 
 
@@ -527,6 +544,7 @@ typedef struct {
     uint32_t channels;                     // Audio channels
     uint32_t channel_mask;                 // Audio channel mask
     uint32_t bitrate;                      // Audio bit rate
+    long reserved[8];
 } Aml_MP_AudioInfo;
 
 ////////////////////////////////////////
@@ -535,6 +553,7 @@ typedef struct {
     uint32_t frame_count;
     uint32_t error_frame_count;
     uint32_t drop_frame_count;
+    long reserved[8];
 } Aml_MP_AdecStat;
 
 ////////////////////////////////////////
@@ -543,6 +562,7 @@ typedef struct {
 typedef struct {
     int what;
     int extra;
+    long reserved[8];
 }Aml_MP_SubtitleInfo;
 
 ////////////////////////////////////////
@@ -551,6 +571,7 @@ typedef struct {
     uint32_t frameCount;
     uint32_t errorFrameCount;
     uint32_t dropFrameCount;
+    long reserved[8];
 } Aml_MP_SubDecStat;
 
 ////////////////////////////////////////
@@ -617,6 +638,7 @@ typedef struct {
     int magazine;
     int page;
     Aml_MP_TeletextEvent event;
+    long reserved[8];
 } AML_MP_TeletextCtrlParam;
 
 ////////////////////////////////////////
@@ -675,6 +697,7 @@ typedef struct {
     int                 pid;
     Aml_MP_CodecID      codecId;
     Aml_MP_DemuxMemSecLevel secureLevel;
+    long                reserved[8];
 } Aml_MP_DVRStream;
 
 typedef struct {
@@ -692,6 +715,7 @@ typedef struct {
   time_t              time;       /**< time duration, unit on ms*/
   loff_t              size;       /**< size*/
   uint32_t            pkts;       /**< number of ts packets*/
+  long                reserved[8];
 } Aml_MP_DVRSourceInfo;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -720,7 +744,6 @@ typedef enum {
     AML_MP_PLAYER_EVENT_VIDEO_BASE              = 0x2000,
     AML_MP_PLAYER_EVENT_VIDEO_CHANGED,
     AML_MP_PLAYER_EVENT_VIDEO_DECODE_FIRST_FRAME,
-    AML_MP_PLAYER_EVENT_VIDEO_FIRST_FRAME,
     AML_MP_PLAYER_EVENT_VIDEO_OVERFLOW,
     AML_MP_PLAYER_EVENT_VIDEO_UNDERFLOW,
     AML_MP_PLAYER_EVENT_VIDEO_INVALID_TIMESTAMP,
@@ -733,7 +756,6 @@ typedef enum {
     AML_MP_PLAYER_EVENT_AUDIO_BASE              = 0x3000,
     AML_MP_PLAYER_EVENT_AUDIO_CHANGED,
     AML_MP_PLAYER_EVENT_AUDIO_DECODE_FIRST_FRAME,
-    AML_MP_PLAYER_EVENT_AUDIO_FIRST_FRAME,
     AML_MP_PLAYER_EVENT_AUDIO_OVERFLOW,
     AML_MP_PLAYER_EVENT_AUDIO_UNDERFLOW,
     AML_MP_PLAYER_EVENT_AUDIO_INVALID_TIMESTAMP,
@@ -767,6 +789,7 @@ typedef struct {
     uint32_t frame_height;
     uint32_t frame_rate;
     uint32_t frame_aspectratio;
+    long     reserved[8];
 } Aml_MP_PlayerEventVideoFormat;
 
 //AML_MP_PLAYER_EVENT_AUDIO_CHANGED,
@@ -774,12 +797,14 @@ typedef struct {
     uint32_t sample_rate;
     uint32_t channels;
     uint32_t channel_mask;
+    long     reserved[8];
 } Aml_MP_PlayerEventAudioFormat;
 
 //AML_MP_PLAYER_EVENT_SCRAMBLING,
 typedef struct {
     Aml_MP_StreamType type;
     char scramling;
+    long reserved[8];
 } Aml_MP_PlayerEventScrambling;
 
 //AML_MP_PLAYER_EVENT_PID_CHANGED
@@ -794,6 +819,7 @@ typedef struct {
         Aml_MP_AudioParams      audioParams;
         Aml_MP_SubtitleParams   subtitleParams;
     } u;
+    long reserved[8];
 } Aml_MP_PlayerEventPidChangeInfo;
 
 
@@ -802,6 +828,7 @@ typedef struct {
 typedef struct {
     uint8_t  *data;
     size_t   len;
+    long     reserved[8];
 } Aml_MP_PlayerEventMpegUserData;
 
 ////////////////////////////////////////
@@ -825,6 +852,7 @@ typedef struct {
     int videoWidth;
     int videoHeight;
     int showing;
+    long reserved[8];
 }Aml_MP_SubtitleData;
 
 ////////////////////////////////////////
@@ -832,6 +860,7 @@ typedef struct {
 typedef struct {
     uint32_t width;
     uint32_t height;
+    long     reserved[8];
 } Aml_MP_SubtitleDimension;
 
 ////////////////////////////////////////
@@ -839,6 +868,7 @@ typedef struct {
 typedef struct {
     int event;
     int id;
+    long reserved[8];
 }Aml_MP_SubtitleChannelUpdate;
 
 typedef void (*Aml_MP_PlayerEventCallback)(void* userData, Aml_MP_PlayerEventType event, int64_t param);

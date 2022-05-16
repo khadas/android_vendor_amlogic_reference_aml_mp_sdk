@@ -34,11 +34,13 @@ typedef struct {
     int                         ringbufSize;        //dvbcore ringbuf size,this buf is uesd to cache ts data,
     uint8_t                     forceSysClock;      //1: force to use system clock as PVR index time source
                                                     //0: determine index time source based on actual situation
+    long                        reserved[8];
 } Aml_MP_DVRRecorderBasicParams;
 
 typedef struct {
     int64_t                     maxSize;
     int64_t                     maxTime;
+    long                        reserved[8];
 } Aml_MP_DVRRecorderTimeShiftParams;
 
 typedef struct {
@@ -51,6 +53,7 @@ typedef struct {
     uint8_t*                    clearKey;
     uint8_t*                    clearIV;
     uint32_t                    keyLength;
+    long                        reserved[8];
 } Aml_MP_DVRRecorderEncryptParams;
 
 typedef struct {
@@ -81,6 +84,7 @@ typedef struct {
     Aml_MP_DVRSourceInfo info;
     Aml_MP_DVRStreamArray streams;
     Aml_MP_DVRSourceInfo infoObsolete;
+    long reserved[8];
 } Aml_MP_DVRRecorderStatus;
 
 typedef struct {
@@ -89,12 +93,14 @@ typedef struct {
     time_t duration;
     size_t size;
     uint32_t nbPackets;
+    long reserved[8];
 } Aml_MP_DVRSegmentInfo;
 
 typedef struct {
   time_t              time;       /**< time duration, unit on ms*/
   loff_t              size;       /**< size*/
   uint32_t            pkts;       /**< number of ts packets*/
+  long                reserved[8];
 } Aml_MP_DVRRecodFileInfo;
 
 #ifdef __cplusplus
@@ -265,6 +271,7 @@ typedef struct {
     bool                        isTimeShift;
     Aml_MP_InputStreamType      drmMode;
     bool                        isNotifyTime;
+    long                        reserved[8];
 } Aml_MP_DVRPlayerBasicParams;
 
 typedef struct {
@@ -275,6 +282,7 @@ typedef struct {
     uint8_t*                    clearKey;
     uint8_t*                    clearIV;
     uint32_t                    keyLength;
+    long                        reserved[8];
 } Aml_MP_DVRPlayerDecryptParams;
 
 typedef struct {
@@ -308,6 +316,7 @@ typedef struct {
     float speed;                        /**< DVR playback current speed*/
     Aml_MP_DVRPlayerSegmentFlag flags;  /**< DVR playback flags*/
     Aml_MP_DVRSourceInfo infoObsolete;  /**< DVR playback obsolete information, take into account for timeshift*/
+    long reserved[8];
 } Aml_MP_DVRPlayerStatus;
 
 #ifdef __cplusplus
