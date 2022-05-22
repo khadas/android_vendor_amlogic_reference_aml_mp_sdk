@@ -15,9 +15,7 @@
 #ifdef HAVE_TUNER_HAL
 #include "AmlTvPlayer.h"
 #endif
-#ifdef HAVE_CTC
 #include "AmlCTCPlayer.h"
-#endif
 
 #ifdef ANDROID
 #include <system/window.h>
@@ -42,13 +40,19 @@ sptr<AmlPlayerBase> AmlPlayerBase::create(Aml_MP_PlayerCreateParams* createParam
         player = new AmlTvPlayer(createParams, instanceId);
     } else
 #endif
-    if (createParams->channelId == AML_MP_CHANNEL_ID_MAIN ||
+
+#ifdef ANDROID
+    if (createParams->options & AML_MP_OPTION_PREFER_CTC) {
+        player = new AmlCTCPlayer(createParams, instanceId);
+    } else
+#endif
+        if (createParams->channelId == AML_MP_CHANNEL_ID_MAIN ||
         !AmlMpPlayerRoster::instance().isAmTsPlayerExist() ||
         isSupportMultiHwDemux() ||
         AmlMpConfig::instance().mTsPlayerNonTunnel) {
         player = new AmlTsPlayer(createParams, instanceId);
     } else {
-#ifdef HAVE_CTC
+#ifdef ANDROID
         player = new AmlCTCPlayer(createParams, instanceId);
 #endif
     }

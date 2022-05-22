@@ -221,6 +221,7 @@ static void showUsage()
             "   --options     set options, eg: 3, 3 equals with 0b0011, so it means \"prefer tunerhal\" and \"monitor pid change\"\n"
             "                 0-bit set 1 means prefer tunerhal:       AML_MP_OPTION_PREFER_TUNER_HAL\n"
             "                 1-bit set 1 means monitor pid change:    AML_MP_OPTION_MONITOR_PID_CHANGE\n"
+            "                 2-bit set 1 means prefer CTC:            AML_MP_OPTION_PREFER_CTC\n"
             "   --esmode      enable es mode playback\n"
 #ifdef HAVE_SECMEM
             "   --cleartvp    enable cleartvp for es mode playback\n"

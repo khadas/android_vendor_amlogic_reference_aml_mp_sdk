@@ -1701,10 +1701,14 @@ int AmlMpPlayerImpl::prepare_l()
 
     if (mPlayer == nullptr) {
         mPlayer = AmlPlayerBase::create(&mCreateParams, mInstanceId);
+        if (mPlayer == nullptr) {
+            MLOGE("AmlPlayerBase create failed!");
+            return -1;
+        }
     }
 
-    if (mPlayer == nullptr) {
-        MLOGE("AmlPlayerBase create failed!");
+    if (mPlayer->initCheck() != AML_MP_OK) {
+        MLOGE("AmlPlayerBase initCheck failed!");
         return -1;
     }
 

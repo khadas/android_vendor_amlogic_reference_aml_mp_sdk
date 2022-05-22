@@ -117,10 +117,13 @@ typedef enum {
  * \param AML_MP_OPTION_MONITOR_PID_CHANGE
  *      monitor A/V pid change when playing, and report
  *      AML_MP_PLAYER_EVENT_PID_CHANGED when pid changed
+ * \param AML_MP_OPTION_PREFER_CTC
+ *      choose liveplayer internally
  */
 typedef enum {
     AML_MP_OPTION_PREFER_TUNER_HAL      = 1 << 0,
     AML_MP_OPTION_MONITOR_PID_CHANGE    = 1 << 1,
+    AML_MP_OPTION_PREFER_CTC            = 1 << 2,
 } Aml_MP_Option;
 
 typedef enum {
