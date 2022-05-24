@@ -208,6 +208,7 @@ Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryM
 AmlTeletextCtrlParam convertToTeletextCtrlParam(AML_MP_TeletextCtrlParam* teletextCtrlParam);
 AmlTeletextEvent convertToTeletextEvent(Aml_MP_TeletextEvent teletextEvent);
 AML_MP_SubtitleDataType convertToMpSubtitleDataType(AmlSubDataType subDataType);
+int convertToRegionId(char iso639lang[]);
 #endif
 
 bool isSupportMultiHwDemux();

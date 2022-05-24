@@ -949,6 +949,7 @@ AmlTeletextCtrlParam convertToTeletextCtrlParam(AML_MP_TeletextCtrlParam* telete
     params.magazine = teletextCtrlParam->magazine;
     params.page = teletextCtrlParam->page;
     params.event = convertToTeletextEvent(teletextCtrlParam->event);
+    params.regionid = convertToRegionId(teletextCtrlParam->iso639_lang);
 
     return params;
 }
@@ -1022,6 +1023,45 @@ AmlTeletextEvent convertToTeletextEvent(Aml_MP_TeletextEvent teletextEvent) {
         default:
             return TT_EVENT_INVALID;
     }
+}
+
+int convertToRegionId(char iso639lang[]) {
+    //Guessing table for missing "default region triplet"
+    static const int pi_default_triplet[] = {
+        0, 0,           // slo cze
+        8,              // pol
+        24,24,24,24,    //ssc scr slv rum
+        32,32,32,32,32, //est lit rus bul ukr
+        48,48,          //gre ell
+        64,             //ara
+        88,             //heb
+        16 };           //default
+     static const char *const ppsz_default_triplet[] = {
+         "slo", "cze",
+         "pol",
+         "ssc", "scr", "slv", "rum",
+         "est", "lit", "rus", "bul", "ukr",
+         "gre", "ell",
+         "ara",
+         "heb",
+         NULL};
+
+    int regionid = 16;  //default value
+
+    if (iso639lang && iso639lang[0] == '\0')  //iso639lang is NULL
+        return regionid;
+
+    for (int i = 0; ppsz_default_triplet[i] != NULL; i++)
+    {
+        if (!strncmp(iso639lang, ppsz_default_triplet[i], 3))
+        {
+            regionid = pi_default_triplet[i];
+            MLOGI("overwriting default zvbi region: %d", pi_default_triplet[i] );
+            break;
+        }
+    }
+
+    return regionid;
 }
 
 AML_MP_SubtitleDataType convertToMpSubtitleDataType(AmlSubDataType subDataType) {
