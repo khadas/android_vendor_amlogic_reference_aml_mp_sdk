@@ -46,13 +46,6 @@ AmlWVIptvCas::~AmlWVIptvCas()
     MLOGI("dtor AmlWVIptvCas");
     int ret = 0;
 
-    if (mDscFd) {
-        ret = close(mDscFd);
-        if (ret)
-            MLOGE("~AmlWVIptvCas fd= %d error=%d \n", mDscFd, errno);
-    }
-
-
     if (pIptvCas) {
         delete pIptvCas;
         pIptvCas = nullptr;
@@ -115,7 +108,6 @@ int AmlWVIptvCas::startDescrambling(const Aml_MP_IptvCASParams* param)
         return;
     }
 
-    mDscFd = 0;
     mFirstEcm = 0;
     pIptvCas->mCasObjIdx = mInstanceId;
 
@@ -298,8 +290,6 @@ int AmlWVIptvCas::setDscSource()
         ret = amsysfs_set_sysfs_str(DMX0_SOURCE_PATH, DMX_SRC);
         if (ret)
             MLOGI("Error ret 0x%x\n", ret);
-        mDscFd = dscDevOpen(DSC_DEVICE, O_RDWR);
-        MLOGI("%s, dsc_fd=%d\n", __func__, mDscFd);
         ret = amsysfs_set_sysfs_str(DSC0_SOURCE_PATH, DSC_SRC);
         if (ret)
             MLOGI("Error ret 0x%x\n", ret);

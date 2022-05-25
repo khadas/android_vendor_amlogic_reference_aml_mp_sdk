@@ -35,7 +35,6 @@ private:
     int mInstanceId{0};
     char mName[64];
 
-    int mDscFd;
     int mFirstEcm;
     uint8_t mEcmTsPacket[188];
 

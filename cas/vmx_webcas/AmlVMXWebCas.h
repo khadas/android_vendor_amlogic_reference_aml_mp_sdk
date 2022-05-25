@@ -36,7 +36,6 @@ private:
     uint8_t sessionId[8];
     int mInstanceId;
 
-    int mDscFd;
     int mFirstEcm;
     uint8_t mEcmTsPacket[188];
 

@@ -38,11 +38,6 @@ AmlVMXIptvCas_V2::~AmlVMXIptvCas_V2()
     MLOGI("dtor AmlVMXIptvCas_V2");
     int ret = 0;
 
-    if (mDscFd >= 0) {
-        ret = close(mDscFd);
-        if (ret)
-            MLOGE("~AmlVMXIptvCas_V2 fd= %d error=%d \n", mDscFd, errno);
-    }
     pIptvCas.clear();
 }
 
@@ -242,8 +237,6 @@ int AmlVMXIptvCas_V2::setDscSource(const char* source)
         ret = amsysfs_set_sysfs_str(DMX0_SOURCE_PATH, DMX_SRC);
         if (ret)
             MLOGI("Error ret 0x%x\n", ret);
-        mDscFd = dscDevOpen(DSC_DEVICE, O_RDWR);
-        MLOGI("%s, dsc_fd=%d\n", __func__, mDscFd);
         ret = amsysfs_set_sysfs_str(DSC0_SOURCE_PATH, DSC_SRC);
         if (ret)
             MLOGI("Error ret 0x%x\n", ret);
