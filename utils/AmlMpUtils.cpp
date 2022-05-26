@@ -330,7 +330,7 @@ const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorReco
 }
 
 ////////////////////////////////////////////////////////////////////////
-
+#ifdef ANDROID
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec)
 {
     vformat_t vFormat = VFORMAT_UNKNOWN;
@@ -423,6 +423,7 @@ aformat_t convertToAForamt(Aml_MP_CodecID audioCodec)
 
     return aFormat;
 }
+#endif
 
 am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec) {
     switch (aml_MP_VideoCodec) {

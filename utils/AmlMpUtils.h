@@ -12,8 +12,6 @@
 
 #include "AmlMpLog.h"
 #include <chrono>
-#include <amports/vformat.h>
-#include <amports/aformat.h>
 #include <Aml_MP/Common.h>
 #include <string>
 #include <vector>
@@ -34,6 +32,8 @@ struct list_head {
 #include <sys/syscall.h>
 #include <unistd.h>
 #ifdef ANDROID
+#include <amports/vformat.h>
+#include <amports/aformat.h>
 #include <utils/RefBase.h>
 namespace android {
 class NativeHandle;
@@ -168,8 +168,10 @@ const char* mpVideoDecideMode2Str(Aml_MP_VideoDecodeMode decodeMode);
 const char* mpCASServiceType2Str(Aml_MP_CASServiceType servciceType);
 const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
 
+#ifdef ANDROID
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec);
 aformat_t convertToAForamt(Aml_MP_CodecID audioCodec);
+#endif
 
 am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec);
 am_tsplayer_audio_codec convertToAudioCodec(Aml_MP_CodecID aml_MP_AudioCodec);
