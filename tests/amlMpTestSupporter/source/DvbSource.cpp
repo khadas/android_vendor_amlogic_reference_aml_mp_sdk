@@ -184,7 +184,8 @@ int DvbSource::initCheck()
 
     free(address);
 
-    int fendIndex = 0;
+    int fendIndex = mInputParameter.sourceId;
+    MLOGI("open frontend dev, id:%d", fendIndex);
     if (openFend(fendIndex) < 0) {
         MLOGE("openFend failed!\n");
         return -1;

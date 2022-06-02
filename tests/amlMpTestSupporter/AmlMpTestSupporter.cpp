@@ -239,13 +239,13 @@ void AmlMpTestSupporter::setSourceMode(bool esMode, bool clearTVP)
     MLOGI("mEsMode:%d, mClearTVP:%d", mEsMode, mClearTVP);
 }
 
-int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceReceiver)
+int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceReceiver, bool isTimeShift)
 {
     int ret = 0;
     mPlayMode = playMode;
     ALOGI(">>>> AmlMpTestSupporter startPlay\n");
     if (mIsDVRPlayback) {
-        return startDVRPlayback();
+        return startDVRPlayback(true, isTimeShift);
     }
     mDemuxId = mParser->getDemuxId();
     Aml_MP_DemuxId demuxId = mDemuxId;

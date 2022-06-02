@@ -36,6 +36,7 @@ struct Argument
     uint64_t options = 0;
     bool esMode = false;
     bool clearTVP = false;
+    bool timeShift = false;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -55,6 +56,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"options",     required_argument,  nullptr, 'o'},
         {"esmode",      no_argument,        nullptr, 'esmd'},
         {"cleartvp",    no_argument,        nullptr, 't'},
+        {"timeshift",   no_argument,        nullptr, 'tf'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -175,6 +177,13 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 'tf':
+        {
+            printf("timeShift\n");
+            argument->timeShift = true;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -226,6 +235,7 @@ static void showUsage()
 #ifdef HAVE_SECMEM
             "   --cleartvp    enable cleartvp for es mode playback\n"
 #endif
+            "   --timeshift   enable timeshift\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -238,6 +248,28 @@ static void showUsage()
             );
 }
 
+int startPlayback(const sptr<AmlMpTestSupporter>& mpTestSupporter, Argument& argument, const std::string* url = nullptr)
+{
+    int ret = 0;
+    const std::string& playUrl = url ? *url : argument.url;
+
+    mpTestSupporter->setDataSource(playUrl);
+    ret = mpTestSupporter->prepare(argument.crypto);
+    if (ret < 0) {
+        printf("prepare failed!\n");
+        return -1;
+    }
+
+    MLOGI(">>>> AmlMpPlayerDemo Start\n");
+    mpTestSupporter->setVideoErrorRecoveryMode(argument.videoErrorRecoveryMode);
+    mpTestSupporter->setSourceMode(argument.esMode, argument.clearTVP);
+    ret = mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode, true, true, argument.timeShift);
+    if (ret < 0) {
+        return -1;
+    }
+    MLOGI("<<<< AmlMpPlayerDemo Start\n");
+    return ret;
+}
 
 int main(int argc, char *argv[])
 {
@@ -250,6 +282,7 @@ int main(int argc, char *argv[])
     }
 
     sptr<AmlMpTestSupporter> mpTestSupporter = new AmlMpTestSupporter;
+    sptr<AmlMpTestSupporter> mpTestSupporter2 = nullptr;
     mpTestSupporter->installSignalHandler();
 
     AmlMpTestSupporter::DisplayParam displayParam;
@@ -260,6 +293,7 @@ int main(int argc, char *argv[])
     displayParam.zorder = argument.zorder;
     displayParam.videoMode = argument.videoMode;
     displayParam.channelId = argument.channelId;
+
     mpTestSupporter->setDisplayParam(displayParam);
     if (argument.options) {
         mpTestSupporter->addOptions(argument.options);
@@ -268,27 +302,51 @@ int main(int argc, char *argv[])
     if (argument.uiMode) {
         mpTestSupporter->startUIOnly();
     } else {
-        mpTestSupporter->setDataSource(argument.url);
-        ret = mpTestSupporter->prepare(argument.crypto);
-        if (ret < 0) {
-            printf("prepare failed!\n");
-            return -1;
-        }
-        MLOGI("argument.record=%d\n", argument.record);
-        if (!argument.record) {
-            MLOGI(">>>> AmlMpPlayerDemo Start\n");
-            mpTestSupporter->setVideoErrorRecoveryMode(argument.videoErrorRecoveryMode);
-            mpTestSupporter->setSourceMode(argument.esMode, argument.clearTVP);
-            ret = mpTestSupporter->startPlay((AmlMpTestSupporter::PlayMode)argument.playMode);
+        MLOGI("argument.record=%d argument.timeShift=%d\n", argument.record, argument.timeShift);
+        if (argument.record || argument.timeShift) {
+            mpTestSupporter->setDataSource(argument.url);
+            ret = mpTestSupporter->prepare(argument.crypto);
             if (ret < 0) {
+                printf("prepare failed!\n");
                 return -1;
             }
-            MLOGI("<<<< AmlMpPlayerDemo Start\n");
-        } else {
-            mpTestSupporter->startRecord();
+            ret = mpTestSupporter->startRecord(true, argument.timeShift);
+            if (ret < 0) {
+                printf("startRecord failed!\n");
+                return -1;
+            }
+            if (argument.timeShift) {
+                MLOGI(">>>> TimeshiftRecord START\n");
+                sleep(2);//wait for 2s data
+                char recordPathInfo[100];
+                mpTestSupporter2 = new AmlMpTestSupporter;
+                mpTestSupporter2->setDisplayParam(displayParam);
+                if (argument.options) {
+                    mpTestSupporter2->addOptions(argument.options);
+                }
+                sprintf(recordPathInfo, "dvr:/%s?demuxid=%d&sourceid=%d", AML_MP_TEST_SUPPORTER_RECORD_FILE,
+                       mpTestSupporter->mDemuxId + 1, mpTestSupporter->mDemuxId + 1);
+                std::string finalUrl = recordPathInfo;
+                ret = startPlayback(mpTestSupporter2, argument, &finalUrl);
+                if (ret < 0) {
+                    printf("mpTestSupporter2 startDVRPlayback failed!\n");
+                    return -1;
+                }
+                MLOGI("<<<< TimeshiftRecord START\n");
+            }
+        }else {
+            ret = startPlayback(mpTestSupporter, argument);
+            if (ret < 0) {
+                printf("AmlMpPlayerDemo Start failed!\n");
+            }
         }
     }
     mpTestSupporter->fetchAndProcessCommands();
+    if (mpTestSupporter2 != nullptr) {
+        MLOGI("timeShift mpTestSupporter2 destory\n");
+        mpTestSupporter2->stop();
+        mpTestSupporter2.clear();
+    }
     mpTestSupporter->stop();
     mpTestSupporter.clear();
 

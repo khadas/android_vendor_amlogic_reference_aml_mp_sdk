@@ -253,6 +253,11 @@ std::string DVRPlayback::stripUrlIfNeeded(const std::string& url) const
         }
     }
     result.erase(0, strlen("dvr://"));
+
+    auto lsuffix = result.find_first_of('?');
+    if (lsuffix != result.npos) {
+        result = result.substr(0, lsuffix);
+    }
     //for (;;) {
         //auto it = ++result.begin();
         //if (*it != '/') {
