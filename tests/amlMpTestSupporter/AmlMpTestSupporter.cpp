@@ -290,26 +290,25 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
 
 #ifdef ANDROID
 #ifndef __ANDROID_VNDK__
-if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
-    if (!mDisplayParam.videoMode) {
-        if (mDisplayParam.aNativeWindow) {
-            mPlayback->setANativeWindow(mDisplayParam.aNativeWindow);
-        } else {
-            sp<ANativeWindow> window = getSurfaceControl();
-            if (window == nullptr) {
-                MLOGE("create native window failed!");
-                return -1;
-            mPlayback->setANativeWindow(window);
+    if (mWorkMode == AML_MP_PLAYER_MODE_NORMAL) {
+        if (!mDisplayParam.videoMode) {
+            if (mDisplayParam.aNativeWindow) {
+                mPlayback->setANativeWindow(mDisplayParam.aNativeWindow);
+            } else {
+                sp<ANativeWindow> window = getSurfaceControl();
+                if (window == nullptr) {
+                    MLOGE("create native window failed!");
+                    return -1;
+                }
+                mPlayback->setANativeWindow(window);
             }
-        mPlayback->setANativeWindow(window);
+        } else {
+            setOsdBlank(1);
+            mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_WINDOW_ZORDER, &mDisplayParam.zorder);
+            mPlayback->setVideoWindow(mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
+            MLOGI("x:%d y:%d width:%d height:%d\n", mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
         }
-    } else {
-        setOsdBlank(1);
-        mPlayback->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_WINDOW_ZORDER, &mDisplayParam.zorder);
-        mPlayback->setVideoWindow(mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
-        MLOGI("x:%d y:%d width:%d height:%d\n", mDisplayParam.x, mDisplayParam.y, mDisplayParam.width, mDisplayParam.height);
     }
-}
 #else
     if (mDisplayParam.channelId < 0) {
         printf("Please specify the ui channel id by --id option, default set to 0 now!\n");

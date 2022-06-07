@@ -132,8 +132,8 @@ private:
     int setSidebandIfNeeded_l();
     int prepare_l();
     int finishPreparingIfNeeded_l();
-    int resetIfNeeded_l(std::unique_lock<std::mutex>& lock);
-    int reset_l(std::unique_lock<std::mutex>& lock);
+    int resetIfNeeded_l(std::unique_lock<std::mutex>& lock, bool clearCasSession = true);
+    int reset_l(std::unique_lock<std::mutex>& lock, bool clearCasSession);
     int applyParameters_l();
     void programEventCallback(Parser::ProgramEventType event, int param1, int param2, void* data);
     int drainDataFromBuffer_l();
@@ -142,7 +142,7 @@ private:
     void notifyListener(Aml_MP_PlayerEventType eventType, int64_t param);
 
     int start_l();
-    int stop_l(std::unique_lock<std::mutex>& lock);
+    int stop_l(std::unique_lock<std::mutex>& lock, bool clearCasSession = true);
     int pause_l();
     int resume_l();
 

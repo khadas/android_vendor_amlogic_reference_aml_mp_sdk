@@ -371,7 +371,7 @@ int AmlMpPlayerImpl::stop()
     return stop_l(lock);
 }
 
-int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock)
+int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock, bool clearCasSession)
 {
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         if (mPlayer) {
@@ -396,7 +396,7 @@ int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock)
     setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, AML_MP_DECODING_STATE_STOPPED);
     setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_DECODING_STATE_STOPPED);
 
-    int ret = resetIfNeeded_l(lock);
+    int ret = resetIfNeeded_l(lock, clearCasSession);
 
     MLOG("end");
     return ret;
@@ -1916,7 +1916,7 @@ int AmlMpPlayerImpl::finishPreparingIfNeeded_l()
     return 0;
 }
 
-int AmlMpPlayerImpl::resetIfNeeded_l(std::unique_lock<std::mutex>& lock)
+int AmlMpPlayerImpl::resetIfNeeded_l(std::unique_lock<std::mutex>& lock, bool clearCasSession)
 {
     if (mStreamState == 0) {
         setState_l(STATE_STOPPED);
@@ -1925,13 +1925,13 @@ int AmlMpPlayerImpl::resetIfNeeded_l(std::unique_lock<std::mutex>& lock)
     }
 
     if (mState == STATE_STOPPED) {
-        reset_l(lock);
+        reset_l(lock, clearCasSession);
     }
 
     return 0;
 }
 
-int AmlMpPlayerImpl::reset_l(std::unique_lock<std::mutex>& lock)
+int AmlMpPlayerImpl::reset_l(std::unique_lock<std::mutex>& lock, bool clearCasSession)
 {
     MLOG();
     mTsBuffer.reset();
@@ -1949,8 +1949,11 @@ int AmlMpPlayerImpl::reset_l(std::unique_lock<std::mutex>& lock)
     if (!mIsStandaloneCas) {
         stopDescrambling_l();
     }
-    mIsStandaloneCas = false;
-    mCasHandle.clear();
+
+    if (clearCasSession) {
+        mIsStandaloneCas = false;
+        mCasHandle.clear();
+    }
 
     resetVariables_l();
 
@@ -2073,7 +2076,8 @@ int AmlMpPlayerImpl::switchDecodeMode_l(Aml_MP_VideoDecodeMode decodeMode, std::
         return 0;
     }
 
-    ret = stop_l(lock);
+    //Not clear cas session while switch decode mode
+    ret = stop_l(lock, false);
     //When start video decoding will set work mode to player, no need to set here
     if (AML_MP_VIDEO_DECODE_MODE_NONE != mVideoDecodeMode) {
         ret += startVideoDecoding_l();

@@ -666,7 +666,7 @@ int AmlTsPlayer::hideVideo() {
 int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
     int ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
 
-    MLOGI("Call setParameter, key is %s", mpPlayerParameterKey2Str(key));
+    MLOGI("Call setParameter, key is %s, parameter is %d", mpPlayerParameterKey2Str(key), (parameter == nullptr? -1 : *(char*)parameter));
     switch (key) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE:
             //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, value is %d", *(am_tsplayer_video_match_mode*)parameter);
@@ -727,7 +727,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL:
         {
             Aml_MP_ADVolume* ADVolume = (Aml_MP_ADVolume*)parameter;
-            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE, value is master %d, slave %d", ADVolume->masterVolume, ADVolume->slaveVolume);
+            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, value is master %d, slave %d", ADVolume->masterVolume, ADVolume->slaveVolume);
             ret = AmTsPlayer_setADMixLevel(mPlayer, ADVolume->masterVolume, ADVolume->slaveVolume);
         }
         break;
@@ -836,37 +836,21 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             am_tsplayer_video_info videoInfo;
             ret = AmTsPlayer_getVideoInfo(mPlayer, &videoInfo);
             convertToMpVideoInfo((Aml_MP_VideoInfo*)parameter, &videoInfo);
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_VIDEO_INFO, width: %d, height: %d, framerate: %d, bitrate: %d, ratio64: %llu", videoInfo.width, videoInfo.height, videoInfo.framerate, videoInfo.bitrate, videoInfo.ratio64);
             break;
         case AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_STAT:
             ret = AmTsPlayer_getVideoStat(mPlayer, (am_tsplayer_vdec_stat*)parameter);
-            //am_tsplayer_vdec_stat* vdec_stat;
-            //vdec_stat = (am_tsplayer_vdec_stat*)parameter;
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_STAT, frame_width: %d, frame_height: %d, frame_rate: %d", vdec_stat->frame_width, vdec_stat->frame_height, vdec_stat->frame_rate);
             break;
         case AML_MP_PLAYER_PARAMETER_AUDIO_INFO:
             ret = AmTsPlayer_getAudioInfo(mPlayer, (am_tsplayer_audio_info*)parameter);
-            //am_tsplayer_audio_info* audioInfo;
-            //audioInfo = (am_tsplayer_audio_info*)parameter;
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AUDIO_INFO, sample_rate: %d, channels: %d, channel_mask: %d, bitrate: %d", audioInfo->sample_rate, audioInfo->channels, audioInfo->channel_mask, audioInfo->bitrate);
             break;
         case AML_MP_PLAYER_PARAMETER_AUDIO_DECODE_STAT:
             ret = AmTsPlayer_getAudioStat(mPlayer, (am_tsplayer_adec_stat*) parameter);
-            //am_tsplayer_adec_stat* adec_stat;
-            //adec_stat = (am_tsplayer_adec_stat*)parameter;
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AUDIO_DECODE_STAT, frame_count: %d, error_frame_count: %d, drop_frame_count: %d", adec_stat->frame_count, adec_stat->error_frame_count, adec_stat->drop_frame_count);
             break;
         case AML_MP_PLAYER_PARAMETER_AD_INFO:
             ret = AmTsPlayer_getADInfo(mPlayer, (am_tsplayer_audio_info*)parameter);
-            //am_tsplayer_audio_info* adInfo;
-            //adInfo = (am_tsplayer_audio_info*)parameter;
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AUDIO_INFO, sample_rate: %d, channels: %d, channel_mask: %d, bitrate: %d", adInfo->sample_rate, adInfo->channels, adInfo->channel_mask, adInfo->bitrate);
             break;
         case AML_MP_PLAYER_PARAMETER_AD_DECODE_STAT:
             ret = AmTsPlayer_getADStat(mPlayer, (am_tsplayer_adec_stat*)parameter);
-            //am_tsplayer_adec_stat* ad_stat;
-            //ad_stat = (am_tsplayer_adec_stat*)parameter;
-            //MLOGI("trace getParameter, AML_MP_PLAYER_PARAMETER_AUDIO_DECODE_STAT, frame_count: %d, error_frame_count: %d, drop_frame_count: %d", ad_stat->frame_count, ad_stat->error_frame_count, ad_stat->drop_frame_count);
             break;
 
         case AML_MP_PLAYER_PARAMETER_INSTANCE_ID:
