@@ -666,7 +666,7 @@ int AmlTsPlayer::hideVideo() {
 int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
     int ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
 
-    MLOGI("Call setParameter, key is %s, parameter is %d", mpPlayerParameterKey2Str(key), (parameter == nullptr? -1 : *(char*)parameter));
+    MLOGI("Call setParameter, key is %s", mpPlayerParameterKey2Str(key));
     switch (key) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE:
             //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, value is %d", *(am_tsplayer_video_match_mode*)parameter);
