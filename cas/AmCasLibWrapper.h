@@ -69,6 +69,7 @@ public:
     AmCasCode_t processEcm(int isSection, int isVideoEcm, int vEcmPid, int aEcmPid, uint8_t*pBuffer, int iBufferLength);
     AmCasCode_t processEmm(int isSection, int iPid, uint8_t *pBuffer, int iBufferLength);
     AmCasCode_t decrypt(uint8_t *in, uint8_t *out, int size, void *ext_data);
+    AmCasCode_t selectTrack(int trackType,int trackPid,int trackFormat);
     AmCasCode_t releaseAll();
     uint8_t* getOutbuffer();
     //CasStreamInfo mCasStreamInfo;
@@ -92,6 +93,7 @@ private:
     typedef AmCasStatus_t (*closeSessionFunc)(void *casObj, uint8_t *sessionId);
     typedef AmCasStatus_t (*releaseAllFunc)(void *casObj);
     typedef uint8_t* (*getOutbufferFunc)(void *casObj);
+    typedef AmCasStatus_t (*selectTrackFunc)(void *casObj, int trackType, int trackPid, int trackFormat);
 
     struct CasSymbols
     {
@@ -108,6 +110,7 @@ private:
         closeSessionFunc closeSession;
         releaseAllFunc releaseAll;
         getOutbufferFunc getOutbuffer;
+        selectTrackFunc selectTrack;
     };
     static CasSymbols sCasSymbols;
     static void* sCasHandle;

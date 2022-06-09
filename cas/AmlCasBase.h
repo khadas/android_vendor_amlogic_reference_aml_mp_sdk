@@ -50,6 +50,7 @@ public:
     virtual int decrypt(uint8_t *in, int size, void *ext_data, Aml_MP_Buffer* outbuffer);
 
     virtual int updateDescramblingPid(int oldStreamPid, int newStreamPid);
+    virtual int switchAudioTrack(const Aml_MP_AudioParams* params);
     virtual int startDVRRecord(Aml_MP_CASServiceInfo* serviceInfo);
     virtual int stopDVRRecord();
 

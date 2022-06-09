@@ -193,6 +193,21 @@ int AmlVMXIptvCas_V2::processEmm(const uint8_t* data, size_t size)
     return ret;
 }
 
+int AmlVMXIptvCas_V2::switchAudioTrack(const Aml_MP_AudioParams* params)
+{
+    MLOG();
+    int ret = 0;
+    const int tracktype_audio = 2;//tracktype is audio
+
+    if (pIptvCas) {
+        MLOGI("switchAudioTrack: trackType = %d, AudioPid = %d, AudioFormat = %d.", tracktype_audio, params->pid, params->audioCodec);
+        ret = pIptvCas->selectTrack(tracktype_audio, params->pid, -1);   //-1 : audio format is not use.
+    }
+
+    return ret;
+
+}
+
 int AmlVMXIptvCas_V2::dscDevOpen(const char *port_addr, int flags)
 {
     int r;

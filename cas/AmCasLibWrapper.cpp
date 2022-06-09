@@ -146,6 +146,20 @@ AmCasCode_t AmCasLibWrapper<ServiceType>::setPids(int vPid, int aPid)
 }
 
 template <Aml_MP_CASServiceType ServiceType>
+AmCasCode_t AmCasLibWrapper<ServiceType>::selectTrack(int trackType, int trackPid, int trackFormat)
+{
+    if (!sCasSymbols.selectTrack) {
+        return AM_CAS_ERROR;
+    }
+    AmCasStatus_t ret = sCasSymbols.selectTrack(mCasObj, trackType, trackPid, trackFormat);
+    if (ret != CAS_STATUS_OK) {
+        MLOGE("selectTrack failed");
+        return AM_CAS_ERROR;
+    }
+    return AM_CAS_SUCCESS;
+}
+
+template <Aml_MP_CASServiceType ServiceType>
 AmCasCode_t AmCasLibWrapper<ServiceType>::processEcm(int isSection, int isVideoEcm, int vEcmPid, int aEcmPid, uint8_t *pBuffer, int iBufferLength)
 {
     if (!sCasSymbols.processEcm) {
@@ -219,6 +233,7 @@ void AmCasLibWrapper<ServiceType>::loadLib(const char *libName)
     sCasSymbols.openSession = lookupSymbol<openSessionFunc>("openSession");
     sCasSymbols.closeSession = lookupSymbol<closeSessionFunc>("closeSession");
     sCasSymbols.releaseAll = lookupSymbol<releaseAllFunc>("releaseAll");
+    sCasSymbols.selectTrack = lookupSymbol<selectTrackFunc>("selectTrack");
 }
 
 template <Aml_MP_CASServiceType ServiceType>

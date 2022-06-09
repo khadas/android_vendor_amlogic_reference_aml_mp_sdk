@@ -263,6 +263,17 @@ int Aml_MP_CAS_StopDescrambling(AML_MP_CASSESSION casSession);
  */
 int Aml_MP_CAS_UpdateDescramblingPid(AML_MP_CASSESSION casSession, int oldStreamPid, int newStreamPid);
 
+/**
+ * \brief Aml_MP_CAS_SwitchAudioTrack
+ * switch audio track
+ *
+ * \param [in]  CAS session
+ * \param [in]  audio params
+ *
+ * \return 0 if success
+ */
+int Aml_MP_CAS_SwitchAudioTrack(AML_MP_CASSESSION casSession, Aml_MP_AudioParams* params);
+
 //for dvr record
 /**
  * \brief Aml_MP_CAS_StartDVRRecord

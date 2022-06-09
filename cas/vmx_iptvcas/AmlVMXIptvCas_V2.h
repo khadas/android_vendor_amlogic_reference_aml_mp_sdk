@@ -27,6 +27,7 @@ public:
     virtual int setPrivateData(const uint8_t* data, size_t size) override;
     virtual int processEcm(bool isSection, int ecmPid, const uint8_t* data, size_t size) override;
     virtual int processEmm(const uint8_t* data, size_t size) override;
+    virtual int switchAudioTrack(const Aml_MP_AudioParams* params);
 
 private:
     char mServerPort[10];

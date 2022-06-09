@@ -140,6 +140,13 @@ int AmlCasBase::processEmm(const uint8_t* data, size_t size)
     return 0;
 }
 
+int AmlCasBase::switchAudioTrack(const Aml_MP_AudioParams* params)
+{
+    AML_MP_UNUSED(params);
+
+    return 0;
+}
+
 int AmlCasBase::decrypt(uint8_t *in, int size, void *ext_data, Aml_MP_Buffer* outbuffer)
 {
     AML_MP_UNUSED(in);

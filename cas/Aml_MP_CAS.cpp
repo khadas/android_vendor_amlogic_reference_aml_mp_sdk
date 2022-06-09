@@ -231,6 +231,14 @@ int Aml_MP_CAS_UpdateDescramblingPid(AML_MP_CASSESSION casSession, int oldStream
     return casBase->updateDescramblingPid(oldStreamPid, newStreamPid);
 }
 
+int Aml_MP_CAS_SwitchAudioTrack(AML_MP_CASSESSION casSession, Aml_MP_AudioParams* params)
+{
+    sptr<AmlCasBase> casBase = aml_handle_cast<AmlCasBase>(casSession);
+    RETURN_IF(-1, casBase == nullptr);
+
+    return casBase->switchAudioTrack(params);
+}
+
 int Aml_MP_CAS_StartDVRRecord(AML_MP_CASSESSION casSession, Aml_MP_CASServiceInfo *serviceInfo)
 {
     sptr<AmlCasBase> casBase = aml_handle_cast<AmlCasBase>(casSession);
