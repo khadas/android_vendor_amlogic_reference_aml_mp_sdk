@@ -645,7 +645,8 @@ typedef struct {
     int magazine;
     int page;
     Aml_MP_TeletextEvent event;
-    long reserved[8];
+    char iso639_lang[4] __AML_MP_RESERVE_ALIGNED;
+    long reserved[7];
 } AML_MP_TeletextCtrlParam;
 
 ////////////////////////////////////////
