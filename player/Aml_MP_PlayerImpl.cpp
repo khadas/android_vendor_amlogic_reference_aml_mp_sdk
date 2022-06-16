@@ -517,10 +517,12 @@ int AmlMpPlayerImpl::flush()
     if (ret < 0) {
         MLOGI("[%s, %d] stop play fail ret: %d", __FUNCTION__, __LINE__, ret);
     }
-    if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_STARTED) {
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_STARTED ||
+        getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_PAUSED) {
         mPlayer->setVideoParams(&mVideoParams);
     }
-    if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_STARTED) {
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_STARTED ||
+        getDecodingState_l(AML_MP_STREAM_TYPE_AUDIO) == AML_MP_DECODING_STATE_PAUSED) {
         mPlayer->setAudioParams(&mAudioParams);
         if (mAudioPresentationId >= 0) {
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID, &mAudioPresentationId);
@@ -529,7 +531,8 @@ int AmlMpPlayerImpl::flush()
             mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION, &mSPDIFStatus);
         }
     }
-    if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_STARTED) {
+    if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_STARTED ||
+        getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_PAUSED) {
         mPlayer->setADParams(&mADParams, true);
     }
     ret = mPlayer->start();
