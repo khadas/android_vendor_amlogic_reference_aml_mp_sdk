@@ -59,7 +59,7 @@ private:
     bool stopReceive();
     void restoreReceive(bool state = false);
 
-    int lastDequeuResult() const {
+    int lastDequeueResult() const {
         return mLastDequeueBufferResult.load(std::memory_order_relaxed);
     }
 
@@ -69,7 +69,7 @@ private:
 private:
     Aml_MP_StreamType mStreamType;
 
-    std::mutex mDequeudBufferLock;
+    std::mutex mDequeuedBufferLock;
     std::set<std::shared_ptr<Buffer>> mDequeuedBuffers;
 
     mutable std::mutex mBufferLock;

@@ -390,7 +390,7 @@ int BufferQueue::dequeueBuffer(Buffer** buffer)
     }
 
     {
-        std::unique_lock<std::mutex> _l(mDequeudBufferLock);
+        std::unique_lock<std::mutex> _l(mDequeuedBufferLock);
         if (b != nullptr) {
             mDequeuedBuffers.insert(b);
         }
@@ -412,7 +412,7 @@ int BufferQueue::queueBuffer(Buffer* buffer)
 
     std::shared_ptr<Buffer> b;
     {
-        std::unique_lock<std::mutex> _l(mDequeudBufferLock);
+        std::unique_lock<std::mutex> _l(mDequeuedBufferLock);
         auto it = std::find_if(mDequeuedBuffers.begin(), mDequeuedBuffers.end(),
             [buffer](const std::shared_ptr<Buffer>& p) {
                 return p.get() == buffer;
@@ -444,7 +444,7 @@ int BufferQueue::cancelBuffer(Buffer* buffer)
 
     std::shared_ptr<Buffer> b;
     {
-        std::unique_lock<std::mutex> _l(mDequeudBufferLock);
+        std::unique_lock<std::mutex> _l(mDequeuedBufferLock);
         auto it = std::find_if(mDequeuedBuffers.begin(), mDequeuedBuffers.end(),
             [buffer](const std::shared_ptr<Buffer>& p) {
                 return p.get() == buffer;
@@ -469,7 +469,7 @@ BufferQueue::Buffer* BufferQueue::toBuffer(const uint8_t* base)
     std::shared_ptr<Buffer> b;
 
     {
-        std::unique_lock<std::mutex> _l(mDequeudBufferLock);
+        std::unique_lock<std::mutex> _l(mDequeuedBufferLock);
         auto it = std::find_if(mDequeuedBuffers.begin(), mDequeuedBuffers.end(),
             [base](const std::shared_ptr<Buffer>& p) {
                 return p->base() == base;
@@ -848,7 +848,7 @@ int BufferQueue::Consumer::threadLoop()
                     MLOGV("[%u] recycle releaseBuffer base:%p", ++mReleasedCount, buffer->base());
                 }
 
-                if (mBufferQueue->lastDequeuResult() != 0 && canNotify) {
+                if (mBufferQueue->lastDequeueResult() != 0 && canNotify) {
                     MLOGV("try notify buffer available!");
                     if (mBufferAvailableCb) {
                         mBufferAvailableCb();
@@ -915,7 +915,7 @@ int BufferQueue::Consumer::threadLoop()
             } else {
                 MLOGV("[%u] releaseBuffer base:%p", ++mReleasedCount, acquiredBuffer->base());
                 mBufferQueue->releaseBuffer(acquiredBuffer);
-                if (mBufferQueue->lastDequeuResult() != 0) {
+                if (mBufferQueue->lastDequeueResult() != 0) {
                     MLOGV("try notify buffer available!");
                     if (mBufferAvailableCb) {
                         mBufferAvailableCb();
