@@ -1204,11 +1204,17 @@ int AmlMpPlayerImpl::getParameter(Aml_MP_PlayerParameterKey key, void* parameter
         ret = mPlayer->getParameter(key, parameter);
     }
 
-    if (ret == AML_MP_ERROR_INVALID_OPERATION) {
+    if (ret != AML_MP_OK) {
         switch (key) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE:
         {
             *static_cast<bool*>(parameter) = mVideoShowState;
+            ret = AML_MP_OK;
+            break;
+        }
+        case AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID:
+        {
+            *static_cast<int*>(parameter) = mVideoTunnelId;
             ret = AML_MP_OK;
             break;
         }
