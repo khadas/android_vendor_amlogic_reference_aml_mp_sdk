@@ -64,8 +64,8 @@ int AmlWVIptvCas_V2::startDescrambling(const Aml_MP_IptvCASParams* param)
     initPara.ca_system_id = param->caSystemId;
     initPara.video_pid = param->videoPid;
     initPara.audio_pid = param->audioPid;
-    initPara.ecm_pid[0] = param->ecmPid[0];
-    initPara.ecm_pid[1] = param->ecmPid[1];
+    initPara.ecm_pid[0] = param->ecmPid[1];
+    initPara.ecm_pid[1] = param->ecmPid[0];
     initPara.av_diff_ecm = false;
     if (initPara.ecm_pid[0] != 0x1FFF && initPara.ecm_pid[1] != 0x1FFF &&
         initPara.ecm_pid[0] != initPara.ecm_pid[1]) {

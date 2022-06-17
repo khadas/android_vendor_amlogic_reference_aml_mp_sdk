@@ -402,7 +402,7 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                 case 0x09:
                 {
                     int ca_system_id = p2[2]<<8 | p2[3];
-                    int ecm_pid = (p2[4]&0x1F)<<8 | p2[4];
+                    int ecm_pid = (p2[4]&0x1F)<<8 | p2[5];
                     MLOGI("streamType:%#x, pid:%d, ca_system_id:%#x, ecm_pid:%#x, count:%d, descriptor_length:%d\n",
                             stream_type, elementary_pid, ca_system_id, ecm_pid, ++count, descriptor_length);
                     if (descriptor_length > 4) {
