@@ -13,6 +13,7 @@
 #include <cutils/properties.h>
 #include <string>
 #include <unistd.h>
+#include "AmlMpUtils.h"
 
 namespace aml_mp {
 
@@ -41,18 +42,19 @@ void AmlMpConfig::initProperty(const char* propertyName, std::string& value)
 void AmlMpConfig::reset()
 {
     mLogDebug = 0;
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
-    mTsPlayerNonTunnel = 1;
-#else
+
     mTsPlayerNonTunnel = 0;
+#if ANDROID_PLATFORM_SDK_VERSION >= 30
+    mTsPlayerNonTunnel = isSupportMultiHwDemux();
 #endif
+
     mWaitingEcmMode = 1;
     mWriteBufferSize = 2; // default write buffer size set to 2MB.
     mDumpPackts = 0;
 
 #if ANDROID_PLATFORM_SDK_VERSION == 29
     mUseVideoTunnel = 0;
-#elif ANDROID_PLATFORM_SDK_VERSION >= 30
+#else
     mUseVideoTunnel = 1;
 #endif
     mPreferTunerHal = 0;
@@ -110,6 +112,5 @@ AmlMpConfig::AmlMpConfig()
     reset();
     init();
 }
-
 
 }

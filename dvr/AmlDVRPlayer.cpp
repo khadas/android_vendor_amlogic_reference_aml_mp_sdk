@@ -34,8 +34,6 @@ AmlDVRPlayer::AmlDVRPlayer(Aml_MP_DVRPlayerBasicParams* basicParams, Aml_MP_DVRP
     snprintf(mName, sizeof(mName), "%s", LOG_TAG);
     MLOG();
 
-    AmlMpConfig::instance().init();
-
     memset(&mPlaybackOpenParams, 0, sizeof(DVR_WrapperPlaybackOpenParams_t));
 
     memset(&mVideoParams, 0, sizeof(mVideoParams));

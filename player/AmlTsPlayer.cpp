@@ -74,7 +74,7 @@ AmlTsPlayer::~AmlTsPlayer()
 
     MLOGI("mBlackOut: %d", mBlackOut);
     if (mBlackOut) {
-        if (AmlMpConfig::instance().mTsPlayerNonTunnel == 0 || AmlMpConfig::instance().mUseVideoTunnel == 1) {
+        if (AmlMpConfig::instance().mTsPlayerNonTunnel == 0) {
 #if 1
 #ifdef ANDROID
             if (mNativewindow != nullptr)

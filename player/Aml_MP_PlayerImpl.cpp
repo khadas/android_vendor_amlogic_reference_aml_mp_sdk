@@ -53,6 +53,7 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
 , mCreateParams(*createParams)
 {
     snprintf(mName, sizeof(mName), "%s_%d", LOG_TAG, mInstanceId);
+    AmlMpConfig::instance().init();
 
 #ifdef ANDROID
     int sdkVersion = ANDROID_PLATFORM_SDK_VERSION;
@@ -62,7 +63,7 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
 #else
         "vendor";
 #endif
-    MLOG("sdk:%d, platform:%s", sdkVersion, platform);
+    MLOG("sdk:%d, platform:%s, mTsPlayerNonTunnel: %d", sdkVersion, platform, AmlMpConfig::instance().mTsPlayerNonTunnel);
 #else
     ;
 #endif
@@ -85,7 +86,6 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
     mAudioBalance = AML_MP_AUDIO_BALANCE_STEREO;
 
-    AmlMpConfig::instance().init();
     mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
     MLOGI("mWaitingEcmMode:%d", mWaitingEcmMode);
 
@@ -853,7 +853,7 @@ int AmlMpPlayerImpl::setSidebandIfNeeded_l()
         return 0;
     }
 
-    if (AmlMpConfig::instance().mTsPlayerNonTunnel) {
+    if (AmlMpConfig::instance().mTsPlayerNonTunnel || mCreateParams.sourceType == AML_MP_INPUT_SOURCE_ES_MEMORY) {
         if (AmlMpConfig::instance().mUseVideoTunnel == 1) {
             if (mNativeWindowHelper.setSidebandNonTunnelMode(mNativeWindow.get(), &mVideoTunnelId) == 0) {
                 MLOGI("allocated video tunnel id:%d", mVideoTunnelId);
