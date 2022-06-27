@@ -83,9 +83,6 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     mADParams.audioCodec = AML_MP_CODEC_UNKNOWN;
     memset(&mIptvCasParams, 0, sizeof(mIptvCasParams));
 
-    mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
-    mAudioBalance = AML_MP_AUDIO_BALANCE_STEREO;
-
     mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
     MLOGI("mWaitingEcmMode:%d", mWaitingEcmMode);
 
@@ -597,11 +594,9 @@ int AmlMpPlayerImpl::getPlaybackRate(float* rate) {
         return AML_MP_ERROR;
     }
 
-    int ret = AML_MP_OK;
-    if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) != AML_MP_DECODING_STATE_STARTED) {
-        *rate = 0;
-    } else {
-        ret = mPlayer->getPlaybackRate(rate);
+    int ret = mPlayer->getPlaybackRate(rate);
+    if (ret != AML_MP_OK) {
+        *rate = mPlaybackRate;
     }
     //MLOG("rate: %f, mPlaybackRate: %f", *rate, mPlaybackRate);
 
@@ -1731,8 +1726,10 @@ int AmlMpPlayerImpl::prepare_l()
         return -1;
     }
 
-    MLOGI("mWorkMode: %s", mpPlayerWorkMode2Str(mWorkMode));
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_WORK_MODE, &mWorkMode);
+    if (mWorkMode >= 0) {
+        MLOGI("mWorkMode: %s", mpPlayerWorkMode2Str(mWorkMode));
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_WORK_MODE, &mWorkMode);
+    }
 
     mPlayer->registerEventCallback([](void* userData, Aml_MP_PlayerEventType event, int64_t param) {
         AmlMpPlayerImpl* thiz = static_cast<AmlMpPlayerImpl*>(userData);
@@ -1989,21 +1986,46 @@ int AmlMpPlayerImpl::reset_l(std::unique_lock<std::mutex>& lock, bool clearCasSe
 
 int AmlMpPlayerImpl::applyParameters_l()
 {
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, &mVideoDisplayMode);
+    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_MODE, &mVideoDecodeMode);
+
+    if (mVideoDisplayMode >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, &mVideoDisplayMode);
+    }
+
     if (mBlackOut >= 0) {
         bool param = (0 == mBlackOut)?false:true;
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_BLACK_OUT, &param);
     }
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_MODE, &mVideoDecodeMode);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_PTS_OFFSET, &mVideoPtsOffset);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE, &mAudioOutputMode);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_DEVICE, &mAudioOutputDevice);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PTS_OFFSET, &mAudioPtsOffset);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_BALANCE, &mAudioBalance);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mAudioMute);
-    mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_NETWORK_JITTER, &mNetworkJitter);
 
-    if (mVideoErrorRecoveryMode != AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT) {
+    if (mVideoPtsOffset >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_PTS_OFFSET, &mVideoPtsOffset);
+    }
+
+    if (mAudioOutputMode >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE, &mAudioOutputMode);
+    }
+
+    if (mAudioOutputDevice >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_DEVICE, &mAudioOutputDevice);
+    }
+
+    if (mAudioPtsOffset >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_PTS_OFFSET, &mAudioPtsOffset);
+    }
+
+    if (mAudioBalance >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_BALANCE, &mAudioBalance);
+    }
+
+    if (mAudioMute >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mAudioMute);
+    }
+
+    if (mNetworkJitter >= 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_NETWORK_JITTER, &mNetworkJitter);
+    }
+
+    if (mVideoErrorRecoveryMode >= 0) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE, &mVideoErrorRecoveryMode);
     }
 
@@ -2087,7 +2109,7 @@ int AmlMpPlayerImpl::resetAudioCodec_l(bool callStart)
 int AmlMpPlayerImpl::switchDecodeMode_l(Aml_MP_VideoDecodeMode decodeMode, std::unique_lock<std::mutex>& lock) {
 
     int ret = 0;
-    MLOG("decodeMode: %s", mpVideoDecideMode2Str(decodeMode));
+    MLOG("decodeMode: %s", mpVideoDecodeMode2Str(decodeMode));
 
     if (mVideoDecodeMode == decodeMode) {
         MLOGI("Decode mode not change, no need do process");

@@ -201,18 +201,20 @@ private:
 
     std::vector<int> mEcmPids;
 
-    Aml_MP_VideoDisplayMode mVideoDisplayMode{AML_MP_VIDEO_DISPLAY_MODE_NORMAL};
-    int mBlackOut{-1};
     Aml_MP_VideoDecodeMode mVideoDecodeMode{AML_MP_VIDEO_DECODE_MODE_NONE};
-    int mVideoPtsOffset{0};
-    Aml_MP_AudioOutputMode mAudioOutputMode{AML_MP_AUDIO_OUTPUT_PCM};
-    Aml_MP_AudioOutputDevice mAudioOutputDevice{AML_MP_AUDIO_OUTPUT_DEVICE_NORMAL};
-    int mAudioPtsOffset{0};
-    Aml_MP_AudioBalance mAudioBalance{AML_MP_AUDIO_BALANCE_STEREO};
-    bool mAudioMute{false};
-    int mNetworkJitter{0};
+
+    Aml_MP_VideoDisplayMode mVideoDisplayMode{(Aml_MP_VideoDisplayMode)-1};
+    int mBlackOut{-1};
+    int mVideoPtsOffset{-1};
+    Aml_MP_AudioOutputMode mAudioOutputMode{(Aml_MP_AudioOutputMode)-1};
+    Aml_MP_AudioOutputDevice mAudioOutputDevice{(Aml_MP_AudioOutputDevice)-1};
+    int mAudioPtsOffset{-1};
+    Aml_MP_AudioBalance mAudioBalance{(Aml_MP_AudioBalance)-1};
+    int mAudioMute{-1};
+    int mNetworkJitter{-1};
     Aml_MP_ADVolume mADMixLevel{-1, -1};
-    Aml_MP_PlayerWorkMode mWorkMode;
+    Aml_MP_PlayerWorkMode mWorkMode{(Aml_MP_PlayerWorkMode)-1};
+    Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode{(Aml_MP_VideoErrorRecoveryMode)-1};
 
     float mVolume = -1.0;
     float mADVolume = -1.0;
@@ -260,8 +262,6 @@ private:
 private:
     AmlMpPlayerImpl(const AmlMpPlayerImpl&) = delete;
     AmlMpPlayerImpl& operator= (const AmlMpPlayerImpl&) = delete;
-
-    Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode = AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT;
 };
 
 }

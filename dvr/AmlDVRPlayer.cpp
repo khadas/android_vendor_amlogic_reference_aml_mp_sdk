@@ -269,8 +269,6 @@ int AmlDVRPlayer::setPlaybackRate(float rate)
 
 int AmlDVRPlayer::getStatus(Aml_MP_DVRPlayerStatus* status)
 {
-    MLOG();
-
     int ret = -1;
     DVR_WrapperPlaybackStatus_t dvrStatus;
     ret = dvr_wrapper_get_playback_status(mDVRPlayerHandle, &dvrStatus);
@@ -326,8 +324,6 @@ int AmlDVRPlayer::getVolume(float* volume)
 
 int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
 {
-    MLOGI("Call setParameter, key is %s, player:%p", mpPlayerParameterKey2Str(key), mMpPlayerHandle);
-
     RETURN_IF(-1, parameter == nullptr);
 
     int ret = 0;
@@ -346,12 +342,7 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
 
 int AmlDVRPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter)
 {
-
-    MLOGI("Call getParameter, key is %s, player:%p", mpPlayerParameterKey2Str(key), mMpPlayerHandle);
-
-    if (!parameter) {
-        return -1;
-    }
+    RETURN_IF(-1, parameter == nullptr);
 
     int ret = -1;
     ret = Aml_MP_Player_GetParameter(mMpPlayerHandle, key, parameter);

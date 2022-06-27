@@ -666,23 +666,23 @@ int AmlTsPlayer::hideVideo() {
 int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
     int ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
 
-    MLOGI("Call setParameter, key is %s", mpPlayerParameterKey2Str(key));
     switch (key) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE:
-            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_VIDEO_DISPLAY_MODE, value is %d", *(am_tsplayer_video_match_mode*)parameter);
+            MLOGI("setVideoDisplayMode: %d", *(Aml_MP_VideoDisplayMode*)parameter);
             ret = AmTsPlayer_setVideoMatchMode(mPlayer, convertToTsPlayerVideoMatchMode(*(Aml_MP_VideoDisplayMode*)parameter));
             break;
 
         case AML_MP_PLAYER_PARAMETER_BLACK_OUT:
         {
-            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_BLACK_OUT, value is %d", *(bool_t*)parameter);
             int blackOut = *(bool_t*)parameter;
+            MLOGI("setVideoBlackOut: %d", blackOut);
             ret = AmTsPlayer_setVideoBlackOut(mPlayer, blackOut);
             mBlackOut = blackOut;
             break;
         }
 
         case AML_MP_PLAYER_PARAMETER_VIDEO_DECODE_MODE:
+            MLOGI("setVideoDecodeMode: %s", mpVideoDecodeMode2Str(*(Aml_MP_VideoDecodeMode*)parameter));
             ret = AmTsPlayer_setTrickMode(mPlayer, convertToTsplayerVideoTrickMode(*(Aml_MP_VideoDecodeMode*)parameter));
             break;
 
@@ -690,7 +690,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             break;
 
         case AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE:
-            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE, value is %d", *(Aml_MP_AudioOutputMode*)parameter);
+            MLOGI("setAudioOutputMode: %d", *(Aml_MP_AudioOutputMode*)parameter);
             ret = AmTsPlayer_setAudioOutMode(mPlayer, convertToTsPlayerAudioOutMode(*(Aml_MP_AudioOutputMode*)parameter));
             break;
 
@@ -701,12 +701,14 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             break;
 
         case AML_MP_PLAYER_PARAMETER_AUDIO_BALANCE:
+            MLOGI("setAudioBalance: %d", *(Aml_MP_AudioBalance*)parameter);
             ret = AmTsPlayer_setAudioStereoMode(mPlayer, convertToTsPlayerAudioStereoMode(*(Aml_MP_AudioBalance*)parameter));
             break;
 
         case AML_MP_PLAYER_PARAMETER_AUDIO_MUTE:
         {
             bool mute = *(bool*)parameter;
+            MLOGI("setAudioMute: %d", mute);
             ret =AmTsPlayer_setAudioMute(mPlayer, mute, mute);
             break;
         }
@@ -717,6 +719,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_AD_STATE:
         {
             int isEnable = *(int*)parameter;
+            MLOGI("setADState: %d", isEnable);
             if (isEnable)
                 ret = AmTsPlayer_enableADMix(mPlayer);
             else
@@ -727,13 +730,13 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL:
         {
             Aml_MP_ADVolume* ADVolume = (Aml_MP_ADVolume*)parameter;
-            //MLOGI("trace setParameter, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, value is master %d, slave %d", ADVolume->masterVolume, ADVolume->slaveVolume);
+            MLOGI("setADMixLevel: %d/%d", ADVolume->masterVolume, ADVolume->slaveVolume);
             ret = AmTsPlayer_setADMixLevel(mPlayer, ADVolume->masterVolume, ADVolume->slaveVolume);
         }
         break;
 
         case AML_MP_PLAYER_PARAMETER_WORK_MODE:
-            MLOGI("Call AmTsPlayer_setWorkMode, set workmode: %d", *(am_tsplayer_work_mode*)(parameter));
+            MLOGI("setWorkMode: %s", mpPlayerWorkMode2Str(*(Aml_MP_PlayerWorkMode*)(parameter)));
             ret = AmTsPlayer_setWorkMode(mPlayer, *(am_tsplayer_work_mode*)(parameter));
             break;
 
@@ -746,6 +749,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID:
         {
             mVideoTunnelId = *(int*)parameter;
+            MLOGI("setVideoTunnelID: %d", mVideoTunnelId);
             ret = AmTsPlayer_setSurface(mPlayer, &mVideoTunnelId);
             break;
         }
@@ -767,6 +771,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID:
         {
             int para = *(int*)parameter;
+            MLOGI("setPresentationId: %d", para);
             if (para >= 0) {
                 ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_AUDIO_PRESENTATION_ID, parameter);
             }
@@ -778,6 +783,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 #if ANDROID_PLATFORM_SDK_VERSION >= 30
             am_tsplayer_audio_patch_manage_mode audioPatchManageMode = AUDIO_PATCH_MANAGE_AUTO;
             int para = *(int*)parameter;
+            MLOGI("setUseTif: %d", para);
             if (para != -1) {
                 audioPatchManageMode = para ? AUDIO_PATCH_MANAGE_FORCE_DISABLE : AUDIO_PATCH_MANAGE_FORCE_ENABLE;
             }
@@ -790,6 +796,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         {
 #if ANDROID_PLATFORM_SDK_VERSION >= 30
             int para = *(int*)parameter;
+            MLOGI("SetSPDIFProtection: %d", para);
             if (para != -1) {
                 ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, parameter);
             }
@@ -800,6 +807,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         case AML_MP_PLAYER_PARAMETER_VIDEO_CROP:
         {
             Aml_MP_Rect videoCrop = *(Aml_MP_Rect*)parameter;
+            MLOGI("setVideoCrop: [%d, %d, %d, %d]", videoCrop.left, videoCrop.top, videoCrop.right, videoCrop.bottom);
             ret = AmTsPlayer_setVideoCrop(mPlayer, videoCrop.left, videoCrop.top, videoCrop.right, videoCrop.bottom);
         }
         break;
@@ -809,6 +817,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 #ifdef __linux__
 #ifndef ANDROID
             int recoveryMode = convertToCodecRecoveryMode(*(Aml_MP_VideoErrorRecoveryMode*)parameter);
+            MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str(recoveryMode));
             ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_VIDEO_RECOVERY_MODE, &recoveryMode);
 #endif
 #endif
@@ -827,11 +836,17 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
     am_tsplayer_result ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
 
-    if (!parameter) {
-        return -1;
-    }
+    RETURN_IF(-1, parameter == nullptr);
 
     switch (key) {
+        case AML_MP_PLAYER_PARAMETER_AUDIO_MUTE:
+        {
+            bool_t analog_unmute, digital_unmute;
+            ret = AmTsPlayer_getAudioMute(mPlayer, &analog_unmute, &digital_unmute);
+            *(bool*)parameter = digital_unmute;
+            break;
+        }
+
         case AML_MP_PLAYER_PARAMETER_VIDEO_INFO:
             am_tsplayer_video_info videoInfo;
             ret = AmTsPlayer_getVideoInfo(mPlayer, &videoInfo);

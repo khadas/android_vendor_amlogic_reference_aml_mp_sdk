@@ -1103,6 +1103,33 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "gMute", 0, "get audio mute/unmute state",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int mute;
+            int ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mute);
+            printf("Current mute state: %d, ret: %d\n", mute, ret);
+            return ret;
+        }
+    },
+
+    {
+        "sMute", 0, "set audio mute/unmute state",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int mute, mute2;
+            if (args.size() != 2) {
+                printf("Input example: sMute mute\n");
+                return -1;
+            }
+            printf("String input: %s\n", args[1].data());
+            mute = stod(args[1]);
+            int ret = Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mute);
+            ret = Aml_MP_Player_GetParameter(player, AML_MP_PLAYER_PARAMETER_AUDIO_MUTE, &mute2);
+            printf("Get mute state: %d, set mute: %d, ret: %d\n", mute2, mute, ret);
+            return ret;
+        }
+    },
+
+    {
         "sFast", 0, "set Fast rate",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             float fastRate, getRate;
@@ -1217,7 +1244,7 @@ static struct TestModule::Command g_commandTable[] = {
             Aml_MP_AudioOutputMode audioMode = AML_MP_AUDIO_OUTPUT_PCM;
             ret = Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE, &audioMode);
             printf("AML_MP_PLAYER_PARAMETER_AUDIO_OUTPUT_MODE set mode: %d, ret: %d\n", audioMode, ret);
-            Aml_MP_ADVolume adVolume = {5, 5};
+            Aml_MP_ADVolume adVolume = {50, 50};
             ret = Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL, &adVolume);
             printf("AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL set mode: %d, %d, ret: %d\n", adVolume.masterVolume, adVolume.slaveVolume, ret);
             return ret;
