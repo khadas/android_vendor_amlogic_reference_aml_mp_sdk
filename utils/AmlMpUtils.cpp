@@ -1108,7 +1108,7 @@ AML_MP_SubtitleDataType convertToMpSubtitleDataType(AmlSubDataType subDataType) 
             return AML_MP_SUB_DATA_TYPE_CC_JSON;
         case SUB_DATA_TYPE_BITMAP:
             return AML_MP_SUB_DATA_TYPE_BITMAP;
-        case SUB_DATA_TYPE_POSITON_BITMAP:
+        case SUB_DATA_TYPE_POSITION_BITMAP:
             return AML_MP_SUB_DATA_TYPE_POSITON_BITMAP;
         default:
             return AML_MP_SUB_DATA_TYPE_UNKNOWN;

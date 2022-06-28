@@ -196,7 +196,7 @@ bool AmlPlayerBase::constructAmlSubtitleParam(AmlSubtitleParam* amlSubParam, Aml
 
     switch (params->subtitleCodec) {
     case AML_MP_SUBTITLE_CODEC_CC:
-        amlSubParam->subtitleType = AmlSubtitletype::TYPE_SUBTITLE_CLOSED_CATPTION;
+        amlSubParam->subtitleType = AmlSubtitletype::TYPE_SUBTITLE_CLOSED_CAPTION;
         break;
 
     case AML_MP_SUBTITLE_CODEC_SCTE27:
@@ -250,7 +250,7 @@ int AmlPlayerBase::startSubtitleDecoding()
     sSubtitleCbHandle = this;
     amlsub_RegistOnDataCB(mSubtitleHandle, AmlMPSubtitleDataCb);
     amlsub_RegistOnSubtitleAvailCb(mSubtitleHandle, AmlMPSubtitleAvailCb);
-    amlsub_RegistGetDimesionCb(mSubtitleHandle, AmlMPSubtitleDimensionCb);
+    amlsub_RegistGetDimensionCb(mSubtitleHandle, AmlMPSubtitleDimensionCb);
     amlsub_RegistAfdEventCB(mSubtitleHandle, AmlMPSubtitleAfdEventCb);
     amlsub_RegistOnChannelUpdateCb(mSubtitleHandle, AmlMPSubtitleChannelUpdateCb);
     amlsub_RegistOnSubtitleLanguageCb(mSubtitleHandle, AmlMPSubtitleLanguageCb);
