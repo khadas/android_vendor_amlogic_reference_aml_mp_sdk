@@ -24,7 +24,7 @@ DVRPlayback::DVRPlayback(const std::string& url, bool cryptoMode, Aml_MP_DemuxId
     Aml_MP_DVRPlayerCreateParams createParams;
     memset(&createParams, 0, sizeof(createParams));
     createParams.basicParams.demuxId = mDemuxId;
-    strncpy(createParams.basicParams.location, mUrl.c_str(), AML_MP_MAX_PATH_SIZE);
+    strncpy(createParams.basicParams.location, mUrl.c_str(), AML_MP_MAX_PATH_SIZE - 1);
     createParams.basicParams.blockSize = 188 * 1024;
     createParams.basicParams.isTimeShift = isTimeShift;
     createParams.basicParams.drmMode = AML_MP_INPUT_STREAM_NORMAL;
@@ -140,11 +140,11 @@ int DVRPlayback::setStreams()
         goto exit;
     }
 
-    exit:
-        if (pSegmentIds) {
-            ::free(pSegmentIds);
-            pSegmentIds = nullptr;
-        }
+exit:
+    if (pSegmentIds) {
+        ::free(pSegmentIds);
+        pSegmentIds = nullptr;
+    }
     return 0;
 }
 

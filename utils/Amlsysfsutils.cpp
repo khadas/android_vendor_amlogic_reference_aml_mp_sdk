@@ -61,11 +61,12 @@ int amsysfs_set_sysfs_str(const char *path, const char *val) {
 }
 int amsysfs_get_sysfs_str(const char *path, char *valstr, unsigned size) {
     int fd;
+    int bytes;
     fd = open(path, O_RDONLY);
     if (fd >= 0) {
         memset(valstr, 0, size);
-        read(fd, valstr, size - 1);
-        valstr[strlen(valstr)] = '\0';
+        bytes = read(fd, valstr, size - 1);
+        valstr[strlen(valstr) - 1] = '\0';
         close(fd);
         return 0;
     } else {
@@ -104,11 +105,12 @@ int amsysfs_set_sysfs_int(const char *path, int val) {
 
 int amsysfs_get_sysfs_int(const char *path) {
     int fd;
+    int bytes;
     int val = 0;
     char bcmd[16];
     fd = open(path, O_RDONLY);
     if (fd >= 0) {
-        read(fd, bcmd, sizeof(bcmd));
+        bytes = read(fd, bcmd, sizeof(bcmd));
         val = strtol(bcmd, NULL, 10);
         close(fd);
     } else {
@@ -146,11 +148,12 @@ int amsysfs_set_sysfs_int16(const char *path, int val) {
 
 int amsysfs_get_sysfs_int16(const char *path) {
     int fd;
+    int bytes;
     int val = 0;
     char bcmd[16];
     fd = open(path, O_RDONLY);
     if (fd >= 0) {
-        read(fd, bcmd, sizeof(bcmd));
+        bytes = read(fd, bcmd, sizeof(bcmd));
         val = strtol(bcmd, NULL, 16);
         close(fd);
     } else {
@@ -168,10 +171,11 @@ int amsysfs_get_sysfs_int16(const char *path) {
 
 unsigned long amsysfs_get_sysfs_ulong(const char *path) {
     int fd;
+    int bytes;
     char bcmd[24] = "";
     unsigned long num = 0;
     if ((fd = open(path, O_RDONLY)) >= 0) {
-        read(fd, bcmd, sizeof(bcmd));
+        bytes = read(fd, bcmd, sizeof(bcmd));
         num = strtoul(bcmd, NULL, 0);
         close(fd);
     } else {
@@ -248,4 +252,3 @@ unsigned long amsysfs_get_sysfs_ulong(const char *path)
 #endif
 
 }
-

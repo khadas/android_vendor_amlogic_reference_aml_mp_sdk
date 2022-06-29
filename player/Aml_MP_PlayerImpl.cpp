@@ -1694,7 +1694,7 @@ void AmlMpPlayerImpl::setDecodingState_l(Aml_MP_StreamType streamType, int state
 {
     unsigned int offset = streamType * kStreamStateBits;
 
-    if (offset > sizeof(mStreamState)*8) {
+    if (offset >= sizeof(mStreamState) * 8) {
         MLOGE("streamType(%s) is overflow!", mpStreamType2Str(streamType));
         return;
     }

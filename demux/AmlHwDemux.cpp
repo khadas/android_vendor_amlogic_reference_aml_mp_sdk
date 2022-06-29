@@ -65,6 +65,9 @@ private:
 AmlHwDemux::AmlHwDemux()
 {
     MLOG("mstopped = %d", mStopped.load());
+
+    mIsHardwareSource = false;
+    mIsSecureBuffer = false;
 }
 
 AmlHwDemux::~AmlHwDemux()
@@ -104,6 +107,11 @@ int AmlHwDemux::close()
 int AmlHwDemux::start()
 {
     MLOGI("start");
+
+    if (mTsParser == nullptr) {
+        MLOGE("Demux not open, start fail");
+        return -1;
+    }
 
     mTsParser->dvr_open(mDemuxId, mIsHardwareSource, mIsSecureBuffer);
     if (mLooper == nullptr) {
@@ -246,6 +254,7 @@ HwTsParser::HwTsParser(const std::function<FilterCallback>& cb, const std::strin
 , mDemuxName(name)
 {
     MLOG();
+    mDvrFd = -1;
 }
 
 HwTsParser::~HwTsParser()

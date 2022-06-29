@@ -29,6 +29,10 @@ AmlVMXWebCas::AmlVMXWebCas(Aml_MP_CASServiceType serviceType)
 {
     MLOGI("ctor AmlVMXWebCas");
     pIptvCas = new AmCasLibWrapper<AML_MP_CAS_SERVICE_VERIMATRIX_WEB>("libdec_ca_vmx_web.so");
+    memset(sessionId, 0, sizeof(sessionId));
+
+    mInstanceId = 0;
+    mFirstEcm = 0;
 }
 
 AmlVMXWebCas::~AmlVMXWebCas()

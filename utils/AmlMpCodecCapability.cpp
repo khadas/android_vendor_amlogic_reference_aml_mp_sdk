@@ -114,12 +114,13 @@ void AmlMpCodecCapability::updateAudioCapability() {
         //TODO: This function need media_hal merge, after media_hal code merge need open this func to enable audio capability info get.
 #if 0
         ret = AmTsPlayer_isAudioCodecSupport(convertToAudioCodec((Aml_MP_CodecID)i));
-#endif
+
         if (ret > 0) {
             Aml_MP_DecoderCapabilityInfo info;
             info.decoderName = (Aml_MP_CodecID)i;
             mAudioCapabilityMap.push_back(info);
         }
+#endif
     }
 }
 

@@ -126,6 +126,11 @@ int Aml_MP_DVRRecorder_GetSegmentInfo(const char* location, uint64_t segmentId, 
     DVR_RecordSegmentInfo_t info;
     int ret = dvr_segment_get_info(location, segmentId, &info);
 
+    if (ret != DVR_SUCCESS) {
+        MLOGI("get segment info fail, ret: %d", ret);
+        return ret;
+    }
+
     memset(segmentInfo, 0, sizeof(*segmentInfo));
     segmentInfo->id = info.id;
     segmentInfo->streams.nbStreams = info.nb_pids;

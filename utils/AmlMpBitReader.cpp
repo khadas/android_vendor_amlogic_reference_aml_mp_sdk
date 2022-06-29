@@ -80,7 +80,7 @@ bool AmlMpBitReader::getBitsGraceful(size_t n, uint32_t *out) {
             m = mNumBitsLeft;
         }
 
-        result = (result << m) | (mReservoir >> (32 - m));
+        result = (uint32_t)(result << m) | (mReservoir >> (32 - m));
         mReservoir <<= m;
         mNumBitsLeft -= m;
 

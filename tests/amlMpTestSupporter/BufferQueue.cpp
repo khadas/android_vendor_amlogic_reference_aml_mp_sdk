@@ -193,7 +193,7 @@ BufferQueue::SecBuffer::~SecBuffer()
         if (ret) {
             MLOGE("secmem release failed:%#x", ret);
         }
-        mPhyAddr = UINT32_MAX;
+        mHandle = UINT32_MAX;
     }
 
     if (mReaderView) {

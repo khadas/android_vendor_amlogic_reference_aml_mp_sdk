@@ -65,6 +65,7 @@ int AmlDVRRecorder::setStreams(Aml_MP_DVRStreamArray* streams)
 
     int count = 0;
     DVR_StreamPid_t pids[DVR_MAX_RECORD_PIDS_COUNT];
+    memset(pids, 0, sizeof(pids));
     for (int i = 0; i < streams->nbStreams; ++i) {
         MLOGI("streamType:%d(%s), codecId:%d(%s), pid:%d", streams->streams[i].type,
                 mpStreamType2Str(streams->streams[i].type),

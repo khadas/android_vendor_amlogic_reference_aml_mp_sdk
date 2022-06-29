@@ -84,6 +84,8 @@ AmlPlayerBase::AmlPlayerBase(Aml_MP_PlayerCreateParams* createParams, int instan
     mSubWindowWidth = 1920;
     mSubWindowHeight = 1080;
 
+    memset(&mSubtitleData, 0, sizeof(mSubtitleData));
+    memset(&mSubtitleDimension, 0, sizeof(mSubtitleDimension));
 #endif
 }
 
@@ -542,6 +544,4 @@ void AmlPlayerBase::notifyListener(Aml_MP_PlayerEventType eventType, int64_t par
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 }
-

@@ -454,7 +454,8 @@ void Looper::awoken() {
 #endif
 
     uint64_t counter;
-    (read(mWakeEventFd, &counter, sizeof(uint64_t)));
+    int ret;
+    ret = read(mWakeEventFd, &counter, sizeof(uint64_t));
 }
 
 void Looper::pushResponse(int events, const Request& request) {

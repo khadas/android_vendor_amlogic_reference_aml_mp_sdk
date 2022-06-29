@@ -982,6 +982,7 @@ am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType stre
 #ifdef HAVE_SUBTITLE
 AmlTeletextCtrlParam convertToTeletextCtrlParam(AML_MP_TeletextCtrlParam* teletextCtrlParam) {
     AmlTeletextCtrlParam params;
+    memset(&params, 0, sizeof(params));
     params.magazine = teletextCtrlParam->magazine;
     params.page = teletextCtrlParam->page;
     params.event = convertToTeletextEvent(teletextCtrlParam->event);
@@ -1109,7 +1110,7 @@ AML_MP_SubtitleDataType convertToMpSubtitleDataType(AmlSubDataType subDataType) 
         case SUB_DATA_TYPE_BITMAP:
             return AML_MP_SUB_DATA_TYPE_BITMAP;
         case SUB_DATA_TYPE_POSITION_BITMAP:
-            return AML_MP_SUB_DATA_TYPE_POSITON_BITMAP;
+            return AML_MP_SUB_DATA_TYPE_POSITION_BITMAP;
         default:
             return AML_MP_SUB_DATA_TYPE_UNKNOWN;
     }
@@ -1257,7 +1258,8 @@ const char codecMap[][20][30] = {
 };
 
 const char* convertToMIMEString(Aml_MP_CodecID codecId) {
-    if (codecId > AML_MP_CODEC_UNKNOWN && codecId < AML_MP_SUBTITLE_CODEC_BASE) {
+    if ((codecId >= AML_MP_VIDEO_CODEC_BASE && codecId < AML_MP_VIDEO_CODEC_MAX) ||
+        (codecId >= AML_MP_AUDIO_CODEC_BASE && codecId < AML_MP_AUDIO_CODEC_MAX)) {
         return codecMap[codecId / 1000][codecId % 1000];
     }
     return "Not defined codec";

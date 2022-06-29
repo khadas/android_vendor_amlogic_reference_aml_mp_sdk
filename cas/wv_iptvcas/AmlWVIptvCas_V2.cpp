@@ -43,6 +43,7 @@ AmlWVIptvCas_V2::AmlWVIptvCas_V2(Aml_MP_CASServiceType serviceType)
 
     MLOGI("ctor AmlWVIptvCas_V2");
 
+    mFirstEcm = 0;
 }
 
 AmlWVIptvCas_V2::~AmlWVIptvCas_V2()

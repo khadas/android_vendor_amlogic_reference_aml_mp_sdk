@@ -362,7 +362,7 @@ int ElementaryStreamQueue::appendData(const void* data, size_t size, int64_t pts
         case EAC3:
         {
             uint8_t *ptr = (uint8_t *)data;
-            size_t startOffset = -1;
+            ssize_t startOffset = -1;
             for (size_t i = 0; i < size; ++i) {
                 unsigned payloadSize = 0;
                 if (mMode == AC3) {

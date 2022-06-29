@@ -114,7 +114,6 @@ int UdpSource::start()
         return -1;
     }
 
-#if 1
     int bufferSize = 1 * 1024 * 1024;
     ret = setsockopt(mSocket, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(bufferSize));
     if (ret < 0) {
@@ -123,11 +122,12 @@ int UdpSource::start()
 
     int actualBufferSize = 0;
     socklen_t len = sizeof(actualBufferSize);
-    getsockopt(mSocket, SOL_SOCKET, SO_RCVBUF, &actualBufferSize, &len);
-    if (actualBufferSize != bufferSize) {
+    ret = getsockopt(mSocket, SOL_SOCKET, SO_RCVBUF, &actualBufferSize, &len);
+    if (ret < 0) {
+        MLOGE("get actual buffer size failed! %s", strerror(errno));
+    } else if (actualBufferSize != bufferSize) {
         MLOGE("actual set buffer size:%d", actualBufferSize);
     }
-#endif
 
     ret = bind(mSocket, mAddrInfo->ai_addr, sizeof(sockaddr));
     if (ret < 0) {

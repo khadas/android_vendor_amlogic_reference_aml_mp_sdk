@@ -20,7 +20,7 @@ namespace aml_mp {
 
 #define FUNC_DEF(def, type) \
     typedef type; \
-    pf##def* def;
+    pf##def* def = NULL;
 
 #define FUNC_SYMBOL(v) FUNC_SYMBOL_RET(v, -1)
 

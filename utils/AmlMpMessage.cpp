@@ -56,12 +56,14 @@ AmlMpMessage::AmlMpMessage(void)
     : mWhat(0),
       mTarget(0),
       mNumItems(0) {
+    memset(mItems, 0, sizeof(mItems));
 }
 
 AmlMpMessage::AmlMpMessage(uint32_t what, const sptr<const AmlMpEventHandler> &handler)
     : mWhat(what),
       mNumItems(0) {
     setTarget(handler);
+    memset(mItems, 0, sizeof(mItems));
 }
 
 AmlMpMessage::~AmlMpMessage() {

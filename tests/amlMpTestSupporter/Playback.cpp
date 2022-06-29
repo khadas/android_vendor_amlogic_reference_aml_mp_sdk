@@ -222,7 +222,7 @@ TsDemuxer::~TsDemuxer()
 {
     MLOG();
 
-    for (int i = AML_MP_STREAM_TYPE_UNKNOWN+1; i < AML_MP_STREAM_TYPE_UNKNOWN; ++i) {
+    for (int i = AML_MP_STREAM_TYPE_UNKNOWN + 1; i < AML_MP_STREAM_TYPE_NB; ++i) {
         stopStream((Aml_MP_StreamType)i);
         closeStream((Aml_MP_StreamType)i);
     }
@@ -361,6 +361,11 @@ int TsDemuxer::startStream(Aml_MP_StreamType streamType, int pid, Aml_MP_CodecID
         TsDemuxer* demuxer = (TsDemuxer*)userData;
         Aml_MP_StreamType streamType = demuxer->mPids[pid];
         Stream* stream = demuxer->getStream(streamType);
+        if (stream == nullptr) {
+            MLOGI("[%s] filter get stream failed", mpStreamType2Str(streamType));
+            return -1;
+        }
+
         if (stream->bufferQueue) {
             MLOGV("filter(%d) size:%zu(%zu), cbCount:%zu", pid, size, size-14, ++stream->filterCbCount);
             stream->streamParser->append(data, size);
