@@ -817,7 +817,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 #ifdef __linux__
 #ifndef ANDROID
             int recoveryMode = convertToCodecRecoveryMode(*(Aml_MP_VideoErrorRecoveryMode*)parameter);
-            MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str(recoveryMode));
+            MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str((Aml_MP_VideoErrorRecoveryMode)recoveryMode));
             ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_VIDEO_RECOVERY_MODE, &recoveryMode);
 #endif
 #endif
