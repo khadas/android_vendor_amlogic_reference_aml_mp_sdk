@@ -649,7 +649,7 @@ int AmlMpPlayerImpl::switchSubtitleTrack(const Aml_MP_SubtitleParams* params)
 
 int AmlMpPlayerImpl::writeData(const uint8_t* buffer, size_t size)
 {
-    std::unique_lock<std::mutex> _l(mLock);
+    std::unique_lock<std::mutex> lock(mLock);
     RETURN_IF(-1, mPlayer == nullptr);
 
     int written = 0;
@@ -681,12 +681,12 @@ int AmlMpPlayerImpl::writeData(const uint8_t* buffer, size_t size)
     } else {
         //already start, need move data from mTsBuffer to player
         if (!mTsBuffer.empty() || mWriteBuffer->size() != 0) {
-            if (drainDataFromBuffer_l() != 0) {
+            if (drainDataFromBuffer_l(lock) != 0) {
                 return -1;
             }
         }
 
-        written = doWriteData_l(buffer, size);
+        written = doWriteData_l(buffer, size, lock);
     }
 
     if (written == 0) {
@@ -700,7 +700,7 @@ int AmlMpPlayerImpl::writeData(const uint8_t* buffer, size_t size)
     return written;
 }
 
-int AmlMpPlayerImpl::drainDataFromBuffer_l()
+int AmlMpPlayerImpl::drainDataFromBuffer_l(std::unique_lock<std::mutex>& lock)
 {
     int written = 0;
     int retry = 0;
@@ -710,7 +710,7 @@ int AmlMpPlayerImpl::drainDataFromBuffer_l()
             mWriteBuffer->setRange(0, readSize);
         }
 
-        written = doWriteData_l(mWriteBuffer->data(), mWriteBuffer->size());
+        written = doWriteData_l(mWriteBuffer->data(), mWriteBuffer->size(), lock);
 
         if (written > 0) {
             mWriteBuffer->setRange(mWriteBuffer->offset()+written, mWriteBuffer->size()-written);
@@ -731,12 +731,14 @@ int AmlMpPlayerImpl::drainDataFromBuffer_l()
     return -EAGAIN;
 }
 
-int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size)
+int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size, std::unique_lock<std::mutex>& lock)
 {
     int written = 0;
     if (mCreateParams.drmMode == AML_MP_INPUT_STREAM_ENCRYPTED) {
         if (mCasHandle == nullptr || mWaitingEcmMode == kWaitingEcmASynchronous) {
+            lock.unlock();
             written = mPlayer->writeData(buffer, size);
+            lock.lock();
         } else {
             size_t totalSize = size;
             size_t ecmOffset = size;
@@ -751,7 +753,9 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size)
                 int ret = 0;
                 int retryCount = 0;
                 do {
+                    lock.unlock();
                     ret = mPlayer->writeData(buffer, partialSize);
+                    lock.lock();
                     if (ret <= 0) {
                         if (written == 0) {
                             goto exit;
@@ -779,10 +783,14 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size)
             }
         }
     } else if (mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY) {
+        lock.unlock();
         written = mPlayer->writeData(buffer, size);
+        lock.lock();
     } else {
         //normal stream
+        lock.unlock();
         written = mPlayer->writeData(buffer, size);
+        lock.lock();
     }
 
 exit:
