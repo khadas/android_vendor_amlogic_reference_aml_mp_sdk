@@ -108,8 +108,9 @@ TEST_F(AmlMpTest, DynamicSetStreamTest)
         MLOGI("----------DynamicSetStreamTest START----------\n");
         createMpTestSupporter(false);
         mpTestSupporter->setDataSource(url);
-        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         mpTestSupporter->prepare(CryptoMode);
+        sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
+        // mpTestSupporter->prepare(CryptoMode);
 
         if (mProgramInfo != nullptr)
         {
