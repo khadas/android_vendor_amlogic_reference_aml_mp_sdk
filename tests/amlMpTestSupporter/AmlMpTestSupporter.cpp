@@ -156,28 +156,26 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     }
 
     mParser = new Parser(demuxId, mSource->getFlags()&Source::kIsHardwareSource, demuxType);
-    mParser->selectProgram(programNumber);
     if (mParser == nullptr) {
         MLOGE("create parser failed!");
         return -1;
     }
-
-    if (ret < 0) {
-        MLOGE("source start failed!");
-        return -1;
-    }
-
+    mParser->selectProgram(programNumber);
     ret = mParser->open();
-    mParser->parseProgramInfoAsync();
     if (ret < 0) {
         MLOGE("parser open failed!");
         return -1;
     }
+    mParser->parseProgramInfoAsync();
 
     mParserReceiver = new ParserReceiver(mParser);
     mSource->addSourceReceiver(mParserReceiver);
 
     ret = mSource->start();
+    if (ret < 0) {
+        MLOGE("source start failed!");
+        return -1;
+    }
 
     MLOGI("parsing...");
     ret = mParser->waitProgramInfoParsed();

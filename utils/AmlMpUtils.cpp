@@ -170,6 +170,7 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SYNC_ID);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_SHOW_STATE);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_AV_INFO_JSON);
+        ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_TSPLAYER_HANDLE);
         default:
             return "unknown player parameter key";
     }
@@ -246,9 +247,11 @@ const char* mpPlayerEventType2Str(Aml_MP_PlayerEventType eventType) {
         ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_BASE);
         ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE);
         ENUM_TO_STR(AML_MP_MEDIAPLAYER_EVENT_PREPARED);
+
+        default:
+            return "unknown player event type";
     }
 
-    return "unknown player event type";
 }
 
 const char* mpPlayerWorkMode2Str(Aml_MP_PlayerWorkMode workmode) {
