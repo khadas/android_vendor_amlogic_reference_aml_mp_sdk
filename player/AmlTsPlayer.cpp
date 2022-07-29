@@ -782,7 +782,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         {
 #if ANDROID_PLATFORM_SDK_VERSION >= 30
             am_tsplayer_audio_patch_manage_mode audioPatchManageMode = AUDIO_PATCH_MANAGE_AUTO;
-            int para = *(int*)parameter;
+            int para = *(bool*)parameter;
             MLOGI("setUseTif: %d", para);
             if (para != -1) {
                 audioPatchManageMode = para ? AUDIO_PATCH_MANAGE_FORCE_DISABLE : AUDIO_PATCH_MANAGE_FORCE_ENABLE;
