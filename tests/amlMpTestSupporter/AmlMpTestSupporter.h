@@ -71,7 +71,7 @@ public:
     void setVideoErrorRecoveryMode(int recoveryMode);
     void setSourceMode(bool esMode, bool clearTVP);
     int startPlay(PlayMode playMode = START_ALL_STOP_ALL, bool mStart = true, bool mSourceReceiver = true, bool isTimeShift = false);
-    int startRecord(bool isSetStreams = true, bool isTimeShift = false);
+    int startRecord(bool isSetStreams = true, bool isTimeShift = false, bool appendMode = false);
     int startDVRPlayback(bool isSetStreams=true, bool isTimeShift=false);
     int DVRRecorder_setStreams();
     int DVRPlayback_setStreams();

@@ -34,7 +34,9 @@ typedef struct {
     int                         ringbufSize;        //dvbcore ringbuf size,this buf is uesd to cache ts data,
     uint8_t                     forceSysClock;      //1: force to use system clock as PVR index time source
                                                     //0: determine index time source based on actual situation
-    long                        reserved[8];
+    bool                        appendMode __AML_MP_RESERVE_ALIGNED;   //1:save record file with same location
+                                                                       //0:delete the record file with location before
+    long                        reserved[7];
 } Aml_MP_DVRRecorderBasicParams;
 
 typedef struct {

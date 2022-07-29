@@ -351,14 +351,14 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
     return 0;
 }
 
-int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift)
+int AmlMpTestSupporter::startRecord(bool isSetStreams, bool isTimeShift, bool appendMode)
 {
     int ret = 0;
     ALOGI("enter startRecord\n");
     mDemuxId = mParser->getDemuxId();
     Aml_MP_DemuxId demuxId = mDemuxId;
 
-    mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo, isTimeShift);
+    mTestModule = mRecorder = new DVRRecord(mCryptoMode, demuxId, mProgramInfo, isTimeShift, appendMode);
     ALOGI("before mRecorder start\n");
 
     if (mDVRRecorderEventCallback != nullptr) {

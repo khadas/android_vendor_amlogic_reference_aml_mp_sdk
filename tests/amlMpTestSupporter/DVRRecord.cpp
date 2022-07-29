@@ -17,7 +17,7 @@
 static const char* mName = LOG_TAG;
 
 namespace aml_mp {
-DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift)
+DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift, bool appendMode)
 : mCryptoMode(cryptoMode)
 , mDemuxId(demuxId)
 , mProgramInfo(programInfo)
@@ -28,6 +28,7 @@ DVRRecord::DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<Program
     snprintf(createParams.basicParams.location, AML_MP_MAX_PATH_SIZE, AML_MP_TEST_SUPPORTER_RECORD_FILE);
     createParams.basicParams.segmentSize = 100 * 1024 * 1024;
     createParams.basicParams.isTimeShift = isTimeShift;
+    createParams.basicParams.appendMode = appendMode;
 
     if (isTimeShift) {
         createParams.timeshiftParams.maxSize = maxSize;

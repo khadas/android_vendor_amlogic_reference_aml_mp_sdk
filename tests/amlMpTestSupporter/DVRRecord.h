@@ -16,7 +16,7 @@ namespace aml_mp {
 class DVRRecord : public TestModule, public ISourceReceiver
 {
 public:
-    DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift);
+    DVRRecord(bool cryptoMode, Aml_MP_DemuxId demuxId, const sptr<ProgramInfo>& programInfo, bool isTimeShift, bool appendMode);
     ~DVRRecord();
 
     int start(bool isSetStreams=true);

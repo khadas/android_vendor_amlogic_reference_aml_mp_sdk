@@ -39,6 +39,11 @@ AmlDVRRecorder::AmlDVRRecorder(Aml_MP_DVRRecorderBasicParams* basicParams, Aml_M
         setEncryptParams(encryptParams);
     }
 
+    if (basicParams->appendMode) {
+        mRecStartParams.save_rec_file = basicParams->appendMode;
+        MLOGI("save_rec_file=%d with same location", basicParams->appendMode);
+    }
+
     memset(&mRecordPids, 0, sizeof(mRecordPids));
 
     setTSNSourceToDemod();

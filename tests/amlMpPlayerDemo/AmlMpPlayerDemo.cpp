@@ -37,6 +37,7 @@ struct Argument
     bool esMode = false;
     bool clearTVP = false;
     bool timeShift = false;
+    bool appendMode = false;
 };
 
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -57,6 +58,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"esmode",      no_argument,        nullptr, 'esmd'},
         {"cleartvp",    no_argument,        nullptr, 't'},
         {"timeshift",   no_argument,        nullptr, 'tf'},
+        {"appendmode",  no_argument,        nullptr, 'am'},
         {nullptr,       no_argument,        nullptr, 0},
     };
 
@@ -184,6 +186,13 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
 
+        case 'am':
+        {
+            printf("appendmode\n");
+            argument->appendMode = true;
+        }
+        break;
+
         case 'h':
         default:
             return -1;
@@ -236,6 +245,7 @@ static void showUsage()
             "   --cleartvp    enable cleartvp for es mode playback\n"
 #endif
             "   --timeshift   enable timeshift\n"
+            "   --appendmode  enable appendmode to save record file with same location for dvr\n"
             "\n"
             "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
@@ -310,7 +320,7 @@ int main(int argc, char *argv[])
                 printf("prepare failed!\n");
                 return -1;
             }
-            ret = mpTestSupporter->startRecord(true, argument.timeShift);
+            ret = mpTestSupporter->startRecord(true, argument.timeShift, argument.appendMode);
             if (ret < 0) {
                 printf("startRecord failed!\n");
                 return -1;
