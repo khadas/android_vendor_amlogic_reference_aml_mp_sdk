@@ -37,6 +37,7 @@ TEST_F(AmlMpTest, SwitchSubtitleTest)
         MLOGI("----------SwitchSubtitleTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {

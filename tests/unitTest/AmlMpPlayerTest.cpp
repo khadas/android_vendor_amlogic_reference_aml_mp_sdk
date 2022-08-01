@@ -19,6 +19,7 @@ void AmlMpBase::videoDecoding(const std::string & url, bool mStart, bool mSource
     MLOGI("----------VideoDecodingTest START----------\n");
     createMpTestSupporter();
     mpTestSupporter->setDataSource(url);
+    mpTestSupporter->prepare();
     sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
     if (mProgramInfo == nullptr)
     {
@@ -54,6 +55,7 @@ void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSource
     MLOGI("----------AudioDecodingTest START----------\n");
     createMpTestSupporter();
     mpTestSupporter->setDataSource(url);
+    mpTestSupporter->prepare();
     sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
     if (mProgramInfo == nullptr)
     {
@@ -93,6 +95,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 1, 1);
     std::string finalUrl = url + demuxInfo;
     mpTestSupporter->setDataSource(finalUrl);
+    mpTestSupporter->prepare();
     sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
     if (mProgramInfo == nullptr)
     {
@@ -123,6 +126,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 0, 0);
     finalUrl = url + demuxInfo;
     mpTestSupporter2->setDataSource(finalUrl);
+    mpTestSupporter2->prepare();
     sptr<ProgramInfo> mProgramInfo2 = mpTestSupporter2->getProgramInfo();
     if (mProgramInfo2 == nullptr)
     {
@@ -166,6 +170,7 @@ TEST_F(AmlMpTest, PlayerStartStopTest)
         MLOGI("----------PlayerStartTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -227,6 +232,7 @@ TEST_F(AmlMpTest, SubtitleDecodingTest)
         MLOGI("----------SubtitleDecodingTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -274,6 +280,7 @@ TEST_F(AmlMpTest, PauseResumeTest)
         MLOGI("----------PauseResumeTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -307,6 +314,7 @@ TEST_F(AmlMpTest, FlushTest)
         MLOGI("----------FlushTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -409,6 +417,7 @@ TEST_F(AmlMpTest, AVSyncModeTest)
             MLOGI("avsyncsourceEnum is %d \n", avsyncsourceEnum);
             createMpTestSupporter();
             mpTestSupporter->setDataSource(url);
+            mpTestSupporter->prepare();
             sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
             if (mProgramInfo == nullptr)
             {

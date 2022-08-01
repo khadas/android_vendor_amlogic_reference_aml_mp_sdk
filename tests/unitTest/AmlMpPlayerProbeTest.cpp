@@ -22,6 +22,7 @@ TEST_F(AmlMpTest, BufferTest)
         MLOGI("----------BufferTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -47,6 +48,7 @@ TEST_F(AmlMpTest, PtsTest)
         MLOGI("----------PtsTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -72,6 +74,7 @@ TEST_F(AmlMpTest, VideoInfoTest)
         MLOGI("----------VideoInfoTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -104,6 +107,7 @@ TEST_F(AmlMpTest, VideoDecodeStatTest)
         MLOGI("----------VideoDecodeStatTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -136,6 +140,7 @@ TEST_F(AmlMpTest, AudioInfoTest)
         MLOGI("----------AudioInfoTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -167,6 +172,7 @@ TEST_F(AmlMpTest, AudioDecodeStatTest)
         MLOGI("----------AudioDecodeStatTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -197,6 +203,7 @@ TEST_F(AmlMpTest, AVSyncDoneEventTest)
         MLOGI("----------AVSyncDoneEventTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare();
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
@@ -224,6 +231,7 @@ TEST_F(AmlMpTest, PidChangedEventTest)
             MLOGI("----------PidChangedEventTest START----------\n");
             createMpTestSupporter();
             mpTestSupporter->setDataSource(url);
+            mpTestSupporter->prepare();
             sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
             if (mProgramInfo == nullptr)
             {

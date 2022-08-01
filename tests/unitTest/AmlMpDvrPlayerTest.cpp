@@ -90,8 +90,11 @@ TEST_F(AmlMpTest, DVRPlaybackPauseResumeTest)
         int ret = 0;
         MLOGI("----------DVRPlaybackPauseResumeTest START----------\n");
         createMpTestSupporter(false);
+        // sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        // std::string finalUrl = recordPathInfo;
+        // mpTestSupporter2->setDataSource(finalUrl);
         mpTestSupporter->setDataSource(url);
-        mpTestSupporter->prepare(CryptoMode);
+        // mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);

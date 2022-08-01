@@ -40,6 +40,7 @@ void AmlMpBase::setAudioVideoParam(const std::string & url)
 {
     createMpTestSupporter();
     mpTestSupporter->setDataSource(url);
+    mpTestSupporter->prepare(CryptoMode);
     sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
     if (mProgramInfo == nullptr)
     {
@@ -97,6 +98,7 @@ TEST_F(AmlMpTest, SwitchAudioTrackTest)
         MLOGI("----------SwitchAudioTrackTest START----------\n");
         createMpTestSupporter();
         mpTestSupporter->setDataSource(url);
+        mpTestSupporter->prepare(CryptoMode);
         sptr<ProgramInfo> mProgramInfo = mpTestSupporter->getProgramInfo();
         if (mProgramInfo == nullptr)
         {
