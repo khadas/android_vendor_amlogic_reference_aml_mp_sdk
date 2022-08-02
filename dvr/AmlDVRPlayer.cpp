@@ -569,7 +569,8 @@ int AmlDVRPlayer::setStreamsCommon(Aml_MP_DVRStreamArray* streams)
         if (mADParams.pid != AML_MP_INVALID_PID) {
             ret = Aml_MP_Player_SetADParams(mMpPlayerHandle, &mADParams);
         }
-        if (mSubtitleParams.pid != AML_MP_INVALID_PID || mSubtitleParams.subtitleCodec != AML_MP_CODEC_UNKNOWN) {
+        if (mSubtitleParams.subtitleCodec != AML_MP_VIDEO_CODEC_BASE &&
+            mSubtitleParams.subtitleCodec != AML_MP_CODEC_UNKNOWN) {
             ret = Aml_MP_Player_SetSubtitleParams(mMpPlayerHandle, &mSubtitleParams);
         }
     }
