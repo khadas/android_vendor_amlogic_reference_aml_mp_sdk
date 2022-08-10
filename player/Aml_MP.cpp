@@ -74,6 +74,11 @@ int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource* source)
     return ret;
 }
 
+int Aml_MP_SetCIPlusStatus(bool enable) {
+    int ret = dvb_enable_ciplus(enable);
+    return ret;
+}
+
 int Aml_MP_GetCodecCapability(Aml_MP_CodecID codecId, char* caps, size_t size) {
     MLOG();
 
@@ -86,4 +91,3 @@ int Aml_MP_GetCodecCapability(Aml_MP_CodecID codecId, char* caps, size_t size) {
 
     return 0;
 }
-

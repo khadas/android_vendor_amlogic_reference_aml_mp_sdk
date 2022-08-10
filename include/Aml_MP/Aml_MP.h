@@ -64,6 +64,15 @@ int Aml_MP_SetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource source);
 int Aml_MP_GetDemuxSource(Aml_MP_DemuxId demuxId, Aml_MP_DemuxSource *source);
 
 /**
+ * \brief Aml_MP_SetCIPlusStatus
+ *
+ * \param enable
+ *
+ * \return 0 if success.
+ */
+int Aml_MP_SetCIPlusStatus(bool enable);
+
+/**
  * \brief Aml_MP_GetCodecCapability
  *
  * \param codecId
