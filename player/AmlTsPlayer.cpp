@@ -809,7 +809,15 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 #endif
         }
         break;
-
+#ifdef ANDROID
+        case AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE:
+        {
+            am_tsplayer_audio_lang audioLang;
+            convertToTsPlayerAudioLanguage(&audioLang, (Aml_MP_AudioLanguage*)parameter);
+            ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_AUDIO_LANG, &audioLang);
+        }
+        break;
+#endif
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -908,6 +916,12 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             ret = AM_TSPLAYER_OK;
         }
         break;
+
+        case AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID:
+        {
+            ret = AmTsPlayer_getParams(mPlayer, AM_TSPLAYER_KEY_AUDIO_PRESENTATION_ID, parameter);
+            break;
+        }
 
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;

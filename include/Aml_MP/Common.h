@@ -387,6 +387,8 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                     //setVideoCrop(Aml_MP_Rect*)
     AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorRecoveryMode(Aml_MP_VideoErrorRecoveryMode*)
 
+    AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE,                 //setAudioLanguage(Aml_MP_AudioLanguage*)
+
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,
     AML_MP_PLAYER_PARAMETER_VIDEO_INFO,                     //getVideoInfo(Aml_MP_VideoInfo*)
@@ -669,6 +671,14 @@ typedef enum {
     AML_MP_VIDEO_ERROR_RECOVERY_DROP,       //Drop frame if any error detected
     AML_MP_VIDEO_ERROR_RECOVERY_NONE,       //Do nothing after decoding error frame
 } Aml_MP_VideoErrorRecoveryMode;
+
+////////////////////////////////////////
+//AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE
+typedef struct {
+    uint32_t            firstLanguage;
+    uint32_t            secondLanguage;
+    long                reserved[8];
+} Aml_MP_AudioLanguage;
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {

@@ -216,6 +216,7 @@ private:
     Aml_MP_ADVolume mADMixLevel{-1, -1};
     Aml_MP_PlayerWorkMode mWorkMode{(Aml_MP_PlayerWorkMode)-1};
     Aml_MP_VideoErrorRecoveryMode mVideoErrorRecoveryMode{(Aml_MP_VideoErrorRecoveryMode)-1};
+    Aml_MP_AudioLanguage mAudioLanguage;
 
     float mVolume = -1.0;
     float mADVolume = -1.0;

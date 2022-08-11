@@ -85,6 +85,8 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     memset(&mTeletextCtrlParam, 0, sizeof(mTeletextCtrlParam));
     mTeletextCtrlParam.event = AML_MP_TT_EVENT_INVALID;
 
+    memset(&mAudioLanguage, 0, sizeof(mAudioLanguage));
+
     mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
     MLOGI("mWaitingEcmMode:%d", mWaitingEcmMode);
 
@@ -1182,6 +1184,14 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
     }
     break;
 
+    case AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE:
+    {
+        RETURN_IF(-1, parameter == nullptr);
+        mAudioLanguage = *(Aml_MP_AudioLanguage*)parameter;
+        MLOGI("set audio language:[%#x, %#x]", mAudioLanguage.firstLanguage, mAudioLanguage.secondLanguage);
+        break;
+    }
+
     default:
         MLOGW("unhandled key: %s", mpPlayerParameterKey2Str(key));
         return ret;
@@ -2054,6 +2064,10 @@ int AmlMpPlayerImpl::applyParameters_l()
 
     if (mVideoCrop.right >= 0 && mVideoCrop.bottom >= 0) {
         mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_VIDEO_CROP, &mVideoCrop);
+    }
+
+    if (mAudioLanguage.firstLanguage != 0 || mAudioLanguage.secondLanguage != 0) {
+        mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE, &mAudioLanguage);
     }
 
     return 0;
