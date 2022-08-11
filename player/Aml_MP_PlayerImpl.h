@@ -196,6 +196,7 @@ private:
     Aml_MP_VideoParams mVideoParams;
     Aml_MP_AudioParams mAudioParams;
     Aml_MP_SubtitleParams mSubtitleParams;
+    AML_MP_TeletextCtrlParam mTeletextCtrlParam;
     WindowSize mSubtitleWindow;
     Aml_MP_AudioParams mADParams;
 

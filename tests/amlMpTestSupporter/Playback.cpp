@@ -749,6 +749,16 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
         MLOGE("unknown playmode:%d", mPlayMode);
     }
 
+    if (mProgramInfo->subtitleCodec == AML_MP_SUBTITLE_CODEC_TELETEXT && mProgramInfo->magazine != -1 && mProgramInfo->page != -1) {
+        // teletext need call ttControl after start
+        AML_MP_TeletextCtrlParam teletextCtrlParam = {
+            .magazine = mProgramInfo->magazine,
+            .page = mProgramInfo->page,
+            .event = AML_MP_TT_EVENT_GO_TO_SUBTITLE,
+        };
+        Aml_MP_Player_SetParameter(mPlayer, AML_MP_PLAYER_PARAMETER_TELETEXT_CONTROL, &teletextCtrlParam);
+    }
+
     if (mDemuxer) {
         if (mProgramInfo->videoPid != AML_MP_INVALID_PID) {
             mDemuxer->openStream(AML_MP_STREAM_TYPE_VIDEO, 16, 3 * 1024 * 1024, mDrmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY,

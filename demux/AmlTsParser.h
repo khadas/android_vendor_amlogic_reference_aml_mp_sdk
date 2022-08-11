@@ -64,6 +64,9 @@ struct StreamInfo
     Aml_MP_CodecID codecId          = AML_MP_CODEC_UNKNOWN;
     int compositionPageId           = -1;
     int ancillaryPageId             = -1;
+    // teletext subtitle params
+    int magazine                    = -1;
+    int page                        = -1;
 };
 
 struct PMTInfo {
@@ -85,6 +88,8 @@ struct PMTStream {
 
     int compositionPageId{}; //dvb subtitle
     int ancillaryPageId{}; //dvb subtitle
+    int magazine = -1; //teletext subtitle
+    int page = -1; //teletext subtitle
     bool isAD{false};
 };
 
@@ -148,6 +153,8 @@ struct ProgramInfo : public AmlMpRefBase
     int adPid                       = AML_MP_INVALID_PID;
     int compositionPageId;
     int ancillaryPageId;
+    int magazine    = -1;
+    int page        = -1;
 
     std::vector<StreamInfo> audioStreams;
     std::vector<StreamInfo> videoStreams;

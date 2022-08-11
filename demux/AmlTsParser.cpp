@@ -451,6 +451,27 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                 }
                 break;
 
+                case 0x56:
+                {
+                    if (descriptor_length > 0 && descriptor_length % 5 != 0) {
+                        break;
+                    }
+                    int language_count = descriptor_length / 5;
+                    for (int i = 0; i < language_count; i++) {
+                        int type = p2[i * 5 + 5] >> 3;
+                        // type == 2: Teletext subtitle page
+                        // type == 5: Teletext subtitle page for hearing impaired people
+                        if (type == 2 || type == 5) {
+                            // choose the first subtitle magazine
+                            esStream.magazine = p2[i * 5 + 5] & 0x07;
+                            esStream.page = p2[i * 5 + 6];
+                            MLOGI("magazine:%#x, page:%#x", esStream.magazine, esStream.page);
+                            break;
+                        }
+                    }
+                    break;
+                }
+
                 case 0x59:
                 {
                     int language_count = descriptor_length / 8;
@@ -761,6 +782,9 @@ void Parser::onPmtParsed(const PMTSection& results)
                 if (programInfo->subtitleCodec == AML_MP_SUBTITLE_CODEC_DVB) {
                     programInfo->compositionPageId = stream->compositionPageId;
                     programInfo->ancillaryPageId = stream->ancillaryPageId;
+                } else if (programInfo->subtitleCodec == AML_MP_SUBTITLE_CODEC_TELETEXT) {
+                    programInfo->magazine = stream->magazine;
+                    programInfo->page = stream->page;
                 }
             }
             StreamInfo streamInfo;
@@ -770,6 +794,9 @@ void Parser::onPmtParsed(const PMTSection& results)
             if (streamInfo.codecId == AML_MP_SUBTITLE_CODEC_DVB) {
                 streamInfo.compositionPageId = stream->compositionPageId;
                 streamInfo.ancillaryPageId = stream->ancillaryPageId;
+            } else if (streamInfo.codecId == AML_MP_SUBTITLE_CODEC_TELETEXT) {
+                streamInfo.magazine = stream->magazine;
+                streamInfo.page = stream->page;
             }
             programInfo->subtitleStreams.push_back(streamInfo);
             MLOGI("subtitle pid:%d(%#x), codec:%s", streamInfo.pid, streamInfo.pid, mpCodecId2Str(streamInfo.codecId));

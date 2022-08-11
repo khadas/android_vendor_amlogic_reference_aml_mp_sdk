@@ -82,6 +82,8 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     mADParams.pid = AML_MP_INVALID_PID;
     mADParams.audioCodec = AML_MP_CODEC_UNKNOWN;
     memset(&mIptvCasParams, 0, sizeof(mIptvCasParams));
+    memset(&mTeletextCtrlParam, 0, sizeof(mTeletextCtrlParam));
+    mTeletextCtrlParam.event = AML_MP_TT_EVENT_INVALID;
 
     mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
     MLOGI("mWaitingEcmMode:%d", mWaitingEcmMode);
@@ -1152,6 +1154,8 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
 
     case  AML_MP_PLAYER_PARAMETER_TELETEXT_CONTROL:
     {
+        RETURN_IF(-1, parameter == nullptr);
+        mTeletextCtrlParam = *(AML_MP_TeletextCtrlParam*)parameter;
         MLOGW("ttx key: %s", mpPlayerParameterKey2Str(key));
     }
     break;
@@ -1937,6 +1941,9 @@ int AmlMpPlayerImpl::finishPreparingIfNeeded_l()
 
     if (getDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE) == AML_MP_DECODING_STATE_START_PENDING) {
         startSubtitleDecoding_l();
+        if (mSubtitleParams.subtitleCodec == AML_MP_SUBTITLE_CODEC_TELETEXT && mTeletextCtrlParam.event != AML_MP_TT_EVENT_INVALID) {
+            mPlayer->setParameter(AML_MP_PLAYER_PARAMETER_TELETEXT_CONTROL, &mTeletextCtrlParam);
+        }
     }
 
     if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_START_PENDING) {
