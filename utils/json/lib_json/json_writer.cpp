@@ -94,7 +94,7 @@ using StreamWriterPtr = std::auto_ptr<StreamWriter>;
 
 String valueToString(LargestInt value) {
   UIntToStringBuffer buffer;
-  char* current = buffer + sizeof(buffer);
+  char* current = buffer + sizeof(buffer) - 1;
   if (value == Value::minLargestInt) {
     uintToString(LargestUInt(Value::maxLargestInt) + 1, current);
     *--current = '-';
@@ -110,7 +110,7 @@ String valueToString(LargestInt value) {
 
 String valueToString(LargestUInt value) {
   UIntToStringBuffer buffer;
-  char* current = buffer + sizeof(buffer);
+  char* current = buffer + sizeof(buffer) - 1;
   uintToString(value, current);
   assert(current >= buffer);
   return current;

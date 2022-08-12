@@ -38,7 +38,6 @@
 
 std::string get_vfm_map_checkpoint();
 std::string get_frame_count_checkpoint();
-int amsysfs_get_sysfs_str(const char *path, char* buf, size_t len);
 void check_vfm_map(int timeoutMs);
 void check_frame_count(int timeoutMs);
 

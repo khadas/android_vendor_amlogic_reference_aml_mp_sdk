@@ -240,15 +240,9 @@ int DvbSource::openFend(int fendIndex)
    struct stat file_status;
 
    snprintf(fe_name, sizeof(fe_name), "/dev/dvb0.frontend%u", fendIndex);
-   if (stat(fe_name, &file_status) == 0) {
-       MLOGE("Found FE[%s]\n", fe_name);
-   } else {
-       MLOGE("No FE found [%s]!", fe_name);
-	   return -1;
-   }
 
    if ((mFendFd = open(fe_name, O_RDWR | O_NONBLOCK)) < 0) {
-	 MLOGE("Failed to open [%s], errno %d\n", fe_name, errno);
+      MLOGE("Failed to open [%s], errno %d\n", fe_name, errno);
       return -1;
    } else {
       MLOGE("Open %s frontend_fd:%d \n", fe_name, mFendFd);

@@ -22,21 +22,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <Aml_MP/Dvr.h>
+#include <utils/Amlsysfsutils.h>
 
 using namespace aml_mp;
-
-int amsysfs_get_sysfs_str(const char *path, char* buf, size_t len) {
-    int fd;
-    int bytes;
-    fd = open(path, O_RDONLY);
-    if (fd >= 0)
-    {
-        bytes = read(fd, buf, len);
-        close(fd);
-        return 0;
-    }
-    return -1;
-}
 
 std::string get_vfm_map_checkpoint()
 {
@@ -387,4 +375,3 @@ void AmlMpBase::DVRSegment(std::string url, bool isDelete)
         EXPECT_EQ(Aml_MP_DVRRecorder_DeleteSegment(url.c_str(), segmentIds[segmentIndex]), AML_MP_OK);
     }
 }
-

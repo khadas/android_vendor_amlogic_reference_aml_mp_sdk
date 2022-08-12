@@ -1088,7 +1088,7 @@ int convertToRegionId(char iso639lang[]) {
 
     int regionid = 16;  //default value
 
-    if (iso639lang && iso639lang[0] == '\0')  //iso639lang is NULL
+    if (iso639lang == NULL || iso639lang[0] == '\0')  //iso639lang is NULL
         return regionid;
 
     for (int i = 0; ppsz_default_triplet[i] != NULL; i++)

@@ -352,8 +352,7 @@ int AmlTsPlayer::packetize(
     }
 
     packets->clear();
-    int ret = 0;;
-    bool alignPayload = 0;
+    int ret = 0;
     size_t PES_packet_length = buffer_size + 8 + numStuffingBytes;
     if (PES_private_data_len > 0) {
         PES_packet_length += PES_private_data_len + 1;
@@ -371,9 +370,6 @@ int AmlTsPlayer::packetize(
         size_t numBytesOfPayload = buffer_size;
         if (numBytesOfPayload > sizeAvailableForPayload) {
             numBytesOfPayload = sizeAvailableForPayload;
-            if (alignPayload && numBytesOfPayload > 16) {
-                numBytesOfPayload -= (numBytesOfPayload % 16);
-            }
         }
 
         // size_t numPaddingBytes = sizeAvailableForPayload - numBytesOfPayload;
@@ -382,11 +378,7 @@ int AmlTsPlayer::packetize(
         // can contain at most.
         sizeAvailableForPayload = TS_PACKET_SIZE - TS_PACKET_HEADER_SIZE;
         size_t sizeAvailableForAlignedPayload = sizeAvailableForPayload;
-        if (alignPayload) {
-            // We're only going to use a subset of the available space
-            // since we need to make each fragment a multiple of 16 in size.
-            sizeAvailableForAlignedPayload -= (sizeAvailableForAlignedPayload % 16);
-        }
+
         /*divide the PayloadRemaining and caculate how many ts packet can contain it*/
         size_t numFullTSPackets = numBytesOfPayloadRemaining / sizeAvailableForAlignedPayload;
         numTSPackets += numFullTSPackets;
@@ -426,9 +418,6 @@ int AmlTsPlayer::packetize(
     size_t copy = buffer_size;
     if (copy > sizeAvailableForPayload) {
         copy = sizeAvailableForPayload;
-        if (alignPayload && copy > 16) {
-            copy -= (copy % 16);
-        }
     }
 
     size_t numPaddingBytes = sizeAvailableForPayload - copy;
@@ -488,9 +477,6 @@ int AmlTsPlayer::packetize(
         size_t copy = buffer_size - offset;
         if (copy > sizeAvailableForPayload) {
             copy = sizeAvailableForPayload;
-            if (alignPayload && copy > 16) {
-                copy -= (copy % 16);
-            }
         }
 
         size_t numPaddingBytes = sizeAvailableForPayload - copy;
@@ -816,8 +802,8 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         {
 #ifdef __linux__
 #ifndef ANDROID
+            MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str(*(Aml_MP_VideoErrorRecoveryMode*)parameter));
             int recoveryMode = convertToCodecRecoveryMode(*(Aml_MP_VideoErrorRecoveryMode*)parameter);
-            MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str((Aml_MP_VideoErrorRecoveryMode)recoveryMode));
             ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_VIDEO_RECOVERY_MODE, &recoveryMode);
 #endif
 #endif

@@ -859,7 +859,7 @@ void Parser::onEcmParsed(const ECMSection& results){
  * 5. old stream removed
  * 6. new stream inserted
  */
-bool Parser::checkPidChange(PMTSection oldPmt, PMTSection newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfos)
+bool Parser::checkPidChange(const PMTSection& oldPmt, const PMTSection& newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfos)
 {
     std::map<int, PMTStream> oldPidStreamMap;
     std::map<int, PMTStream> newPidStreamMap;

@@ -282,7 +282,7 @@ private:
     void onCatParsed(const CATSection& results);
     void onEcmParsed(const ECMSection& results);
 
-    bool checkPidChange(PMTSection oldPmt, PMTSection newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfo);
+    bool checkPidChange(const PMTSection& oldPmt, const PMTSection& newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfo);
 
     std::function<ProgramEventCallback> mCb = nullptr;
 

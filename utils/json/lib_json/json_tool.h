@@ -80,7 +80,7 @@ using UIntToStringBuffer = char[uintToStringBufferSize];
  *        Must have at least uintToStringBufferSize chars free.
  */
 static inline void uintToString(LargestUInt value, char*& current) {
-  *--current = 0;
+  *current = 0;
   do {
     *--current = static_cast<char>(value % 10U + static_cast<unsigned>('0'));
     value /= 10;

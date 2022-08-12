@@ -24,8 +24,11 @@ TestUrlList::TestUrlList()
 
 void TestUrlList::initSourceDir(const std::string& sourceDir)
 {
+    if (sourceDir.empty()) {
+        return;
+    }
     mSourceDir = sourceDir;
-    if (*(mSourceDir.end()-1) != '/') {
+    if (*mSourceDir.rbegin() != '/') {
         mSourceDir.append("/");
     }
 }
@@ -37,7 +40,9 @@ void TestUrlList::initSourceUrl(const std::string& sourceUrl)
 
 bool TestUrlList::getUrl(const std::string& testName __unused, std::string* url)
 {
-    if (mSourceUrl == "") return false;
+    if (mSourceUrl.empty()) {
+        return false;
+    }
     *url = mSourceUrl;
     return true;
 }
@@ -77,11 +82,6 @@ std::string TestUrlList::mapToDirectoryName(const std::string& testName)
 
 bool TestUrlList::collectFileList(const std::string& dir, std::list<std::string>* fileList)
 {
-    if (access(dir.c_str(), F_OK) < 0) {
-        printf("cann't access %s\n", dir.c_str());
-        return false;
-    }
-
     DIR* dirHandle;
     dirHandle = opendir(dir.c_str());
     if (dirHandle == nullptr) {

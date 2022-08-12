@@ -1113,7 +1113,7 @@ int StreamParser::parsePES(const uint8_t* data, size_t size __unused, Frame* fra
         }
 
         if (PTS_DTS_flags & 0x01) {
-            dts = (p[0]&0x0e) << 29;
+            dts = (int64_t)(p[0]&0x0e) << 29;
             dts |= ((p[1]<<8 | p[2])>>1) << 15;
             dts |= ((p[3]<<8 | p[4])>>1);
 

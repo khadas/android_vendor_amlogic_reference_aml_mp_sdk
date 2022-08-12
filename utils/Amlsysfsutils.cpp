@@ -66,7 +66,7 @@ int amsysfs_get_sysfs_str(const char *path, char *valstr, unsigned size) {
     if (fd >= 0) {
         memset(valstr, 0, size);
         bytes = read(fd, valstr, size - 1);
-        valstr[strlen(valstr) - 1] = '\0';
+        valstr[size - 1] = '\0';
         close(fd);
         return 0;
     } else {

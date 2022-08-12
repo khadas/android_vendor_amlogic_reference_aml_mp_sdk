@@ -379,6 +379,7 @@ public:
     wptr& operator = (T* other);
     wptr& operator = (const wptr<T>& other);
     wptr& operator = (const sptr<T>& other);
+    wptr& operator = (wptr<T>&& other);
 
     template<typename U> wptr& operator = (U* other);
     template<typename U> wptr& operator = (const wptr<U>& other);
@@ -568,6 +569,16 @@ wptr<T>& wptr<T>::operator = (const sptr<T>& other)
     if (m_ptr) m_refs->decWeak(this);
     m_ptr = otherPtr;
     m_refs = newRefs;
+    return *this;
+}
+
+template<typename T>
+wptr<T>& wptr<T>::operator = (wptr<T>&& other)
+{
+    m_ptr = other.m_ptr;
+    m_refs = other.m_refs;
+    other.m_ptr = nullptr;
+    other.m_refs = nullptr;
     return *this;
 }
 

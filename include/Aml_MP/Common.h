@@ -777,13 +777,13 @@ typedef enum {
 
     // Subtitle event
     AML_MP_PLAYER_EVENT_SUBTITLE_BASE           = 0x4000,
-    AML_MP_PLAYER_EVENT_SUBTITLE_DATA,                      //param: Aml_MP_SubtitleData
-    AML_MP_PLAYER_EVENT_SUBTITLE_AVAIL,                     //param: int
-    AML_MP_PLAYER_EVENT_SUBTITLE_DIMENSION,                 //param: Aml_MP_SubtitleDimension
-    AML_MP_PLAYER_EVENT_SUBTITLE_AFD_EVENT,                 //param: int
-    AML_MP_PLAYER_EVENT_SUBTITLE_CHANNEL_UPDATE,            //param: Aml_MP_SubtitleChannelUpdate
+    AML_MP_PLAYER_EVENT_SUBTITLE_DATA,                      //param: Aml_MP_SubtitleData*
+    AML_MP_PLAYER_EVENT_SUBTITLE_AVAIL,                     //param: int*
+    AML_MP_PLAYER_EVENT_SUBTITLE_DIMENSION,                 //param: Aml_MP_SubtitleDimension*
+    AML_MP_PLAYER_EVENT_SUBTITLE_AFD_EVENT,                 //param: int*
+    AML_MP_PLAYER_EVENT_SUBTITLE_CHANNEL_UPDATE,            //param: Aml_MP_SubtitleChannelUpdate*
     AML_MP_PLAYER_EVENT_SUBTITLE_LANGUAGE,                  //param: char[4]
-    AML_MP_PLAYER_EVENT_SUBTITLE_INFO,                      //param: Aml_MP_SubtitleInfo
+    AML_MP_PLAYER_EVENT_SUBTITLE_INFO,                      //param: Aml_MP_SubtitleInfo*
     AML_MP_PLAYER_EVENT_SUBTITLE_LOSEDATA,
     AML_MP_PLAYER_EVENT_SUBTITLE_TIMEOUT,
     AML_MP_PLAYER_EVENT_SUBTITLE_INVALID_TIMESTAMP,
@@ -794,7 +794,6 @@ typedef enum {
     AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE,
     AML_MP_MEDIAPLAYER_EVENT_PREPARED,
 } Aml_MP_PlayerEventType;
-
 
 //AML_MP_PLAYER_EVENT_VIDEO_CHANGED,
 typedef struct {
