@@ -102,7 +102,7 @@ AmlDvbCasHal::AmlDvbCasHal(Aml_MP_CASServiceType serviceType)
 : AmlCasBase(serviceType)
 {
 #ifdef HAVE_CAS_HAL
-    AM_RESULT ret = AM_ERROR_GENERAL_ERORR;
+    AM_RESULT ret = AM_ERROR_GENERAL_ERROR;
     CA_SERVICE_TYPE_t caServiceType = convertToCAServiceType(mServiceType);
     ret = AM_CA_OpenSession(g_casHandle, &mCasSession, caServiceType);
     if (ret != AM_ERROR_SUCCESS) {
@@ -125,7 +125,7 @@ AmlDvbCasHal::~AmlDvbCasHal()
     MLOG();
 
 #ifdef HAVE_CAS_HAL
-    AM_RESULT ret = AM_ERROR_GENERAL_ERORR;
+    AM_RESULT ret = AM_ERROR_GENERAL_ERROR;
     ret = AM_CA_CloseSession(mCasSession);
     if (ret != AM_ERROR_SUCCESS) {
         MLOGE("AM_CA_CloseSession failed!");
