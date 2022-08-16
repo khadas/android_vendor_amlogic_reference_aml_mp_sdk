@@ -345,6 +345,28 @@ int Aml_MP_MediaPlayer_GetParameter(AML_MP_MEDIAPLAYER handle, Aml_MP_MediaPlaye
 int Aml_MP_MediaPlayer_RegisterEventCallBack(AML_MP_MEDIAPLAYER handle, Aml_MP_MediaPlayerEventCallback cb, void* userData);
 
 /**
+ * \brief Aml_MP_MediaPlayer_SetVolume
+ * Set playback volume
+ *
+ * \param [in]  player handle
+ * \param [in]  volume [0.0 ~ 100.0]
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_SetVolume(AML_MP_MEDIAPLAYER handle, float volume);
+
+/**
+ * \brief Aml_MP_MediaPlayer_GetVolume
+ * Get playback volume
+ *
+ * \param [in]   player handle
+ * \param [out]  volume
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_GetVolume(AML_MP_MEDIAPLAYER handle, float* volume);
+
+/**
  * \brief Aml_MP_MediaPlayer_SetPlaybackRate
  * Set playback rate
  *

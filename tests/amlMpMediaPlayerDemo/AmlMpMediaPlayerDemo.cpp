@@ -246,7 +246,6 @@ static struct TestModule::Command g_commandTable[] = {
         }
     },
 
-/*
     {
         "gVolume", 0, "get volume",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -273,7 +272,6 @@ static struct TestModule::Command g_commandTable[] = {
             return ret;
         }
     },
-*/
 
     {
         "sFast", 1, "set Fast rate",
