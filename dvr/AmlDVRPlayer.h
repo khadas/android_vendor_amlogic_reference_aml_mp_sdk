@@ -75,6 +75,7 @@ private:
     //record start time
     uint32_t mRecStartTime;
     uint32_t mLimit;
+    int32_t mAudioPresentationId;
 
     int setBasicParams(Aml_MP_DVRPlayerBasicParams* basicParams);
     int setDecryptParams(Aml_MP_DVRPlayerDecryptParams* decryptParams);

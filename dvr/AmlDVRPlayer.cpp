@@ -55,6 +55,7 @@ AmlDVRPlayer::AmlDVRPlayer(Aml_MP_DVRPlayerBasicParams* basicParams, Aml_MP_DVRP
     setBasicParams(basicParams);
     mRecStartTime = 0;
     mLimit = 0;
+    mAudioPresentationId = -1;
     mIsEncryptStream = basicParams->drmMode != AML_MP_INPUT_STREAM_NORMAL;
     mInputStreamType = basicParams->drmMode;
 
@@ -83,10 +84,14 @@ int AmlDVRPlayer::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* use
 
 int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
 {
-
     MLOG();
     int ret = setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
+        if (mAudioPresentationId > -1) {
+#if ANDROID_PLATFORM_SDK_VERSION != 29
+            ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
+#endif
+        }
         ret = dvr_wrapper_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {
             MLOGE("update playback failed!");
@@ -100,6 +105,11 @@ int AmlDVRPlayer::onlySetStreams(Aml_MP_DVRStreamArray* streams)
     MLOG();
     int ret = setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
+        if (mAudioPresentationId > -1) {
+#if ANDROID_PLATFORM_SDK_VERSION != 29
+            ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
+#endif
+        }
         ret = dvr_wrapper_only_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {
             MLOGE("update playback failed!");
@@ -187,7 +197,7 @@ int AmlDVRPlayer::stop()
         ret = Aml_MP_Player_Destroy(mMpPlayerHandle);
         mMpPlayerHandle = AML_MP_INVALID_HANDLE;
         if (ret < 0) {
-            MLOGE("ts player close playback failed!");
+            MLOGE("mp player close playback failed!");
         }
     }
     return 0;
@@ -331,7 +341,11 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         case AML_MP_PLAYER_PARAMETER_VENDOR_ID:
             mVendorID = *(int*)parameter;
             break;
-
+        case AML_MP_PLAYER_PARAMETER_AUDIO_PRESENTATION_ID:
+        {
+            mAudioPresentationId = *(int32_t*)parameter;
+            break;
+        }
         default:
             break;
 
