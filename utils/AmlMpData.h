@@ -85,7 +85,7 @@ namespace aml_mp {
  */
 struct HIDE _AUnion_impl {
     /**
-     * Calls placement constuctor for type T with arbitrary arguments for a storage at an address.
+     * Calls placement constructor for type T with arbitrary arguments for a storage at an address.
      * Storage MUST be large enough to contain T.
      * Also clears the slack space after type T. \todo This is not technically needed, so we may
      * choose to do this just for debugging.
@@ -103,7 +103,7 @@ struct HIDE _AUnion_impl {
     }
 
     /**
-     * Calls destuctor for an object of type T located at a specific address.
+     * Calls destructor for an object of type T located at a specific address.
      *
      * \note we do not clear the storage in this case as the storage should not be used
      * until another object is placed there, at which case the storage will be cleared.
@@ -219,7 +219,7 @@ public:
  *
  * It provides:
  *
- * void assign(T*, const U&) // for copiable types - this leaves the source unchanged, hence const.
+ * void assign(T*, const U&) // for copyable types - this leaves the source unchanged, hence const.
  *
  * \param T type of object to assign to
  */
@@ -838,7 +838,7 @@ public:
             typename std::enable_if<Flagger::flagFor((T*)0) != Flagger::flagFor((void*)0)>::type;
 
         /**
-         * Checks if there is a copiable object of type T in this container. If there is, it copies
+         * Checks if there is a copyable object of type T in this container. If there is, it copies
          * that object into the provided address and returns true. Otherwise, it does nothing and
          * returns false.
          *

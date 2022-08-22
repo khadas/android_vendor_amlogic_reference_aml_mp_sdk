@@ -165,7 +165,7 @@ const char* mpInputStreamType2Str(Aml_MP_InputStreamType inputStreamType);
 const char* mpInputSourceType2Str(Aml_MP_InputSourceType inputSourceType);
 const char* mpCASType2Str(Aml_MP_CASType casType);
 const char* mpVideoDecodeMode2Str(Aml_MP_VideoDecodeMode decodeMode);
-const char* mpCASServiceType2Str(Aml_MP_CASServiceType servciceType);
+const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType);
 const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
 
 #ifdef ANDROID

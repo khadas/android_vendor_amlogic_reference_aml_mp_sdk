@@ -51,7 +51,7 @@ AmlTsPlayer::AmlTsPlayer(Aml_MP_PlayerCreateParams* createParams, int instanceId
     int temp_buffer_num   = 100;
     mPacktsBuffer = new AmlMpBuffer(temp_buffer_num * TS_PACKET_SIZE);
     if (AmlMpConfig::instance().mDumpPackts == 1) {
-        mPacketizefd = open("/data/PacketizeEstoTsFile.ts", O_CREAT | O_RDWR, 0666);
+        mPacketsizefd = open("/data/PacketizeEstoTsFile.ts", O_CREAT | O_RDWR, 0666);
     }
 #endif
 }
@@ -86,8 +86,8 @@ AmlTsPlayer::~AmlTsPlayer()
         }
     }
 #ifdef HAVE_PACKETIZE_ESTOTS
-    if (mPacketizefd >= 0) {
-        close(mPacketizefd);
+    if (mPacketsizefd >= 0) {
+        close(mPacketsizefd);
     }
 #endif
     AmlMpPlayerRoster::instance().signalAmTsPlayerId(-1);
@@ -379,7 +379,7 @@ int AmlTsPlayer::packetize(
         sizeAvailableForPayload = TS_PACKET_SIZE - TS_PACKET_HEADER_SIZE;
         size_t sizeAvailableForAlignedPayload = sizeAvailableForPayload;
 
-        /*divide the PayloadRemaining and caculate how many ts packet can contain it*/
+        /*divide the PayloadRemaining and calculate how many ts packet can contain it*/
         size_t numFullTSPackets = numBytesOfPayloadRemaining / sizeAvailableForAlignedPayload;
         numTSPackets += numFullTSPackets;
         numBytesOfPayloadRemaining -= numFullTSPackets * sizeAvailableForAlignedPayload;
@@ -502,8 +502,8 @@ int AmlTsPlayer::packetize(
     }
 
     *packets = mPacktsBuffer;
-    if (mPacketizefd >= 0) {
-        write(mPacketizefd, mPacktsBuffer->data(), numTSPackets * TS_PACKET_SIZE);
+    if (mPacketsizefd >= 0) {
+        write(mPacketsizefd, mPacktsBuffer->data(), numTSPackets * TS_PACKET_SIZE);
         //ALOGE("[%s %d] PacketizeEstoTsFile.ts size:%d", __FUNCTION__, __LINE__, numTSPackets * TS_PACKET_SIZE);
     }
     ret = writeData(mPacktsBuffer->data(),numTSPackets * TS_PACKET_SIZE);
@@ -946,7 +946,7 @@ int AmlTsPlayer::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     am_tsplayer_result ret = AM_TSPLAYER_OK;
 
     MLOGI("setsyncmode, syncSource %s!!!", mpAVSyncSource2Str(syncSource));
-    MLOGI("converted syncSoource is: %d", convertToAVSyncSourceType(syncSource));
+    MLOGI("converted syncSource is: %d", convertToAVSyncSourceType(syncSource));
     ret = AmTsPlayer_setSyncMode(mPlayer, convertToAVSyncSourceType(syncSource));
     if (ret != AM_TSPLAYER_OK) {
         return -1;

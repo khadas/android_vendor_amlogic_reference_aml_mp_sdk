@@ -281,8 +281,8 @@ int AmlDvbCasHal::DVREncrypt(Aml_MP_CASCryptoParams* cryptoParams)
 {
     int ret = AML_MP_ERROR;
 #ifdef HAVE_CAS_HAL
-    static_assert(sizeof(Aml_MP_CASCryptoParams) == sizeof(AM_CA_CryptoPara_t), "Imcompatible with AM_CA_CryptoPara_t!");
-    static_assert(sizeof(loff_t) == sizeof(int64_t), "Imcompatible loff_t vs int64_t");
+    static_assert(sizeof(Aml_MP_CASCryptoParams) == sizeof(AM_CA_CryptoPara_t), "Incompatible with AM_CA_CryptoPara_t!");
+    static_assert(sizeof(loff_t) == sizeof(int64_t), "Incompatible loff_t vs int64_t");
     AM_CA_CryptoPara_t* amCryptoParams = reinterpret_cast<AM_CA_CryptoPara_t*>(cryptoParams);
 
     ret = convertToAmlMPErrorCode(AM_CA_DVREncrypt(mCasSession, amCryptoParams));
@@ -297,8 +297,8 @@ int AmlDvbCasHal::DVRDecrypt(Aml_MP_CASCryptoParams* cryptoParams)
 {
     int ret = AML_MP_ERROR;
 #ifdef HAVE_CAS_HAL
-    static_assert(sizeof(Aml_MP_CASCryptoParams) == sizeof(AM_CA_CryptoPara_t), "Imcompatible with AM_CA_CryptoPara_t!");
-    static_assert(sizeof(loff_t) == sizeof(int64_t), "Imcompatible loff_t vs int64_t");
+    static_assert(sizeof(Aml_MP_CASCryptoParams) == sizeof(AM_CA_CryptoPara_t), "Incompatible with AM_CA_CryptoPara_t!");
+    static_assert(sizeof(loff_t) == sizeof(int64_t), "Incompatible loff_t vs int64_t");
     AM_CA_CryptoPara_t* amCryptoParams = reinterpret_cast<AM_CA_CryptoPara_t*>(cryptoParams);
 
     ret = convertToAmlMPErrorCode(AM_CA_DVRDecrypt(mCasSession, amCryptoParams));
@@ -361,7 +361,7 @@ int AmlDvbCasHal::getStoreRegion(Aml_MP_CASStoreRegion* region, uint8_t* regionC
 {
     int ret = AML_MP_ERROR;
 #ifdef HAVE_CAS_HAL
-    static_assert(sizeof(Aml_MP_CASStoreRegion) == sizeof(AM_CA_StoreRegion_t), "Imcompatible with AM_CA_StoreRegion_t!");
+    static_assert(sizeof(Aml_MP_CASStoreRegion) == sizeof(AM_CA_StoreRegion_t), "Incompatible with AM_CA_StoreRegion_t!");
     ret = convertToAmlMPErrorCode(AM_CA_GetStoreRegion(mCasSession, reinterpret_cast<AM_CA_StoreRegion_t*>(region), regionCount));
 #else
     AML_MP_UNUSED(region);

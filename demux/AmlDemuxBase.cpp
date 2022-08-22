@@ -142,7 +142,7 @@ bool AmlDemuxBase::Channel::attachFilter(const sptr<Filter>& filter)
     {
         std::lock_guard<std::mutex> _l(mLock);
         mFilters.insert(filter);
-        MLOGV("attach filter:%d to channel:%d, totoal filters num:%zu",
+        MLOGV("attach filter:%d to channel:%d, total filters num:%zu",
             filter->id(), mPid, mFilters.size());
     }
 

@@ -64,7 +64,7 @@ namespace aml_mp {
 
 // Observations, invariants, etc:
 
-// By default, obects are destroyed when the last strong reference disappears
+// By default, objects are destroyed when the last strong reference disappears
 // or, if the object never had a strong reference, when the last weak reference
 // disappears.
 //

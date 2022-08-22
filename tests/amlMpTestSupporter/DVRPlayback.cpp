@@ -404,7 +404,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "destory", 0, "call destroy",
+        "destroy", 0, "call destroy",
         [](AML_MP_DVRPLAYER handle, const std::vector<std::string>& args __unused) -> int {
             int ret = -1;
             ret = Aml_MP_DVRPlayer_Stop(handle);

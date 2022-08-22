@@ -134,7 +134,7 @@ private:
 
     AmlMediaPlayerBase* mPlayer;
 
-    //playbcak
+    //playback
     float mPlaybackRate = 1.0f;
     Aml_MP_VideoDecodeMode mVideoDecodeMode{AML_MP_VIDEO_DECODE_MODE_NONE};
     float mVolume = 1.0f;

@@ -24,7 +24,7 @@ typedef enum {
 typedef struct {
     uint16_t service_id;                    /**< The service's index.*/
     uint8_t dmx_dev;                        /**< The demux device's index.*/
-    uint8_t dsc_dev;                        /**< The descrmabler device's index.*/
+    uint8_t dsc_dev;                        /**< The descrambler device's index.*/
     uint8_t dvr_dev;                        /**< The DVR device's index.*/
     Aml_MP_CASServiceMode serviceMode;      /**< Service mode.*/
     Aml_MP_CASServiceType serviceType;      /**< Service type.*/
@@ -110,8 +110,8 @@ int Aml_MP_CAS_Terminate();
  * \brief Aml_MP_CAS_IsNeedWholeSection
  * Whether CAS module need whole section
  *
- * \return 1 need whole sectiom
- * \return 0 not need whole sectiom
+ * \return 1 need whole section
+ * \return 0 not need whole section
  */
 int Aml_MP_CAS_IsNeedWholeSection();
 
@@ -338,13 +338,13 @@ int Aml_MP_CAS_DVRReplay(AML_MP_CASSESSION casSession, Aml_MP_CASCryptoParams* c
  * \param [out] secure memory
  * \param [out] secure memory size
  *
- * \return secuer memory handle
+ * \return secure memory handle
  */
 AML_MP_SECMEM Aml_MP_CAS_CreateSecmem(AML_MP_CASSESSION casSession, Aml_MP_CASServiceType type, void **pSecbuf, uint32_t *size);
 
 /**
  * \brief Aml_MP_CAS_DestroySecmem
- * Destory secure memory
+ * Destroy secure memory
  *
  * \param [in]  CAS session
  * \param [in]  secure memory

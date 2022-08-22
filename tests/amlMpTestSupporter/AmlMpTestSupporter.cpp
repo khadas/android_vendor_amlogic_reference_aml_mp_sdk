@@ -643,15 +643,15 @@ bool AmlMpTestSupporter::processCommand(const std::vector<std::string>& args)
     std::string cmd = *args.begin();
 
     if (cmd == "osd") {
-    #ifdef ANDORID
+    #ifdef ANDROID
         mNativeUI->controlSurface(-2);
     #endif
     } else if (cmd == "video") {
-    #ifdef ANDORID
+    #ifdef ANDROID
         mNativeUI->controlSurface(0);
     #endif
     } else if (cmd == "zorder") {
-    #ifdef ANDORID
+    #ifdef ANDROID
         if (args.size() == 2) {
             int zorder = std::stoi(args[1]);
             mNativeUI->controlSurface(zorder);

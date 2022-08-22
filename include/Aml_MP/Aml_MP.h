@@ -279,7 +279,7 @@ int Aml_MP_Player_SwitchAudioTrack(AML_MP_PLAYER handle, Aml_MP_AudioParams* par
 
 /**
  * \brief Aml_MP_Player_SwitchSubtitleTrack
- * Switch aubtitle track
+ * Switch subtitle track
  *
  * \param [in]  player handle
  * \param [in]  params for new subtitle track

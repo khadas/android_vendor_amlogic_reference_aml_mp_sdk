@@ -318,7 +318,7 @@ int AmlMpPlayerImpl::start_l()
         return 0;
     }
 
-    // dvr play case need set secury level to tsplayer
+    // dvr play case need set secure level to tsplayer
     if (mVideoParams.pid != AML_MP_INVALID_PID ||
         mCreateParams.options & AML_MP_OPTION_DVR_PLAYBACK) {
         mPlayer->setVideoParams(&mVideoParams);
@@ -804,8 +804,7 @@ exit:
 int AmlMpPlayerImpl::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size_t size, int64_t pts)
 {
     MLOGD("[%s_%s] buffer:%p, size:%zu, pts:%#" PRIx64 "(%.3fs)", __FUNCTION__, mpStreamType2Str(type), buffer, size, pts, pts/9e4);
-
-    //audio isn`t supoort non-blocking mode, must different threads to write av es
+    //audio isn`t support non-blocking mode, must different threads to write av es
     //std::unique_lock<std::mutex> _l(mLock);
     RETURN_IF(-1, mPlayer == nullptr);
 

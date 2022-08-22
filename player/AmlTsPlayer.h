@@ -87,7 +87,7 @@ private:
     bool mAudioParaSeted;
 
     int32_t mApid = AML_MP_INVALID_PID;
-    int mPacketizefd = -1;
+    int mPacketsizefd = -1;
     sptr<AmlMpBuffer> mPacktsBuffer;
     unsigned mAudioContinuityCounter;
     int packetize(

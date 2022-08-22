@@ -50,14 +50,14 @@ int AmlVMXWebCas::startDescrambling(const Aml_MP_IptvCASParams* params)
     AmlCasBase::startDescrambling(params);
 
     int ret = 0;
-    drmseverinfo_t initParam;
+    drmserverinfo_t initParam;
     memset(&initParam, 0, sizeof(initParam));
     initParam.enablelog = 1;
     initParam.serveraddr = mIptvCasParam.serverAddress;
     snprintf(mServerPort, sizeof(mServerPort), "%d", mIptvCasParam.serverPort);
     initParam.serverport = mServerPort;
     initParam.storepath = mIptvCasParam.keyPath;
-    ret = pIptvCas->setPrivateData((void *)&initParam, sizeof(drmseverinfo_t));
+    ret = pIptvCas->setPrivateData((void *)&initParam, sizeof(drmserverinfo_t));
 
     ret = pIptvCas->provision();
 

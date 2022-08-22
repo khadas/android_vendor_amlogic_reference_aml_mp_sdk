@@ -1351,7 +1351,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "destory", 0, "call destroy",
+        "destroy", 0, "call destroy",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_Player_Destroy(player);
             printf("call destroy ret: %d\n", ret);

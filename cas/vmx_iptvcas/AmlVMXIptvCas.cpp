@@ -43,7 +43,7 @@ private:
     int (*ca_writedata)(dvb_ca_t* ca, uint8_t* buf, size_t len, void* userdata) = nullptr;
     int (*ca_callback)(dvb_ca_t* ca, dvb_ca_callback cb) = nullptr;
     int (*ca_stop)(dvb_ca_t* ca) = nullptr;
-    int (*ca_destory)(dvb_ca_t* ca) = nullptr;
+    int (*ca_destroy)(dvb_ca_t* ca) = nullptr;
 
     CasLibWrapper(const CasLibWrapper&) = delete;
     CasLibWrapper& operator= (const CasLibWrapper&) = delete;
@@ -164,7 +164,7 @@ CasLibWrapper::CasLibWrapper()
     ca_writedata   = (int (*)(dvb_ca_t *, uint8_t *, size_t, void *)) dlsym(casHandle, "AM_MP_DVB_write");
     ca_callback    = (int (*)(dvb_ca_t *, dvb_ca_callback)) dlsym(casHandle, "AM_MP_DVB_set_callback");
     ca_stop        = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_stop");
-    ca_destory     = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_destory");
+    ca_destroy     = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_destory");
 
     init();
 }
@@ -220,9 +220,9 @@ int CasLibWrapper::stop(dvb_ca_t* ca)
 
 int CasLibWrapper::destroy(dvb_ca_t* ca)
 {
-    RETURN_IF(-1, ca_destory == nullptr);
+    RETURN_IF(-1, ca_destroy == nullptr);
 
-    return ca_destory(ca);
+    return ca_destroy(ca);
 }
 
 }

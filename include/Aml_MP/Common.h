@@ -267,7 +267,7 @@ typedef struct {
 } Aml_MP_IptvCASParams;
 
 ////////////////////////////////////////
-// Deprecaed begin
+// Deprecated begin
 typedef enum {
     AML_MP_CAS_UNKNOWN,
     AML_MP_CAS_VERIMATRIX_IPTV,
@@ -298,7 +298,7 @@ typedef struct {
         } casParam;
     } u;
 } Aml_MP_CASParams AML_MP_DEPRECATED;
-// Deprecaed end
+// Deprecated end
 
 ////////////////////////////////////////
 typedef enum {
@@ -761,7 +761,7 @@ typedef enum {
     AML_MP_DVRPLAYER_EVENT_NO_KEY,                          /**< no key*/
     AML_MP_DVRPLAYER_EVENT_REACHED_BEGIN,                   /**< reached begin*/
     AML_MP_DVRPLAYER_EVENT_REACHED_END,                     /**< reached end*/
-    AML_MP_DVRPLAYER_EVENT_NOTIFY_PLAYTIME,                 /**< notify play cur segmeng time ms*/
+    AML_MP_DVRPLAYER_EVENT_NOTIFY_PLAYTIME,                 /**< notify play cur segment time ms*/
 
     // Video event
     AML_MP_PLAYER_EVENT_VIDEO_BASE              = 0x2000,

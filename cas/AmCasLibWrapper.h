@@ -32,19 +32,19 @@ typedef enum
     CAS_STATUS_NOT_IMPLEMENTED,
 } AmCasStatus_t;
 
-typedef struct iptvseverinfo {
+typedef struct iptvserverinfo {
     char * storepath;
     char * serveraddr;
     char * serverport;
     int    enablelog;
-} iptvseverinfo_t;
+} iptvserverinfo_t;
 
-typedef struct drmseverinfo {
+typedef struct drmserverinfo {
     char * storepath;
     char * serveraddr;
     char * serverport;
     int    enablelog;
-} drmseverinfo_t;
+} drmserverinfo_t;
 
 typedef struct __tagCAS_INIT_HEADERS {
 	char *license_url;

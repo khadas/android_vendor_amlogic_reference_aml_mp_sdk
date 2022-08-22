@@ -58,7 +58,7 @@ int UdpSource::initCheck()
 
     auto p = mAddress.find_last_of(':');
     if (p == std::string::npos) {
-        MLOGE("parsr port failed!");
+        MLOGE("parser port failed!");
         return -1;
     }
 

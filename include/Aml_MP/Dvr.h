@@ -31,7 +31,7 @@ typedef struct {
     int64_t                     segmentSize;
     Aml_MP_DVRRecorderFlag      flags;
     int                         bufferSize;         //flush size
-    int                         ringbufSize;        //dvbcore ringbuf size,this buf is uesd to cache ts data,
+    int                         ringbufSize;        //dvbcore ringbuf size,this buf is used to cache ts data,
     uint8_t                     forceSysClock;      //1: force to use system clock as PVR index time source
                                                     //0: determine index time source based on actual situation
     bool                        appendMode __AML_MP_RESERVE_ALIGNED;   //1:save record file with same location
@@ -121,7 +121,7 @@ int Aml_MP_DVRRecorder_Create(Aml_MP_DVRRecorderCreateParams* createParams, AML_
 
 /**
  * \brief Aml_MP_DVRRecorder_Destroy
- * Destory DVR recorder
+ * Destroy DVR recorder
  *
  * \param [in]  DVR recorder handle
  *
@@ -313,7 +313,7 @@ typedef enum
 typedef struct {
     Aml_MP_DVRPlayerState state;        /**< DVR playback state*/
     Aml_MP_DVRSourceInfo infoCur;       /**< DVR playback current information*/
-    Aml_MP_DVRSourceInfo infoFull;      /**< DVR playback total(non-obsolete) infomation*/
+    Aml_MP_DVRSourceInfo infoFull;      /**< DVR playback total(non-obsolete) information*/
     Aml_MP_DVRStreamArray pids;         /**< DVR playback pids information*/
     float speed;                        /**< DVR playback current speed*/
     Aml_MP_DVRPlayerSegmentFlag flags;  /**< DVR playback flags*/
@@ -337,7 +337,7 @@ int Aml_MP_DVRPlayer_Create(Aml_MP_DVRPlayerCreateParams* createParams, AML_MP_D
 
 /**
  * \brief Aml_MP_DVRPlayer_Destroy
- * Destory DVR player
+ * Destroy DVR player
  *
  * \param [in]  DVR player handle
  *

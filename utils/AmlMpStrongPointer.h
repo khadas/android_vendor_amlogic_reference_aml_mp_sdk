@@ -30,7 +30,7 @@ template<typename T> class wptr;
 // TODO: Maybe remove sp<> ? wp<> comparison? These are dangerous: If the wp<>
 // was created before the sp<>, and they point to different objects, they may
 // compare equal even if they are entirely unrelated. E.g. CameraService
-// currently performa such comparisons.
+// currently perform such comparisons.
 
 #define AML_MP_COMPARE_STRONG(_op_)                                           \
 template<typename U>                                            \

@@ -235,7 +235,7 @@ int AmlPlayerBase::startSubtitleDecoding()
     AmlSubtitleParam subParam{};
     subParam.ioSource = AmlSubtitleIOType::E_SUBTITLE_DEMUX;
     if (!constructAmlSubtitleParam(&subParam, &mSubtitleParams)) {
-        MLOGI("unknow subtitle codec, not start subtitle");
+        MLOGI("unknown subtitle codec, not start subtitle");
         return 0;
     }
 
@@ -281,7 +281,7 @@ int AmlPlayerBase::startSubtitleDecoding()
         }
     }
 
-    showSubtitle();//SubtitleServer: Error, no default fallback display registed!
+    showSubtitle();//SubtitleServer: Error, no default fallback display registered!
     MLOGI("Subtitle size is x:%d, y: %d, width: %d, height: %d", mSubWindowX, mSubWindowY, mSubWindowWidth, mSubWindowHeight);
     ret = amlsub_UiSetSurfaceViewRect(mSubtitleHandle, mSubWindowX, mSubWindowY, mSubWindowWidth, mSubWindowHeight);
     if (ret != SUB_STAT_OK) {

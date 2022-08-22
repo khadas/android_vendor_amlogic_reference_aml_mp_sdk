@@ -797,7 +797,7 @@ const char* AmlMpMediaPlayerImpl::stateString(State state)
     case STATE_COMPLETED:
         return "STATE_COMPLETED";
     default:
-        return "unknow";
+        return "unknown";
     }
 }
 

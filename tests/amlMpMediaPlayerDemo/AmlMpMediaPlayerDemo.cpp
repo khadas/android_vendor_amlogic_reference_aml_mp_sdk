@@ -379,11 +379,11 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "gDurtion", 0, "get durtion",
+        "gDuration", 0, "get duration",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            int ret = 0, durtion = 0;
-            ret = Aml_MP_MediaPlayer_GetDuration(player, &durtion);
-            printf("Aml_MP_MediaPlayer_GetDuration get durtion: %d(ms), ret: %d\n", durtion, ret);
+            int ret = 0, duration = 0;
+            ret = Aml_MP_MediaPlayer_GetDuration(player, &duration);
+            printf("Aml_MP_MediaPlayer_GetDuration get duration: %d(ms), ret: %d\n", duration, ret);
 
             return ret;
         }
@@ -437,7 +437,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "sdatasource", 1, "set data source",
+        "sDatasource", 1, "set data source",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             const char *url = args.at(1).c_str();
             int ret = Aml_MP_MediaPlayer_SetDataSource(player, url);
@@ -707,7 +707,7 @@ int main(int argc, char *argv[])
     Aml_MP_MediaPlayer_Create(&mPlayer);
 
     //only settings
-    // channelid is used for pip function whick start the demo in a different process.
+    // channelid is used for pip function which start the demo in a different process.
     // it means different play channels,0 : main, else pip
     if (argument.channelId != -1)
         Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_CHANNEL_ID, (void*)(&argument.channelId));

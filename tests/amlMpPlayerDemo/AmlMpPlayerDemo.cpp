@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
     }
     mpTestSupporter->fetchAndProcessCommands();
     if (mpTestSupporter2 != nullptr) {
-        MLOGI("timeShift mpTestSupporter2 destory\n");
+        MLOGI("timeShift mpTestSupporter2 destroy\n");
         mpTestSupporter2->stop();
         mpTestSupporter2.clear();
     }

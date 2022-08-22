@@ -632,7 +632,7 @@ void Parser::onPmtParsed(const PMTSection& results)
         return;
     }
 
-    bool isProgramSeleted = false;
+    bool isProgramSelected = false;
     bool isNewEcm = false;
     bool isNewPmt = false;
     bool isPidChanged = false;
@@ -642,7 +642,7 @@ void Parser::onPmtParsed(const PMTSection& results)
         if (mProgramNumber != -1) {
             // check if this pmt is the selected program
             if (mProgramNumber == results.programNumber) {
-                isProgramSeleted = true;
+                isProgramSelected = true;
             }
         } else {
             // check if this pmt contains with a/v pid
@@ -655,7 +655,7 @@ void Parser::onPmtParsed(const PMTSection& results)
                 }
             }
             if ((mVPid == AML_MP_INVALID_PID || containsVideo) && (mAPid == AML_MP_INVALID_PID || containsAudio)) {
-                isProgramSeleted = true;
+                isProgramSelected = true;
                 mProgramNumber = results.programNumber;
             }
         }
@@ -674,13 +674,13 @@ void Parser::onPmtParsed(const PMTSection& results)
         }
 
         //check is newEcm
-        if (isProgramSeleted && results.scrambled && mEcmPidSet.find(results.ecmPid) == mEcmPidSet.end()) {
+        if (isProgramSelected && results.scrambled && mEcmPidSet.find(results.ecmPid) == mEcmPidSet.end()) {
             isNewEcm = true;
             mEcmPidSet.emplace(results.ecmPid);
         }
     }
 
-    if (!isProgramSeleted) {
+    if (!isProgramSelected) {
         MLOGI("not program selected");
         return;
     }
