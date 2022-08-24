@@ -129,6 +129,11 @@ AmlMpPlayerImpl::~AmlMpPlayerImpl()
     // recover demux sec mem size to default, this value same as DMC_MEM_DEFAULT_SIZE
     recoverDmxSecMemSize();
 
+    /* Set Aspect Mode to NONE & Disable AFD when exit playback */
+    if (mVideoAFDAspectMode >= 0) {
+        setVideoAFDAspectMode_l(AML_MP_VIDEO_AFD_ASPECT_MODE_NONE);
+    }
+
     AmlMpPlayerRoster::instance().unregisterPlayer(mInstanceId);
 }
 
@@ -1183,6 +1188,20 @@ int AmlMpPlayerImpl::setParameter_l(Aml_MP_PlayerParameterKey key, void* paramet
     }
     break;
 
+    case AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE:
+    {
+        RETURN_IF(-1, parameter == nullptr);
+        int ret = 0;
+        mVideoAFDAspectMode = *(Aml_MP_VideoAFDAspectMode*)parameter;
+        MLOGI("Set video AFD aspect mode: %s", mpVideoAFDAspectMode2Str(mVideoAFDAspectMode));
+        if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
+            ret = setVideoAFDAspectMode_l(mVideoAFDAspectMode);
+        }
+
+        return ret;
+    }
+    break;
+
     case AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE:
     {
         RETURN_IF(-1, parameter == nullptr);
@@ -1234,6 +1253,13 @@ int AmlMpPlayerImpl::getParameter(Aml_MP_PlayerParameterKey key, void* parameter
         case AML_MP_PLAYER_PARAMETER_VIDEO_TUNNEL_ID:
         {
             *static_cast<int*>(parameter) = mVideoTunnelId;
+            ret = AML_MP_OK;
+            break;
+        }
+
+        case AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE:
+        {
+            *static_cast<Aml_MP_VideoAFDAspectMode*>(parameter) = mVideoAFDAspectMode;
             ret = AML_MP_OK;
             break;
         }
@@ -1800,6 +1826,10 @@ int AmlMpPlayerImpl::prepare_l()
         mPlayer->setADVolume(mADVolume);
     }
 
+    if (mVideoAFDAspectMode >= 0) {
+        setVideoAFDAspectMode_l(mVideoAFDAspectMode);
+    }
+
     applyParameters_l();
 
     mPrepareWaitingType = kPrepareWaitingNone;
@@ -2284,6 +2314,42 @@ int AmlMpPlayerImpl::getADVolume(float* volume)
     RETURN_IF(-1, mPlayer == nullptr);
 
     return mPlayer->getADVolume(volume);
+}
+
+int AmlMpPlayerImpl::enableAFD_l(bool enable)
+{
+    MLOGI("[%s] enable: %d", __FUNCTION__, enable);
+
+    int ret = 0;
+    char enableParam[64] = {0};
+
+    if (enable) {
+        RETURN_IF(-1, mPlayer == nullptr);
+        sprintf(enableParam, "%d %d %d", 0, mPlayer->getPlayerId(), 1);
+    } else {
+        sprintf(enableParam, "%d %d %d", 0, 0, 0);
+    }
+    ret = amsysfs_set_sysfs_str("/sys/class/afd_module/enable", enableParam);
+
+    return ret;
+}
+
+int AmlMpPlayerImpl::setVideoAFDAspectMode_l(Aml_MP_VideoAFDAspectMode aspectMode)
+{
+    int ret = 0;
+    char aspectModeParam[64] = {0};
+
+    if (aspectMode >= AML_MP_VIDEO_AFD_ASPECT_MODE_AUTO && aspectMode < AML_MP_VIDEO_AFD_ASPECT_MODE_MAX) {
+        ret = enableAFD_l(true);
+        sprintf(aspectModeParam, "%d %d", 0, aspectMode);
+    } else {
+        MLOGE("[%s] Invalid aspect mode: %d", __FUNCTION__, aspectMode);
+        ret = enableAFD_l(false);
+        sprintf(aspectModeParam, "%d %d", 0, AML_MP_VIDEO_AFD_ASPECT_MODE_NONE);
+    }
+    ret += amsysfs_set_sysfs_str("/sys/class/afd_module/aspect_mode", aspectModeParam);
+
+    return ret;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

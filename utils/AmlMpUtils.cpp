@@ -156,6 +156,7 @@ const char* mpPlayerParameterKey2Str(Aml_MP_PlayerParameterKey playerParamKey) {
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_CROP);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE);
+        ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE);
         //get only
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_GET_BASE);
         ENUM_TO_STR(AML_MP_PLAYER_PARAMETER_VIDEO_INFO);
@@ -328,6 +329,20 @@ const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorReco
         ENUM_TO_STR(AML_MP_VIDEO_ERROR_RECOVERY_DEFAULT);
         default:
             return "Unknown video error recovery mode";
+    }
+}
+
+const char* mpVideoAFDAspectMode2Str(Aml_MP_VideoAFDAspectMode afdAspectMode) {
+    switch (afdAspectMode) {
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_NONE);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_AUTO);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_4_3);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_16_9);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_14_9);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_ZOOM);
+        ENUM_TO_STR(AML_MP_VIDEO_AFD_ASPECT_MODE_CUSTOM);
+        default:
+            return "Unknown video afd aspect mode";
     }
 }
 

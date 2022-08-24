@@ -167,6 +167,7 @@ const char* mpCASType2Str(Aml_MP_CASType casType);
 const char* mpVideoDecodeMode2Str(Aml_MP_VideoDecodeMode decodeMode);
 const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType);
 const char* mpVideoErrorRecoveryMode2Str(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
+const char* mpVideoAFDAspectMode2Str(Aml_MP_VideoAFDAspectMode afdAspectMode);
 
 #ifdef ANDROID
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec);

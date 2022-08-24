@@ -386,8 +386,8 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION,               //SetSPDIFProtection(int*)
     AML_MP_PLAYER_PARAMETER_VIDEO_CROP,                     //setVideoCrop(Aml_MP_Rect*)
     AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorRecoveryMode(Aml_MP_VideoErrorRecoveryMode*)
-
     AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE,                 //setAudioLanguage(Aml_MP_AudioLanguage*)
+    AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE,          //setVideoAFDAspectMode(Aml_MP_VideoAFDAspectMode *)
 
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,
@@ -481,6 +481,18 @@ typedef enum {
     AML_MP_RATIO_16_9,
     AML_MP_RATIO_UNDEFINED = 255
 } Aml_MP_VideoRatio;
+
+////////////////////////////////////////
+typedef enum {
+    AML_MP_VIDEO_AFD_ASPECT_MODE_NONE = -1,
+    AML_MP_VIDEO_AFD_ASPECT_MODE_AUTO,
+    AML_MP_VIDEO_AFD_ASPECT_MODE_4_3,  /* 16:9 video, on 4:3 display/scene -> Centre Cut-Out */
+    AML_MP_VIDEO_AFD_ASPECT_MODE_16_9, /* 16:9 video, on 4:3 display/scene -> Letter Box */
+    AML_MP_VIDEO_AFD_ASPECT_MODE_14_9,
+    AML_MP_VIDEO_AFD_ASPECT_MODE_ZOOM,
+    AML_MP_VIDEO_AFD_ASPECT_MODE_CUSTOM,
+    AML_MP_VIDEO_AFD_ASPECT_MODE_MAX,
+} Aml_MP_VideoAFDAspectMode;
 
 ////////////////////////////////////////
 //AML_MP_PLAYER_PARAMETER_VIDEO_INFO

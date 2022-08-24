@@ -1243,6 +1243,21 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
+        "sAfdMode", 0, "set afd aspect mode",
+        [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
+            Aml_MP_VideoAFDAspectMode aspectMode = AML_MP_VIDEO_AFD_ASPECT_MODE_AUTO;
+            if (args.size() != 2) {
+                printf("Input example: sAfdMode aspect_mode\n");
+                return -1;
+            }
+            aspectMode = (Aml_MP_VideoAFDAspectMode)stoi(args[1]);
+            int ret = Aml_MP_Player_SetParameter(player, AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE, &aspectMode);
+            printf("AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE set mode: %d, ret: %d\n", aspectMode, ret);
+            return ret;
+        }
+    },
+
+    {
         "sParam", 0, "set param",
         [](AML_MP_PLAYER player, const std::vector<std::string>& args __unused) -> int {
             Aml_MP_VideoDisplayMode videoMode = AML_MP_VIDEO_DISPLAY_MODE_NORMAL;

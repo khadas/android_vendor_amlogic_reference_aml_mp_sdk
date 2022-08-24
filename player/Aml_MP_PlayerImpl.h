@@ -166,6 +166,9 @@ private:
     int setSubtitleParams_l(const Aml_MP_SubtitleParams* params);
     int setParameter_l(Aml_MP_PlayerParameterKey key, void* parameter, std::unique_lock<std::mutex>& lock);
 
+    int enableAFD_l(bool enable);
+    int setVideoAFDAspectMode_l(Aml_MP_VideoAFDAspectMode aspectMode);
+
     void statisticWriteDataRate_l(size_t size);
     void collectBuffingInfos_l();
 
@@ -260,6 +263,8 @@ private:
     int64_t mLastBytesWritten = 0;
     int64_t mLastWrittenTimeUs = 0;
     bool mVideoShowState = true;
+
+    Aml_MP_VideoAFDAspectMode mVideoAFDAspectMode = AML_MP_VIDEO_AFD_ASPECT_MODE_NONE;
 
 private:
     AmlMpPlayerImpl(const AmlMpPlayerImpl&) = delete;
