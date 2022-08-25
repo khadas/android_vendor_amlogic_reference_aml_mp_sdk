@@ -106,7 +106,7 @@ TEST_F(AmlMpTest, SwitchAudioTrackTest)
             continue;
         }
         mProgramInfo->scrambled=true;
-        std::vector<StreamInfo> audioStreams = mProgramInfo->audioStreams;
+        std::vector<StreamInfo>& audioStreams = mProgramInfo->audioStreams;
         mpTestSupporter->startPlay();
         void *player = getPlayer();
         //audioParams

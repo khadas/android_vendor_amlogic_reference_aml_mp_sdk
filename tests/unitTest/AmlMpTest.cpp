@@ -75,11 +75,12 @@ void check_vfm_map(int timeoutMs)
     t = clock();
     while (clock() - t < timeoutMs)
     {
+        sleep(kSleepTimeMs);
         ret = get_vfm_map_checkpoint();
-        EXPECT_TRUE(ret.find(VCOM_MAP) != std::string::npos);
         std::smatch m;
         std::regex vdec_map_pattern ("^.* \\[\\d+\\]\\s+vdec-map-1 \\{\\s+vdec\\.\\w+\\.\\d+\\(1\\) dimulti\\.1\\(1\\) v4lvideo\\.0\\} .*$");
         EXPECT_EQ(std::regex_search (ret, m, vdec_map_pattern), AML_MP_OK);
+        EXPECT_TRUE(ret.find(VCOM_MAP) != std::string::npos);
     }
 }
 
