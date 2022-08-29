@@ -148,7 +148,6 @@ AML_MP_INC := $(LOCAL_PATH)/include \
 	$(TOP)/hardware/amlogic/gralloc \
 	$(TOP)/hardware/amlogic/media/amcodec/include \
 	$(TOP)/vendor/amlogic/common/prebuilt/libmediadrm/ \
-	$(AML_REFERENCE_PATH)/frameworks/services/subtiltleserver/client \
 	$(AML_REFERENCE_PATH)/frameworks/services/subtitleserver/client \
 	$(TOP)/frameworks/av/media/libmediametrics/include
 
