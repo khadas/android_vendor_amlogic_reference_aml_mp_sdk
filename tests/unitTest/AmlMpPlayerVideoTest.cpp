@@ -164,7 +164,7 @@ TEST_F(AmlMpTest, showHideVideoTest)
             EXPECT_FALSE(waitPlayingErrors());
             void *player = getPlayer();
             EXPECT_EQ(Aml_MP_Player_HideVideo(player), AML_MP_OK);
-            EXPECT_FALSE(waitPlayingErrors());
+            waitPlaying(kWaitPlayingErrorsMs);
             EXPECT_EQ(Aml_MP_Player_ShowVideo(player), AML_MP_OK);
             EXPECT_FALSE(waitPlayingErrors());
         }

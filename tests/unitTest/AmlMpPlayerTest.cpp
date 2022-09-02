@@ -78,7 +78,6 @@ void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSource
         waitPlaying(1 * 1000ll);
     }else {
         EXPECT_FALSE(waitPlaying(1 * 1000ll));
-        EXPECT_FALSE(waitPlayingErrors());
     }
     //stop decoding
     EXPECT_EQ(Aml_MP_Player_StopAudioDecoding(player), AML_MP_OK);
@@ -92,7 +91,7 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
     MLOGI("----------FCCAndPIPTest START----------\n");
     createMpTestSupporter();
     char demuxInfo[30];
-    sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 1, 1);
+    sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 1, 0);
     std::string finalUrl = url + demuxInfo;
     mpTestSupporter->setDataSource(finalUrl);
     mpTestSupporter->prepare();

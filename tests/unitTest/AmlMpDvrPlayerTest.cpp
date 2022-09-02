@@ -38,6 +38,7 @@ TEST_F(AmlMpTest, DVRPlayback_SetStreams_Test)
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
+        stopPlaying();
 
         createMpTestSupporter2();
         sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
@@ -90,11 +91,11 @@ TEST_F(AmlMpTest, DVRPlaybackPauseResumeTest)
         int ret = 0;
         MLOGI("----------DVRPlaybackPauseResumeTest START----------\n");
         createMpTestSupporter(false);
-        // sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
-        // std::string finalUrl = recordPathInfo;
-        // mpTestSupporter2->setDataSource(finalUrl);
+        //sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
+        //std::string finalUrl = recordPathInfo;
+        //mpTestSupporter2->setDataSource(finalUrl);
         mpTestSupporter->setDataSource(url);
-        // mpTestSupporter->prepare(CryptoMode);
+        mpTestSupporter->prepare(CryptoMode);
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
@@ -171,6 +172,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_Normal_Test)
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
 
+
         createMpTestSupporter2();
         sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
         std::string finalUrl = recordPathInfo;
@@ -200,17 +202,17 @@ TEST_F(AmlMpTest, DVRPlaybackRate_MicroSpeed_Test)
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(20 * 1000ll);
-        stopPlaying();
+
 
         createMpTestSupporter2();
         sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
         std::string finalUrl = recordPathInfo;
         mpTestSupporter2->setDataSource(finalUrl);
         mpTestSupporter2->prepare(CryptoMode);
+        mpTestSupporter2->startDVRPlayback();
+        void* dvrplayer = getDVRPlayer();
         for (size_t i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
-            mpTestSupporter2->startDVRPlayback();
-            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
             EXPECT_FALSE(waitPlayingErrors(20 * 1000ll));
         }
@@ -222,7 +224,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_MicroSpeed_Test)
 TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
 {
     std::string url;
-    float rate[] = {2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 12.0, 16.0, 32.0, 48.0, 64.0, 128.0};
+    float rate[] = {2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 12.0, 16.0};
     char recordPathInfo[100];
     for (auto &url: mUrls)
     {
@@ -234,17 +236,16 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(30 * 1000ll);
-        stopPlaying();
 
         createMpTestSupporter2();
         sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
         std::string finalUrl = recordPathInfo;
         mpTestSupporter2->setDataSource(finalUrl);
         mpTestSupporter2->prepare(CryptoMode);
+        mpTestSupporter2->startDVRPlayback();
+        void* dvrplayer = getDVRPlayer();
         for (size_t i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
-            mpTestSupporter2->startDVRPlayback();
-            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
             EXPECT_FALSE(waitPlayingErrors(10 * 1000ll));
         }
@@ -256,7 +257,7 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastForward_Test)
 TEST_F(AmlMpTest, DVRPlaybackRate_FastBackward_Test)
 {
     std::string url;
-    float rate[] = {-1.0, -2.0, -4.0, -8.0, -12.0, -16.0, -32.0, -48.0, -64.0, -128.0};
+    float rate[] = {-1.0, -2.0, -4.0, -8.0, -12.0, -16.0, -32.0};
     char recordPathInfo[100];
     for (auto &url: mUrls)
     {
@@ -268,17 +269,16 @@ TEST_F(AmlMpTest, DVRPlaybackRate_FastBackward_Test)
         EXPECT_EQ(ret = mpTestSupporter->startRecord(), AML_MP_OK);
         void* recorder = getRecorder();
         waitPlaying(30 * 1000ll);
-        stopPlaying();
 
         createMpTestSupporter2();
         sprintf(recordPathInfo, "%s?demuxid=%d&sourceid=%d", AML_MP_RECORD_PATH, 1, 1);
         std::string finalUrl = recordPathInfo;
         mpTestSupporter2->setDataSource(finalUrl);
         mpTestSupporter2->prepare(CryptoMode);
+        mpTestSupporter2->startDVRPlayback();
+        void* dvrplayer = getDVRPlayer();
         for (size_t i = 0; i < sizeof(rate)/sizeof(rate[0]); i++)
         {
-            mpTestSupporter2->startDVRPlayback();
-            void* dvrplayer = getDVRPlayer();
             EXPECT_EQ(Aml_MP_DVRPlayer_SetPlaybackRate(dvrplayer, rate[i]), AML_MP_OK);
             waitPlaying(10 * 1000ll);
             EXPECT_FALSE(waitPlayingErrors(10 * 1000ll));
