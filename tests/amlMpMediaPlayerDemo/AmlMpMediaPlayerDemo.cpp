@@ -10,6 +10,7 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "AmlMpMediaPlayerDemo"
 #include <utils/AmlMpLog.h>
+#include <utils/AmlMpUtils.h>
 #include <unistd.h>
 #include <getopt.h>
 #include "TestUtils.h"
@@ -21,12 +22,406 @@
 #include <thread>
 #include "../amlMpTestSupporter/TestModule.h"
 #include <../../mediaplayer/AmlMediaPlayerBase.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <poll.h>
+#include <termios.h>
+#include <errno.h>
+#include <iostream>
+#include <stdexcept>
+//srand
+#include <stdlib.h>
+#include <time.h>
+
+///////////////////////////////////////////////////////////////////////////////
+//
+struct Argument;
+struct AmlMpMediaPlayerDemo;
+struct playerRoster;
+
+//func
+int tty_reset(int fd);
+int tty_cbreak(int fd);
+
+//Track info
+static void printCurTrackInfo(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo, Aml_MP_StreamType streamType);
+static int getNextTrack(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo, Aml_MP_StreamType streamType);
+static void printMediaInfo(Aml_MP_MediaInfo *mediaInfo);
+
+//Multi
+static int multiPlaybackThread(int id, bool isMain);
+static int createMultiPlayback(int id, AML_MP_MEDIAPLAYER* player, struct Argument* argument, AmlMpMediaPlayerDemo* commandsProcess);
+static int destroyMultiPlayback(int id);
+static void closeMultiPlayback(int id);
+static void closeAllMultiPlayback();
+
+//utils
+static int isUrlValid(const std::string url, std::string& urlHead, std::string& urlFile);
+
+//callback func
+void demoCallback(void* userData, Aml_MP_MediaPlayerEventType event, int64_t param);
+
+//info
+static void showOption();
+static void showUsage();
+
+///////////////////////////////////////////////////////////////////////////////
+//static
 static const char* mName = LOG_TAG;
 using namespace aml_mp;
 
+///////////////////////////////////////////////////////////////////////////////
+//define
+#define TTY_RESET_FD(fd)                                    \
+    do {                                                    \
+        if (tty_reset(fd) < 0) {                            \
+            printf("\n tty_reset error\n");                 \
+        }                                                   \
+    } while (0)
+
+#define TTY_CBREAK_FD(fd)                                   \
+    do {                                                    \
+        if (tty_cbreak(fd) < 0) {                           \
+            printf("\n tty_cbreak error\n");                \
+        }                                                   \
+    } while (0)
+
+#define MIN(A, B) ( (A) > (B) ? (B) : (A) )
+#define MAX(A, B) ( (A) > (B) ? (A) : (B) )
+#define MEDIAPLAYERDEMO_MAIN (0)
+#define MEDIAPLAYERDEMO_PIP (1)
+
+///////////////////////////////////////////////////////////////////////////////
+//Argument
+struct Argument
+{
+    std::string url;
+    int x = 0;
+    int y = 0;
+    int viewWidth = -1;
+    int viewHeight = -1;
+    int channelId = -1;
+    bool onlyVideo = false;
+    bool onlyAudio = false;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//playerRoster
+#define MaxPlayerNum 4
+struct playerRoster
+{
+    static playerRoster& instance() {
+        static playerRoster sInstance;
+        return sInstance;
+    }
+
+    int registerAll(AML_MP_MEDIAPLAYER player, int id, const struct Argument* argument, const struct AmlMpMediaPlayerDemo* demo) {
+        if (id < 0 || id >= MaxPlayerNum || argument == NULL) {
+            printf("%s invalid, id:%d, argument:%p, demo:%p \n", __FUNCTION__, id, argument, demo);
+            return -1;
+        }
+
+        mLock.lock();
+
+        mPlayers[id] = player;
+        mPlayerArgument[id].url             = argument->url;
+        mPlayerArgument[id].x               = argument->x;
+        mPlayerArgument[id].y               = argument->y;
+        mPlayerArgument[id].viewWidth       = argument->viewWidth;
+        mPlayerArgument[id].viewHeight      = argument->viewHeight;
+        mPlayerArgument[id].channelId       = argument->channelId;
+        mPlayerArgument[id].onlyVideo       = argument->onlyVideo;
+        mPlayerArgument[id].onlyAudio       = argument->onlyAudio;
+
+        mPlayerPlayerDemo[id] = const_cast<struct AmlMpMediaPlayerDemo*>(demo);
+
+        if (NULL != player) {
+            ++mPlayerHandlerCount;
+        }
+        mLock.unlock();
+
+        return id;
+    }
+
+    int registerPlayerArgument(int id, const struct Argument* argument) {
+        if (id < 0 || id >= MaxPlayerNum || argument == NULL) {
+            printf("%s invalid, id:%d, argument:%p \n", __FUNCTION__, id, argument);
+            return -1;
+        }
+
+        mLock.lock();
+        mPlayerArgument[id].url             = argument->url;
+        mPlayerArgument[id].x               = argument->x;
+        mPlayerArgument[id].y               = argument->y;
+        mPlayerArgument[id].viewWidth       = argument->viewWidth;
+        mPlayerArgument[id].viewHeight      = argument->viewHeight;
+        mPlayerArgument[id].channelId       = argument->channelId;
+        mPlayerArgument[id].onlyVideo       = argument->onlyVideo;
+        mPlayerArgument[id].onlyAudio       = argument->onlyAudio;
+        mLock.unlock();
+
+        return id;
+    }
+
+    int registerPlayerThreadHandle(int id, std::thread thread) {
+        if (id < 0 || id >= MaxPlayerNum) {
+            printf("%s invalid, id:%d\n", __FUNCTION__, id);
+            return -1;
+        }
+
+        mLock.lock();
+        mThread[id] = std::move(thread);
+        mLock.unlock();
+
+        return id;
+    }
+
+    int unregisterPlayer(AML_MP_MEDIAPLAYER player) {
+        if (player == NULL) {
+            printf("%s player invalid, player=%p \n", __FUNCTION__, player);
+            return -1;
+        }
+
+        mLock.lock();
+        for (size_t i = 0; i < MaxPlayerNum; ++i) {
+            if (player == mPlayers[i]) {
+                mPlayers[i] = NULL;
+                memset(&mPlayerArgument[i], 0, sizeof(struct Argument));
+                mPlayerPlayerDemo[i] = NULL;
+
+                if (mPlayerHandlerCount > 0) {
+                    --mPlayerHandlerCount;
+                }
+                break;
+            }
+        }
+        mLock.unlock();
+
+        return 0;
+    }
+
+    bool isMultiPlayerExist(int id) {
+        bool isExist = false;
+        if (id < 0 || id >= MaxPlayerNum ) {
+            printf("%s invalid, id:%d,\n", __FUNCTION__, id);
+            return isExist;
+        }
+
+        mLock.lock();
+
+        if (NULL != mPlayers[id]) {
+            isExist = true;
+        }
+
+        mLock.unlock();
+
+        return isExist;
+    }
+
+    void getPlayerHandle(int id, AML_MP_MEDIAPLAYER *player) {
+        if (id < 0 || id >= MaxPlayerNum) {
+            printf("%s invalid, id:%d \n", __FUNCTION__, id);
+            return;
+        }
+
+        mLock.lock();
+        if (mPlayers[id] != NULL) {
+            *player = mPlayers[id];
+        }
+        mLock.unlock();
+    }
+
+    void getPlayerArgument(int id, struct Argument** argument) {
+        if (id < 0 || id >= MaxPlayerNum) {
+            printf("%s invalid, id:%d \n", __FUNCTION__, id);
+            return;
+        }
+
+        mLock.lock();
+        *argument = (&mPlayerArgument[id]);
+        mLock.unlock();
+    }
+
+    void getPlayerDemoHandle(int id, struct AmlMpMediaPlayerDemo** playerDemo) {
+        if (id < 0 || id >= MaxPlayerNum) {
+            printf("%s invalid, id:%d \n", __FUNCTION__, id);
+            return;
+        }
+
+        mLock.lock();
+        if (NULL != mPlayerPlayerDemo[id]) {
+            *playerDemo = (mPlayerPlayerDemo[id]);
+        }
+        mLock.unlock();
+    }
+
+    void getPlayerThreadHandle(int id, std::thread** thread) {
+        if (id < 0 || id >= MaxPlayerNum) {
+            printf("%s invalid, id:%d \n", __FUNCTION__, id);
+            return;
+        }
+
+        mLock.lock();
+        *thread = (&mThread[id]);
+        mLock.unlock();
+    }
+
+    int playerHandlerCount() {
+        int count = 0;
+
+        mLock.lock();
+        count = mPlayerHandlerCount;
+        mLock.unlock();
+
+        return count;
+    }
+
+private:
+    playerRoster() {
+        for (int i = 0; i < MaxPlayerNum; ++i) {
+            mPlayers[i] = NULL;
+            mPlayerArgument[i].url             = "";
+            mPlayerArgument[i].x               = -1;
+            mPlayerArgument[i].y               = -1;
+            mPlayerArgument[i].viewWidth       = -1;
+            mPlayerArgument[i].viewHeight      = -1;
+            mPlayerArgument[i].channelId       = -1;
+            mPlayerArgument[i].onlyVideo       = false;
+            mPlayerArgument[i].onlyAudio       = false;
+            mPlayerPlayerDemo[i] = NULL;
+
+            mPlayerHandlerCount = 0;
+        }
+    }
+
+    std::mutex mLock;
+    int mPlayerHandlerCount = 0;
+    AML_MP_MEDIAPLAYER mPlayers[MaxPlayerNum];
+    struct Argument mPlayerArgument[MaxPlayerNum];
+    struct AmlMpMediaPlayerDemo* mPlayerPlayerDemo[MaxPlayerNum];
+    std::thread mThread[MaxPlayerNum];
+
+    playerRoster(const playerRoster&) = delete;
+    playerRoster& operator=(const playerRoster&) = delete;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//AmlMpMediaPlayerCommandProcessor
+struct AmlMpMediaPlayerCommandProcessor : CommandProcessor
+{
+    AmlMpMediaPlayerCommandProcessor(const std::string& prompt = ">");
+    ~AmlMpMediaPlayerCommandProcessor();
+
+    virtual int fetchAndProcessCommands();
+
+private:
+
+    AmlMpMediaPlayerCommandProcessor(const AmlMpMediaPlayerCommandProcessor&) = delete;
+    AmlMpMediaPlayerCommandProcessor& operator=(const AmlMpMediaPlayerCommandProcessor&) = delete;
+};
+
+AmlMpMediaPlayerCommandProcessor::AmlMpMediaPlayerCommandProcessor(const std::string& prompt)
+    : CommandProcessor(prompt)
+{
+    MLOGI();
+}
+
+AmlMpMediaPlayerCommandProcessor::~AmlMpMediaPlayerCommandProcessor()
+{
+    MLOGI();
+}
+
+int AmlMpMediaPlayerCommandProcessor::fetchAndProcessCommands()
+{
+    bool prompt = false;
+    std::string lastCommand = "-1";
+
+    for (;;) {
+        if (mInterrupter()) {
+            break;
+        }
+
+        if (tcgetpgrp(0) != getpid()) {
+            usleep(10 * 1000);
+            continue;
+        }
+
+        if (prompt) {
+            prompt = false;
+            fprintf(stderr, "%s", mPrompt.c_str());
+        }
+
+        struct pollfd fds;
+        fds.fd = STDIN_FILENO;
+        fds.events = POLL_IN;
+        fds.revents = 0;
+        // change the wait time from 1s to 100ms to avoid
+        // the situation that the signal change is not detected in time
+        int ret = ::poll(&fds, 1, 100);
+        if (ret < 0) {
+            //printf("poll STDIN_FILENO failed! %d\n", -errno);
+        } else if (ret > 0) {
+            if (fds.revents & POLL_ERR) {
+                MLOGE("poll error!");
+                continue;
+            } else if (!(fds.revents & POLL_IN)) {
+                continue;
+            }
+
+            prompt = true;
+
+            char buffer[100]{0};
+            int len = ::read(STDIN_FILENO, buffer, sizeof(buffer));
+            if (len <= 0) {
+                MLOGE("read failed! %d", -errno);
+                continue;
+            }
+
+            if (len > -1)
+                buffer[len] = '\0';
+            //printf("read buf:%s, %d, size:%d\n", buffer, buffer[0], len);
+            //printf("\n");
+
+            std::string buf(buffer);
+            size_t b = 0;
+            size_t e = buf.size();
+            while (b < e) {
+                if (isspace(buf[b])) ++b;
+                else if (isspace(buf[e])) --e;
+                else break;
+            }
+            //printf("read b:%d, e:%d\n", b, e);
+
+            if (b < e) {
+                buf = buf.substr(b, e - b);
+                lastCommand = buf;
+            } else if (b == e && !lastCommand.empty()) {
+                //buf = lastCommand;
+            } else {
+                continue;
+            }
+
+            std::vector<std::string> args = split(buf);
+            mCommandVisitor(args);
+        }
+    }
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//AmlMpMediaPlayerDemo
+static const char rateFactorMap[] = {
+    1, //1x
+    8,
+    16,
+    32,
+    64,
+};
+
 struct AmlMpMediaPlayerDemo : public TestModule
 {
-        AmlMpMediaPlayerDemo();
+        AmlMpMediaPlayerDemo(int id);
         ~AmlMpMediaPlayerDemo();
 
         int fetchAndProcessCommands();
@@ -35,24 +430,34 @@ struct AmlMpMediaPlayerDemo : public TestModule
         void waitPreparedEvent();
         void broadcast();
         int installSignalHandler();
+
 public:
         AML_MP_MEDIAPLAYER mPlayer = NULL;
         bool mQuitPending = false;
         std::condition_variable mCondition;
         std::mutex mMutex;
+        int mId;
 
 protected:
         const TestModule::Command* getCommandTable() const;
         bool processCommand(const std::vector<std::string>& args);
 
 private:
+        //Rewind Forward
+        char mRewindStateIndex = 0, mForwardStateIndex = 0;
+        bool isRewindOrForward = false;
+        std::string RewindOrForward = "";
+        void resetRewindAndForwardState() { mRewindStateIndex = 0; mForwardStateIndex = 0; }
+
+private:
         sptr<CommandProcessor> mCommandProcessor;
         std::thread mSignalHandleThread;
 };
 
-AmlMpMediaPlayerDemo::AmlMpMediaPlayerDemo()
+AmlMpMediaPlayerDemo::AmlMpMediaPlayerDemo(int id)
+    : mId(id)
 {
-    MLOGI();
+    MLOGI("mId:%d", mId);
 }
 
 AmlMpMediaPlayerDemo::~AmlMpMediaPlayerDemo()
@@ -63,9 +468,9 @@ AmlMpMediaPlayerDemo::~AmlMpMediaPlayerDemo()
 int AmlMpMediaPlayerDemo::fetchAndProcessCommands()
 {
     char promptBuf[50];
-    snprintf(promptBuf, sizeof(promptBuf), "AmlMpMediaPlayerDemo >");
+    snprintf(promptBuf, sizeof(promptBuf), "AmlMpMediaPlayerDemo (press 'h' for help) > ");
 
-    mCommandProcessor = new CommandProcessor(promptBuf);
+    mCommandProcessor = new AmlMpMediaPlayerCommandProcessor(promptBuf);
     if (mCommandProcessor == nullptr) {
         return -1;
     }
@@ -80,95 +485,59 @@ bool AmlMpMediaPlayerDemo::processCommand(const std::vector<std::string>& args)
     bool ret = true;
     std::string cmd = *args.begin();
 
-    if (cmd == "osd") {
-        MLOGI("%s,%d cmd==osd", __FUNCTION__, __LINE__);
-
-    } else if (cmd == "video") {
-        MLOGI("%s,%d cmd==video", __FUNCTION__, __LINE__);
-
-    } else if (cmd == "zorder") {
-        MLOGI("%s,%d cmd==zorder", __FUNCTION__, __LINE__);
-
-    } else if (cmd == "resize") {
-        MLOGI("%s,%d cmd==resize", __FUNCTION__, __LINE__);
-
-    }  else if (cmd == "quit") {
+    if (cmd == "q") {
         MLOGI("%s,%d set mQuitPending = true", __FUNCTION__, __LINE__);
-        mQuitPending = true;
+        //mQuitPending = true;
 
+        closeAllMultiPlayback();
     } else {
+        if (isRewindOrForward && (RewindOrForward != cmd || (cmd.compare("<") && cmd.compare(">")))) {
+            isRewindOrForward = false;
+            resetRewindAndForwardState();
+        }
+
+        if (">" == cmd) {
+            isRewindOrForward = true;
+            RewindOrForward = cmd;
+
+            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(rateFactorMap[mForwardStateIndex]));
+            if (++mForwardStateIndex >= sizeof(rateFactorMap) / sizeof(rateFactorMap[0])) {
+                mForwardStateIndex = 0;
+            }
+
+        } else if ("<" == cmd) {
+            isRewindOrForward = true;
+            RewindOrForward = cmd;
+
+            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(~(rateFactorMap[mRewindStateIndex]) + 1));
+            if (++mRewindStateIndex >= sizeof(rateFactorMap) / sizeof(rateFactorMap[0])) {
+                mRewindStateIndex = 0;
+            }
+        }
+
+        /*int i = 0, size = args.size();
+        printf("processCommand: size:%d\n", size);
+        for (auto i = args.begin(); i != args.end(); i++) {
+            std::cout << *i << ' ' << std::endl;
+        }*/
+
         TestModule::processCommand(args);
     }
 
     return ret;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-static void printTrackInfo(Aml_MP_TrackInfo *trackInfo)
-{
-    if (trackInfo == NULL)
-        return;
-
-    int index = 0;
-    Aml_MP_TrackInfo *info = trackInfo;
-
-    printf("nb_streams:%d \n", info->nb_streams);
-    for (index = 0; index < info->nb_streams; ++index) {
-        if (info->streamInfo[index].streamType == AML_MP_STREAM_TYPE_VIDEO) {
-            printf("index:%d [video] id:%d, videoCodec:%d, width:%d, height:%d, mine:%s\n", index
-                ,info->streamInfo[index].vInfo.id
-                ,info->streamInfo[index].vInfo.videoCodec
-                ,info->streamInfo[index].vInfo.width
-                ,info->streamInfo[index].vInfo.height
-                ,info->streamInfo[index].vInfo.mine);
-        } else if (info->streamInfo[index].streamType == AML_MP_STREAM_TYPE_AUDIO) {
-            printf("index:%d [audio] id:%d, audioCodec:%d, nChannels:%d, nSampleRate:%d, mine:%s, language:%s\n", index
-                ,info->streamInfo[index].aInfo.id
-                ,info->streamInfo[index].aInfo.audioCodec
-                ,info->streamInfo[index].aInfo.nChannels
-                ,info->streamInfo[index].aInfo.nSampleRate
-                ,info->streamInfo[index].aInfo.mine
-                ,info->streamInfo[index].aInfo.language);
-        } else if (info->streamInfo[index].streamType == AML_MP_STREAM_TYPE_SUBTITLE) {
-            printf("index:%d [subtitle] id:%d, subtitleCodec:%d, mine:%s, language:%s\n", index
-                ,info->streamInfo[index].sInfo.id
-                ,info->streamInfo[index].sInfo.subtitleCodec
-                ,info->streamInfo[index].sInfo.mine
-                ,info->streamInfo[index].sInfo.language);
-        } else {
-            ;
-        }
-    }
-}
-
-static void printMediaInfo(Aml_MP_MediaInfo *mediaInfo)
-{
-    if (mediaInfo == NULL)
-        return;
-
-    int index = 0;
-    Aml_MP_MediaInfo *info = mediaInfo;
-
-    printf("[mediaInfo] filename:%s, duration:%" PRId64 ", file_size:%" PRId64 ", bitrate:%" PRId64 ", nb_streams:%d\n"
-            ,info->filename
-            ,info->duration
-            ,info->file_size
-            ,info->bitrate
-            ,info->nb_streams);
-}
-
-
 static struct TestModule::Command g_commandTable[] = {
     {
-        "help", 0, "help",
+        "h", 0, "help",
         [](AML_MP_MEDIAPLAYER player __unused, const std::vector<std::string>& args __unused) -> int {
-            TestModule::printCommands(g_commandTable, true);
+            showOption();//TestModule::printCommands(g_commandTable, true);
             return 0;
         }
     },
 
     {
-        "pause", 0, "pause player",
+        "p", 0, "pause player",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Pause(player);
             printf("call pause player, ret:%d\n", ret);
@@ -177,7 +546,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "resume", 0, "resume player",
+        "r", 0, "resume player",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Resume(player);
             printf("call resume player, ret:%d\n", ret);
@@ -202,18 +571,40 @@ static struct TestModule::Command g_commandTable[] = {
     },
 */
     {
-        "seek", 1, "call seek",
+        "K", 0, "call seek",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+
+            printf("call seek, press position [milliseconds] : ");
             int ret = 0;
-            int msec = atoi(args.at(1).c_str());
+            std::string msecStr;
+            int msec = -1;
+
+            try {
+                std::getline (std::cin, msecStr);
+                msec = std::stoi(msecStr);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+                msec = -1;
+            }
+
+            if (msec < 0) {
+                ret = -1;
+                goto exit;
+            }
+
             ret = Aml_MP_MediaPlayer_SeekTo(player, msec);
-            printf("call seek, msec:%d, size:%zu, ret:%d\n", msec, args.size(), ret);
+
+exit:
+            printf("call seek, msec:%d, ret:%d\n", msec, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
             return ret;
         }
     },
-
+/*
     {
-        "selectTrack", 1, "select track",
+        "selectTrack", 0, "select track",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0;
             Aml_MP_MediaPlayerInvokeRequest request;
@@ -230,7 +621,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "unselectTrack", 1, "unselect track",
+        "unselectTrack", 0, "unselect track",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0;
             Aml_MP_MediaPlayerInvokeRequest request;
@@ -245,9 +636,9 @@ static struct TestModule::Command g_commandTable[] = {
             return ret;
         }
     },
-
+*/
     {
-        "gVolume", 0, "get volume",
+        "v", 0, "get volume",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             float volume;
             int ret = Aml_MP_MediaPlayer_GetVolume(player, &volume);
@@ -257,43 +648,117 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "sVolume", 1, "set volume",
+        "V", 0, "set volume",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            float volume, volume2;
-            if (args.size() != 2) {
-                printf("Input example: sVolume volume\n");
-                return -1;
+            TTY_RESET_FD(STDIN_FILENO);
+
+            printf("set volume, press volume [0 ~ 100] : ");
+            int ret = 0;
+            std::string volumeStr;
+            float volume = -1;
+
+            try {
+                std::getline (std::cin, volumeStr);
+                volume = std::stof(volumeStr);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+                volume = -1;
             }
-            printf("String input: %s\n", args[1].data());
-            volume = stof(args[1]);
-            int ret = Aml_MP_MediaPlayer_SetVolume(player,volume);
-            ret = Aml_MP_MediaPlayer_GetVolume(player, &volume2);
-            printf("Get volume: %f, set volume: %f, ret: %d\n", volume2, volume, ret);
+
+            if (volume < 0 || volume > 100) {
+                ret = -1;
+                goto exit;
+            }
+
+            ret = Aml_MP_MediaPlayer_SetVolume(player, volume);
+
+exit:
+            printf("set volume: %f, ret: %d\n", volume, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
             return ret;
         }
     },
 
     {
-        "sFast", 1, "set Fast rate",
+        "F", 0, "set Fast rate",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+
+            printf("call set Fast rate, press rate [0.25x/0.5x/1x/1.25x/1.5x/2x] : ");
             int ret = 0;
-            float x = atof(args.at(1).c_str());
-            ret = Aml_MP_MediaPlayer_SetPlaybackRate(player, x);
-            printf("call set Fast rate, speed:%f, ret:%d\n", x, ret);
+            std::string rateStr;
+            float rate = -1;
+
+            try {
+                std::getline (std::cin, rateStr);
+                rate = std::stof(rateStr);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+                rate = -1;
+            }
+
+            if (rate < 0 || rate > 2) {
+                ret = -1;
+                goto exit;
+            }
+
+            ret = Aml_MP_MediaPlayer_SetPlaybackRate(player, rate);
+
+exit:
+            printf("call set Fast rate, rate:%f, ret:%d\n", rate, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
             return ret;
         }
     },
 
     {
-        "sWindow", 4, "set video window",
+        "W", 0, "set video window",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+
             int ret = 0;
-            int x = atoi(args.at(1).c_str());
-            int y = atoi(args.at(2).c_str());
-            int width = atoi(args.at(3).c_str());
-            int height = atoi(args.at(4).c_str());
+            std::string xStr;
+            std::string yStr;
+            std::string widthStr;
+            std::string heightStr;
+
+            int x = -1;
+            int y = -1;
+            int width = -1;
+            int height = -1;
+
+            try {
+                printf("call set video window, press X pos : ");
+                std::getline (std::cin, xStr);
+                printf("call set video window, press Y pos : ");
+                std::getline (std::cin, yStr);
+                printf("call set video window, press width pos : ");
+                std::getline (std::cin, widthStr);
+                printf("call set video window, press height pos : ");
+                std::getline (std::cin, heightStr);
+
+                x = std::stoi(xStr);
+                y = std::stoi(yStr);
+                width = std::stoi(widthStr);
+                height = std::stoi(heightStr);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+                x = -1;
+            }
+
+            if (x < 0 || y < 0 || width < 0 || height < 0) {
+                ret = -1;
+                goto exit;
+            }
+
             ret = Aml_MP_MediaPlayer_SetVideoWindow(player, x, y, width, height);
+
+exit:
             printf("call set video window, x:%d, y:%d, width:%d, height:%d, ret:%d\n",x, y, width, height, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
             return ret;
         }
     },
@@ -308,7 +773,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 */
     {
-        "sOnlyHint", 1, "set only hint",
+        "sOnlyHint", 0, "set only hint",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0;
             Aml_MP_MediaPlayerOnlyHintType type = (Aml_MP_MediaPlayerOnlyHintType)atoi(args.at(1).c_str());
@@ -350,23 +815,217 @@ static struct TestModule::Command g_commandTable[] = {
 */
 
     {
-        "sMute", 1, "set mute umute",
+        "M", 0, "set mute umute",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            bool mute;
-            if (args.size() != 2) {
-                printf("Input example: sMute mute/umute\n");
-                return -1;
+            TTY_RESET_FD(STDIN_FILENO);
+
+            printf("call set mute/umute, press mute/umute [1/0] : ");
+            int ret = 0;
+            std::string muteStr;
+            int mute = -1;
+            try {
+                std::getline (std::cin, muteStr);
+                mute = std::stoi(muteStr, NULL, 10);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+                mute = -1;
             }
-            printf("String input: %s\n", args[1].data());
-            mute = stof(args[1]);
-            int ret = Aml_MP_MediaPlayer_SetMute(player, mute);
+
+            if (mute < 0 || mute > 1) {
+                ret = -1;
+                goto exit;
+            }
+
+            ret = Aml_MP_MediaPlayer_SetMute(player, mute);
+
+exit:
             printf("Set mute: %d, ret: %d\n", mute, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
+            return ret;
+
+        }
+    },
+
+    {
+        "<", 0, "set Rewind",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+
+            int ret = -1;
+            float rewind = 0;
+
+            if (args.size() >= 2) {
+                rewind = stof(args.at(1));
+            }
+
+            if (rewind >= 0) {
+                goto exit;
+            }
+
+            if (-1 == rewind) {
+                rewind = 1;//maybe we need speed=1
+            }
+
+            ret = Aml_MP_MediaPlayer_SetPlaybackRate(player, rewind);
+
+exit:
+            printf("call set Rewind, rateFactor:%f, ret:%d\n", rewind, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
             return ret;
         }
     },
 
     {
-        "gPos", 0, "get current position",
+        ">", 0, "set Forward",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+
+            int ret = -1;
+            float forward = 0;
+
+            if (args.size() >= 2) {
+                forward = stof(args.at(1));
+            }
+
+            if (forward <= 0) {
+                goto exit;
+            }
+
+            ret = Aml_MP_MediaPlayer_SetPlaybackRate(player, forward);
+
+exit:
+            printf("call set Forward, rateFactor:%f, ret:%d\n", forward, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
+            return ret;
+        }
+    },
+
+    {
+        "a", 0, "Get Audio Info Channels",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = 0;
+            printf("\n\n Available Audios : \n");
+
+            Aml_MP_MediaPlayerInvokeRequest trackRequest;
+            Aml_MP_MediaPlayerInvokeReply trackReply;
+            memset(&trackRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&trackReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            trackRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &trackRequest, &trackReply);
+
+            Aml_MP_MediaPlayerInvokeRequest mediaRequest;
+            Aml_MP_MediaPlayerInvokeReply mediaReply;
+            memset(&mediaRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&mediaReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
+
+            printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_AUDIO);
+
+            return ret;
+        }
+    },
+
+    {
+        "A", 0, "Set Next Audio component",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = -1, index = -1;
+
+            Aml_MP_MediaPlayerInvokeRequest trackRequest;
+            Aml_MP_MediaPlayerInvokeReply trackReply;
+            memset(&trackRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&trackReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            trackRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &trackRequest, &trackReply);
+
+            Aml_MP_MediaPlayerInvokeRequest mediaRequest;
+            Aml_MP_MediaPlayerInvokeReply mediaReply;
+            memset(&mediaRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&mediaReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
+
+
+            index = getNextTrack(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_AUDIO);
+            if (index < 0) {
+                goto exit;
+            }
+
+            //TODO: selectTrack
+            ret = 0;
+
+exit:
+            printf("Set Next Audio component, ret:%d, index:%d\n", ret, index);
+            return ret;
+        }
+    },
+
+    {
+        "s", 0, "Get Subtitles Info channels",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = 0;
+            printf("\n\n Available Subtitles : \n");
+
+            Aml_MP_MediaPlayerInvokeRequest trackRequest;
+            Aml_MP_MediaPlayerInvokeReply trackReply;
+            memset(&trackRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&trackReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            trackRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &trackRequest, &trackReply);
+
+            Aml_MP_MediaPlayerInvokeRequest mediaRequest;
+            Aml_MP_MediaPlayerInvokeReply mediaReply;
+            memset(&mediaRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&mediaReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
+
+            printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_SUBTITLE);
+
+            return ret;
+        }
+    },
+
+    {
+        "S", 0, "Set Next Subtitle component",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = -1, index = -1;
+
+            Aml_MP_MediaPlayerInvokeRequest trackRequest;
+            Aml_MP_MediaPlayerInvokeReply trackReply;
+            memset(&trackRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&trackReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            trackRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &trackRequest, &trackReply);
+
+            Aml_MP_MediaPlayerInvokeRequest mediaRequest;
+            Aml_MP_MediaPlayerInvokeReply mediaReply;
+            memset(&mediaRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&mediaReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
+
+
+            index = getNextTrack(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_SUBTITLE);
+            if (index < 0) {
+                goto exit;
+            }
+
+            //TODO: selectTrack
+            ret = 0;
+
+exit:
+            printf("Set Next Subtitle component, ret:%d, index:%d\n", ret, index);
+            return ret;
+
+        }
+    },
+
+    {
+        "n", 0, "get current position",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0, position = 0;
             ret = Aml_MP_MediaPlayer_GetCurrentPosition(player, &position);
@@ -377,7 +1036,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "gDuration", 0, "get duration",
+        "N", 0, "get duration",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0, duration = 0;
             ret = Aml_MP_MediaPlayer_GetDuration(player, &duration);
@@ -399,28 +1058,86 @@ static struct TestModule::Command g_commandTable[] = {
 */
 
     {
-        "invoke", 0, "invoke generic method",
+        "i", 0, "invoke generic method",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0;
-            Aml_MP_MediaPlayerInvokeRequest request;
-            Aml_MP_MediaPlayerInvokeReply reply;
 
+            Aml_MP_MediaPlayerInvokeRequest trackRequest;
+            Aml_MP_MediaPlayerInvokeReply trackReply;
+            memset(&trackRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&trackReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            trackRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &trackRequest, &trackReply);
+            printf("\nAML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO, reply id:0x%x ret: %d\n",trackReply.requestId, ret);
 
-            memset(&request, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
-            memset(&reply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
-            request.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO;
-            ret = Aml_MP_MediaPlayer_Invoke(player, &request, &reply);
-            printf("AML_MP_MEDIAPLAYER_INVOKE_ID_GET_TRACK_INFO, reply id:%x ret: %d\n",reply.requestId, ret);
-            printTrackInfo(&reply.u.trackInfo);
+            Aml_MP_MediaPlayerInvokeRequest mediaRequest;
+            Aml_MP_MediaPlayerInvokeReply mediaReply;
+            memset(&mediaRequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&mediaReply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+            mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
+            printf("\nAML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO,reply id:0x%x ret: %d\n",mediaReply.requestId, ret);
 
+            printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_VIDEO);
+            printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_AUDIO);
+            printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_SUBTITLE);
+            printMediaInfo(&mediaReply.u.mediaInfo);
 
-            memset(&request, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
-            memset(&reply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
-            request.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
-            ret = Aml_MP_MediaPlayer_Invoke(player, &request, &reply);
-            printf("\nAML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO,reply id:%x ret: %d\n",reply.requestId, ret);
-            printMediaInfo(&reply.u.mediaInfo);
+            return ret;
+        }
+    },
 
+    {
+        "O", 0, "Open PIP",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            TTY_RESET_FD(STDIN_FILENO);
+            int ret = -1;
+            std::thread thread;
+            struct Argument argument;
+
+            printf("Open PIP url : ");
+            argument.url = "-1";
+            argument.x = 0;
+            argument.y = 0;
+            argument.viewWidth = 960;
+            argument.viewHeight = 540;
+            argument.channelId = MEDIAPLAYERDEMO_PIP;//maybe need demux=1
+            argument.onlyVideo = false;
+            argument.onlyAudio = false;
+
+            try {
+                std::getline (std::cin, argument.url);
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+            }
+
+            if (argument.url.compare("-1") == 0 || playerRoster::instance().isMultiPlayerExist(MEDIAPLAYERDEMO_PIP)) {
+                ret = -1;
+                goto exit;
+            }
+
+            playerRoster::instance().registerPlayerArgument(MEDIAPLAYERDEMO_PIP, &argument);//only register argument
+            playerRoster::instance().registerPlayerThreadHandle(MEDIAPLAYERDEMO_PIP, std::thread(multiPlaybackThread, MEDIAPLAYERDEMO_PIP, false));
+
+            ret = 0;
+exit:
+            printf("call Open PIP, id:%d ret:%d\n", argument.channelId, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
+            return ret;
+        }
+    },
+
+    {
+        "C", 0, "Close PIP",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = -1;
+
+            closeMultiPlayback(MEDIAPLAYERDEMO_PIP);
+
+            ret = 0;
+
+            printf("call Close PIP, ret:%d\n", ret);
             return ret;
         }
     },
@@ -435,7 +1152,7 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "sDatasource", 1, "set data source",
+        "sDatasource", 0, "set data source",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             const char *url = args.at(1).c_str();
             int ret = Aml_MP_MediaPlayer_SetDataSource(player, url);
@@ -472,9 +1189,17 @@ static struct TestModule::Command g_commandTable[] = {
     },
 
     {
-        "quit", 0, "exit playback",
+        "q", 0, "exit playback",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             printf("exit playback\n");
+            return 0;
+        }
+    },
+
+    {
+        "\n", 0, "\n",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            printf("\n");
             return 0;
         }
     },
@@ -542,7 +1267,8 @@ int AmlMpMediaPlayerDemo::installSignalHandler()
             case SIGINT:
             {
                 //quit
-                mQuitPending = true;
+                //mQuitPending = true;
+                closeAllMultiPlayback();
             }
             break;
 
@@ -560,18 +1286,387 @@ int AmlMpMediaPlayerDemo::installSignalHandler()
     return ret;
 }
 
-struct Argument
+///////////////////////////////////////////////////////////////////////////////
+//
+static void printCurTrackInfo(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo, Aml_MP_StreamType streamType)
 {
-    std::string url;
-    int x = 0;
-    int y = 0;
-    int viewWidth = -1;
-    int viewHeight = -1;
-    int channelId = -1;
-    bool onlyVideo = false;
-    bool onlyAudio = false;
-};
+    if (trackInfo == NULL || mediaInfo == NULL)
+        return;
 
+    int index = 0;
+    Aml_MP_TrackInfo *info = trackInfo;
+    char isSelect[5] = " ";
+
+    //printf("nb_streams:%d \n", info->nb_streams);
+    for (index = 0; index < info->nb_streams; ++index) {
+        memset(isSelect, 0, sizeof(isSelect));
+        strcpy(isSelect, " ");
+
+        if (info->streamInfo[index].streamType == streamType && streamType == AML_MP_STREAM_TYPE_VIDEO) {
+            if (index == mediaInfo->curVideoIndex) {
+                sprintf(isSelect, "%s", ">");
+            }
+
+            printf("   %s array index:%d, actual index:%d [video] id:%d, videoCodec:%d(%s), width:%d, height:%d, mine:%s\n"
+                ,isSelect
+                ,index
+                ,info->streamInfo[index].u.vInfo.index
+                ,info->streamInfo[index].u.vInfo.id
+                ,info->streamInfo[index].u.vInfo.videoCodec
+                ,mpCodecId2Str(info->streamInfo[index].u.vInfo.videoCodec)
+                ,info->streamInfo[index].u.vInfo.width
+                ,info->streamInfo[index].u.vInfo.height
+                ,info->streamInfo[index].u.vInfo.mine);
+        } else if (info->streamInfo[index].streamType == streamType && streamType == AML_MP_STREAM_TYPE_AUDIO) {
+            if (index == mediaInfo->curAudioIndex) {
+                sprintf(isSelect, "%s", ">");
+            }
+
+            printf("   %s array index:%d, actual index:%d [audio] id:%d, audioCodec:%d(%s), nChannels:%d, nSampleRate:%d, mine:%s, language:%s\n"
+                ,isSelect
+                ,index
+                ,info->streamInfo[index].u.aInfo.index
+                ,info->streamInfo[index].u.aInfo.id
+                ,info->streamInfo[index].u.aInfo.audioCodec
+                ,mpCodecId2Str(info->streamInfo[index].u.aInfo.audioCodec)
+                ,info->streamInfo[index].u.aInfo.nChannels
+                ,info->streamInfo[index].u.aInfo.nSampleRate
+                ,info->streamInfo[index].u.aInfo.mine
+                ,info->streamInfo[index].u.aInfo.language);
+        } else if (info->streamInfo[index].streamType == streamType && streamType == AML_MP_STREAM_TYPE_SUBTITLE) {
+            if (index == mediaInfo->curSubIndex) {
+                sprintf(isSelect, "%s", ">");
+            }
+
+            printf("   %s array index:%d, actual index:%d [subtitle] id:%d, subtitleCodec:%d(%s), mine:%s, language:%s\n"
+                ,isSelect
+                ,index
+                ,info->streamInfo[index].u.sInfo.index
+                ,info->streamInfo[index].u.sInfo.id
+                ,info->streamInfo[index].u.sInfo.subtitleCodec
+                ,mpCodecId2Str(info->streamInfo[index].u.sInfo.subtitleCodec)
+                ,info->streamInfo[index].u.sInfo.mine
+                ,info->streamInfo[index].u.sInfo.language);
+        } else {
+            ;
+        }
+    }
+
+    printf("\n");
+}
+
+static int getNextTrack(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo, Aml_MP_StreamType streamType)
+{
+    if (trackInfo == NULL || mediaInfo == NULL)
+        return -1;
+
+    Aml_MP_TrackInfo *info = trackInfo;
+    bool isReachFirst = false;
+    int preTrackIndex = streamType == AML_MP_STREAM_TYPE_VIDEO ? mediaInfo->curVideoIndex :
+        (streamType == AML_MP_STREAM_TYPE_AUDIO ? mediaInfo->curAudioIndex : mediaInfo->curSubIndex);
+    int findTrackIndex = preTrackIndex;
+
+    if (info->nb_streams > 0) {
+        do {
+            if (++findTrackIndex >= info->nb_streams) {
+                findTrackIndex = 0;
+
+                if (isReachFirst) {
+                    //printf("loop again break:%d \n", info->nb_streams);
+                    findTrackIndex = preTrackIndex;
+                    break;
+                }
+
+                isReachFirst = true;
+            }
+
+            if (streamType == info->streamInfo[findTrackIndex].streamType) {
+                break;
+            }
+        } while (1);
+    }
+
+    //printf("getNextTrack findTrackIndex:%d, preTrackIndex:%d\n", findTrackIndex, preTrackIndex);
+
+    return findTrackIndex;
+}
+
+static void printMediaInfo(Aml_MP_MediaInfo *mediaInfo)
+{
+    if (mediaInfo == NULL)
+        return;
+
+    int index = 0;
+    Aml_MP_MediaInfo *info = mediaInfo;
+
+    printf("[mediaInfo] filename:%s, duration:%" PRId64 ", file_size:%" PRId64 ", bitrate:%" PRId64 ", nb_streams:%d" \
+            ", curVideoIndex:%" PRId64 ", curAudioIndex:%" PRId64 ", curSubIndex:%" PRId64 "\n"
+            ,info->filename
+            ,info->duration
+            ,info->file_size
+            ,info->bitrate
+            ,info->nb_streams
+            ,info->curVideoIndex
+            ,info->curAudioIndex
+            ,info->curSubIndex);
+    printf("\n");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//serial
+static struct termios save_termios;
+static int ttysavefd = -1;
+static enum { RESET, RAW, CBREAK } ttystate = RESET;
+int tty_cbreak(int fd) /* put terminal into a cbreak mode */
+{
+    int err;
+    struct termios buf;
+    if (ttystate != RESET) {
+        errno = EINVAL;
+        return(-1);
+    }
+    if (tcgetattr(fd, &buf) < 0)
+        return(-1);
+
+    save_termios = buf; /* structure copy */
+    /*
+    * Echo off, canonical mode off.
+    */
+    buf.c_lflag &= ~(ECHO | ICANON);
+    /*
+    * Case B: 1 byte at a time, no timer.
+    */
+    buf.c_cc[VMIN] = 1;
+    buf.c_cc[VTIME] = 0;
+
+    if (tcsetattr(fd, TCSAFLUSH, &buf) < 0)
+        return(-1);
+    /*
+    * Verify that the changes stuck. tcsetattr can return 0 on
+    * partial success.
+    */
+    if (tcgetattr(fd, &buf) < 0) {
+        err = errno;
+        tcsetattr(fd, TCSAFLUSH, &save_termios);
+        errno = err;
+        return(-1);
+    }
+
+    if ((buf.c_lflag & (ECHO | ICANON)) || buf.c_cc[VMIN] != 1 ||
+    buf.c_cc[VTIME] != 0) {
+        /*
+        * Only some of the changes were made. Restore the
+        * original settings.
+        */
+        tcsetattr(fd, TCSAFLUSH, &save_termios);
+        errno = EINVAL;
+        return(-1);
+    }
+
+    ttystate = CBREAK;
+    ttysavefd = fd;
+
+    return(0);
+}
+
+int tty_reset(int fd) /* restore terminal’s mode */
+{
+    if (ttystate == RESET)
+        return(0);
+    if (tcsetattr(fd, TCSAFLUSH, &save_termios) < 0)
+        return(-1);
+    ttystate = RESET;
+
+    return(0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//PIP/MAIN
+static int multiPlaybackThread(int id, bool isMain)
+{
+    printf("\nAmlMpMediaPlayerDemo:%d ----------play enter! isMain:%d\n", id, isMain);
+
+    int ret = -1;
+    std::string urlHead;
+    std::string urlFile;
+    struct Argument* argument = NULL;
+    AML_MP_MEDIAPLAYER player = NULL;
+
+    playerRoster::instance().getPlayerArgument(id, &argument);
+    if (argument == NULL || argument->url.empty() || 0 != isUrlValid(argument->url, urlHead, urlFile)) {
+        showUsage();
+        return ret;
+    }
+
+    AmlMpMediaPlayerDemo* commandsProcess = new AmlMpMediaPlayerDemo(id);
+    if (NULL == commandsProcess) {
+        return ret;
+    }
+
+    if (isMain) {
+        commandsProcess->installSignalHandler();
+    }
+
+    //create
+    ret = createMultiPlayback(id, &player, argument, commandsProcess);
+    playerRoster::instance().registerAll(player, id, argument, commandsProcess);//register player/commandsProcess
+
+    if (isMain) {
+        //commands process
+        printf("\nAmlMpMediaPlayerDemo:%d ----------fetchAndProcessCommands\n", id);
+        commandsProcess->setCommandHandle(player);
+        commandsProcess->fetchAndProcessCommands();
+
+    } else {
+        //sleep
+        do {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        } while (commandsProcess->mQuitPending == false);
+    }
+
+    //destroy
+    ret = destroyMultiPlayback(id);
+
+    if (commandsProcess) {
+        delete commandsProcess;
+        commandsProcess = NULL;
+    }
+
+    printf("\nAmlMpMediaPlayerDemo:%d ----------play exited!\n", id);
+    return ret;
+}
+
+static int createMultiPlayback(int id, AML_MP_MEDIAPLAYER* player, struct Argument* argument, AmlMpMediaPlayerDemo* commandsProcess)
+{
+    if (argument == NULL) {
+        return -1;
+    }
+
+    //create
+    Aml_MP_MediaPlayer_Create(player);
+
+    //only settings
+    // channelid is used for pip function which start the demo in a different process.
+    // it means different play channels,0 : main, else pip
+    if (argument->channelId != -1)
+        Aml_MP_MediaPlayer_SetParameter(*player, AML_MP_MEDIAPLAYER_PARAMETER_CHANNEL_ID, (void*)(&argument->channelId));
+    Aml_MP_MediaPlayerOnlyHintType type = AML_MP_MEDIAPLAYER_ONLYNONE;
+    if (argument->onlyVideo)
+        type = AML_MP_MEDIAPLAYER_VIDEO_ONLYHIT;
+    if (argument->onlyAudio)
+        type = AML_MP_MEDIAPLAYER_AUDIO_ONLYHIT;
+    Aml_MP_MediaPlayer_SetParameter(*player, AML_MP_MEDIAPLAYER_PARAMETER_ONLYHINT_TYPE, (void*)&type);
+
+    //setdatasource
+    Aml_MP_MediaPlayer_SetDataSource(*player, argument->url.c_str());
+    printf("\nAmlMpMediaPlayerDemo:%d ----------url: %s\n", id, argument->url.c_str());
+
+    //registerEventCallBack
+    Aml_MP_MediaPlayer_RegisterEventCallBack(*player, demoCallback, reinterpret_cast<void*>(commandsProcess));
+
+    //set video window after setting datasource and before starting, take effect after starting.
+    //or use --size options when amlMpMediaPlayerDemo
+    Aml_MP_MediaPlayer_SetVideoWindow(*player, argument->x, argument->y, argument->viewWidth, argument->viewHeight);
+
+    //prepare
+    Aml_MP_MediaPlayer_PrepareAsync(*player);
+    commandsProcess->waitPreparedEvent();
+
+#ifndef ANDROID
+    //set videotunnel id = 0 on yocto
+    //must before prepare
+    int iD = argument->channelId == -1 ? 0 : argument->channelId;
+    Aml_MP_MediaPlayer_SetParameter(*player, AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID, (void*)(&iD));
+#endif
+
+    //start
+    Aml_MP_MediaPlayer_Start(*player);
+    printf("\nAmlMpMediaPlayerDemo:%d ----------Aml_MP_MediaPlayer_Start\n", id);
+
+    return 0;
+}
+
+static int destroyMultiPlayback(int id)
+{
+    int ret = -1;
+    AML_MP_MEDIAPLAYER player = NULL;
+    playerRoster::instance().getPlayerHandle(id, &player);
+
+    if (player != NULL) {
+        //stop
+        ret = Aml_MP_MediaPlayer_Stop(player);
+
+        //reset
+        ret = Aml_MP_MediaPlayer_Reset(player);
+        playerRoster::instance().unregisterPlayer(player);
+
+        //destroy
+        ret= Aml_MP_MediaPlayer_Destroy(player);
+        printf("\nAmlMpMediaPlayerDemo:%d ----------Aml_MP_MediaPlayer_Destroy\n", id);
+    } else {
+        printf("\nAmlMpMediaPlayerDemo:%d ----------is NULl\n", id);
+    }
+
+    return 0;
+}
+
+static void closeMultiPlayback(int id)
+{
+    printf("closeMultiPlayback id:%d\n", id);
+
+    if (id < 0) {
+        return;
+    }
+
+    struct AmlMpMediaPlayerDemo* playerDemo = NULL;
+    playerRoster::instance().getPlayerDemoHandle(id, &playerDemo);
+    if (playerDemo != NULL)
+        playerDemo->mQuitPending = true;
+
+    //join pip threads
+    std::thread *thread = NULL;
+    playerRoster::instance().getPlayerThreadHandle(id, &thread);
+    if (thread != NULL && thread->joinable()) {
+        thread->join();
+        printf("join multiPlaybackThread id:%d\n", id);
+    }
+
+}
+
+static void closeAllMultiPlayback()
+{
+    //close pip first
+    closeMultiPlayback(MEDIAPLAYERDEMO_PIP);
+    closeMultiPlayback(MEDIAPLAYERDEMO_MAIN);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+static int isUrlValid(const std::string url, std::string& urlHead, std::string& urlFile)
+{
+    int ret = -1;
+    std::size_t pos = std::string::npos;
+
+    urlHead = "-1";
+    urlFile = "-1";
+
+    if ((pos = url.find(":")) != std::string::npos) {
+        urlHead = url.substr(0, pos);
+    }
+
+    if (urlHead.compare("dclr") == 0) {
+        urlFile = url.substr(pos + 1);
+
+        if (access(urlFile.c_str(), F_OK) == 0) {
+            ret = 0;
+        }
+    }
+
+    //printf("isUrlValid, ret:%d, url:%s, urlHead:%s, urlHead:%s\n", ret, url.c_str(), urlHead.c_str(), urlFile.c_str());
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//Command Line
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
 {
     static const struct option longopts[] = {
@@ -648,6 +1743,82 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
     return 0;
 }
 
+void demoCallback(void* userData, Aml_MP_MediaPlayerEventType event, int64_t param)
+{
+    AmlMpMediaPlayerDemo* demo = (AmlMpMediaPlayerDemo*)(userData);
+
+    switch (event) {
+        case AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE:
+        {
+            printf("%s at #%d AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE, id:%d\n",__FUNCTION__,__LINE__, demo->mId);
+            break;
+        }
+        case AML_MP_MEDIAPLAYER_EVENT_PREPARED:
+        {
+            if (demo) {
+                demo->broadcast();
+            }
+            printf("%s at #%d AML_MP_MEDIAPLAYER_EVENT_PREPARED, id:%d\n",__FUNCTION__,__LINE__, demo->mId);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+static void showOption()
+{
+    printf(
+    "AmlMpMediaPlayerDemo\n"
+    "Type one option\n"
+    "\n"
+    "Main:\n"
+    "         o.................Open URL\n"
+    "         c.................Close URL\n"
+    "         +.................Zap To Following URL\n"
+    "         -.................Zap To Previous URL\n"
+    "                               CHANNEL LIST\n"
+    "                             ------------\n"
+    "                                - igmp://239.0.0.185:8208\n"
+    "                                - igmp://239.0.0.183:8208\n"
+    "                                - igmp://239.0.0.186:8208\n"
+    "                                - igmp://239.0.0.177:8208\n"
+    "                                - igmp://239.0.0.176:8208\n"
+    "                                - igmp://239.0.0.187:8208\n"
+    "                                - igmp://239.0.5.246:8208\n"
+    "                                - igmp://239.0.5.111:8208\n"
+    "                                - igmp://239.0.5.114:8208\n"
+    "         p.................Play/Start x1 speed\n"
+    "         P.................Pause\n"
+    "         r.................Resume\n"
+    "         K.................Seek\n"
+    "         v.................Get Volume\n"
+    "         V.................Set Volume\n"
+    "         F.................Set fast rate\n"
+    "         M.................Set mute\n"
+    "         <.................Rewind  -> -x8 -> -x16 -> -x32 -> -x64 -> x1\n"
+    "         >.................Forward ->  x8 ->  x16 ->  x32 ->  x64 -> x1\n"
+    "         a.................Get Audio Info Channels\n"
+    "         A.................Set Next Audio component\n"
+    "         s.................Get Subtitles Info channels\n"
+    "         S.................Set Next Subtitle component\n"
+    "         i.................Get Track/Media info\n"
+    "         n.................Get Position [milliseconds]\n"
+    "         d.................Get Duration [milliseconds]\n"
+    "         w.................Get Main Window Position\n"
+    "         W.................Set Main Window Position\n"
+    "\n"
+    "PIP:\n"
+    "         O.................Open PIP\n"
+    "         C.................Close PIP\n"
+    "         e.................Get PIP Window Position\n"
+    "         E.................Set PIP Window Position\n"
+    "\n"
+    "         q................ Exit\n"
+    "\n"
+    );
+}
+
 static void showUsage()
 {
     printf("Usage: amlMpMediaPlayerDemo <options> <url>\n"
@@ -665,102 +1836,35 @@ static void showUsage()
             );
 }
 
-void demoCallback(void* userData, Aml_MP_MediaPlayerEventType event, int64_t param)
-{
-    switch (event) {
-        case AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE:
-        {
-            printf("%s at #%d AML_MP_MEDIAPLAYER_EVENT_PLAYBACK_COMPLETE\n",__FUNCTION__,__LINE__);
-            break;
-        }
-        case AML_MP_MEDIAPLAYER_EVENT_PREPARED:
-        {
-            AmlMpMediaPlayerDemo* demo = (AmlMpMediaPlayerDemo*)(userData);
-            if (demo) {
-                demo->broadcast();
-            }
-            printf("%s at #%d AML_MP_MEDIAPLAYER_EVENT_PREPARED\n",__FUNCTION__,__LINE__);
-            break;
-        }
-        default:
-            break;
-    }
-}
-
 int main(int argc, char *argv[])
 {
-    Argument argument{};
+    int ret = -1;
 
-    if (parseCommandArgs(argc, argv, &argument) < 0 || argument.url.empty()) {
-        showUsage();
+    if (tty_reset(STDIN_FILENO) < 0) {
+        printf("\n tty_reset error\n");
         return 0;
     }
 
-    AmlMpMediaPlayerDemo* commandsProcess = new AmlMpMediaPlayerDemo;
-    commandsProcess->installSignalHandler();
-
-    AML_MP_MEDIAPLAYER mPlayer = NULL;
-
-    //create
-    Aml_MP_MediaPlayer_Create(&mPlayer);
-
-    //only settings
-    // channelid is used for pip function which start the demo in a different process.
-    // it means different play channels,0 : main, else pip
-    if (argument.channelId != -1)
-        Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_CHANNEL_ID, (void*)(&argument.channelId));
-    Aml_MP_MediaPlayerOnlyHintType type = AML_MP_MEDIAPLAYER_ONLYNONE;
-    if (argument.onlyVideo)
-        type = AML_MP_MEDIAPLAYER_VIDEO_ONLYHIT;
-    if (argument.onlyAudio)
-        type = AML_MP_MEDIAPLAYER_AUDIO_ONLYHIT;
-    Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_ONLYHINT_TYPE, (void*)&type);
-
-    //setdatasource
-    Aml_MP_MediaPlayer_SetDataSource(mPlayer, argument.url.c_str());
-    printf("AmlMpMediaPlayerDemo ----------url: %s\n", argument.url.c_str());
-
-    //registerEventCallBack
-    Aml_MP_MediaPlayer_RegisterEventCallBack(mPlayer, demoCallback, reinterpret_cast<void*>(commandsProcess));
-
-    //set video window after setting datasource and before starting, take effect after starting.
-    //or use --size options when amlMpMediaPlayerDemo
-    Aml_MP_MediaPlayer_SetVideoWindow(mPlayer, argument.x, argument.y, argument.viewWidth, argument.viewHeight);
-
-    //prepare
-    Aml_MP_MediaPlayer_PrepareAsync(mPlayer);
-    commandsProcess->waitPreparedEvent();
-
-#ifndef ANDROID
-    //set videotunnel id = 0 on yocto
-    //must before prepare
-    int iD = argument.channelId == -1 ? 0 : argument.channelId;
-    Aml_MP_MediaPlayer_SetParameter(mPlayer, AML_MP_MEDIAPLAYER_PARAMETER_VIDEO_TUNNEL_ID, (void*)(&iD));
-#endif
-
-    //start
-    Aml_MP_MediaPlayer_Start(mPlayer);
-    printf("AmlMpMediaPlayerDemo ----------Aml_MP_MediaPlayer_Start\n");
-
-    //commands process
-    printf("AmlMpMediaPlayerDemo ----------fetchAndProcessCommands\n");
-    commandsProcess->setCommandHandle(mPlayer);
-    commandsProcess->fetchAndProcessCommands();
-
-    //stop
-    Aml_MP_MediaPlayer_Stop(mPlayer);
-
-    //reset
-    Aml_MP_MediaPlayer_Reset(mPlayer);
-
-    //destroy
-    Aml_MP_MediaPlayer_Destroy(mPlayer);
-    printf("AmlMpMediaPlayerDemo ----------Aml_MP_MediaPlayer_Destroy\n");
-
-    if (commandsProcess) {
-        delete commandsProcess;
-        commandsProcess = NULL;
+    if (tty_cbreak(STDIN_FILENO) < 0) {
+        printf("\n tty_cbreak error\n");
     }
-    printf("AmlMpMediaPlayerDemo ----------play exited!\n");
-    return 0;
+
+
+    Argument argument{};
+    if (parseCommandArgs(argc, argv, &argument) < 0) {
+        showUsage();
+        return ret;
+    }
+    playerRoster::instance().registerPlayerArgument(MEDIAPLAYERDEMO_MAIN, &argument);//only register argument
+    ret = multiPlaybackThread(MEDIAPLAYERDEMO_MAIN, true/*isMain*/);
+    if (ret < 0) {
+        printf("\n multiPlaybackThread id:%d error\n", (int)MEDIAPLAYERDEMO_MAIN);
+    }
+
+
+    if (tty_reset(STDIN_FILENO) < 0)
+        printf("\n tty_reset error\n");
+
+    return ret;
 }
+

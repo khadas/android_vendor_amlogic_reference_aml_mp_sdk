@@ -103,6 +103,7 @@ AmlMediaPlayerBase* AmlMediaPlayerBase::create(Aml_MP_MediaPlayerCreateParams* c
 }
 
 AmlMediaPlayerBase::AmlMediaPlayerBase(Aml_MP_MediaPlayerCreateParams* createParams, int instanceId)
+    : mEventCb(NULL), mUserData(NULL)
 {
     ;
 }

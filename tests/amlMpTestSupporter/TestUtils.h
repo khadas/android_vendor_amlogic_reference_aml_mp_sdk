@@ -76,20 +76,20 @@ struct CommandProcessor : AmlMpRefBase
     ~CommandProcessor();
     int setCommandVisitor(const std::function<Visitor>& visitor);
     int setInterrupter(const std::function<Interrupter>& interrupter);
-    int fetchAndProcessCommands();
+    virtual int fetchAndProcessCommands();
 
-private:
+protected:
     bool isDelimiter(const std::string& delimiters, char c) {
         return delimiters.find(c) != std::string::npos;
     }
 
     std::vector<std::string> split(const std::string& str);
 
-private:
     std::function<Visitor> mCommandVisitor;
     std::function<Interrupter> mInterrupter;
     std::string mPrompt;
 
+private:
     CommandProcessor(const CommandProcessor&) = delete;
     CommandProcessor& operator=(const CommandProcessor&) = delete;
 };

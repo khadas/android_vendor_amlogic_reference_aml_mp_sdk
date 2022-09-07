@@ -34,27 +34,33 @@ typedef void (*Aml_MP_MediaPlayerEventCallback)(void* userData, Aml_MP_MediaPlay
 #define AML_MP_MAX_MEDIA_PARAMETER_SIZE 256
 
 typedef struct {
+    uint16_t                index;
     uint16_t                id;
     Aml_MP_CodecID          videoCodec;
     uint32_t                width;
     uint32_t                height;
     char mine[AML_MP_MAX_STREAM_PARAMETER_SIZE];
+    long reserved[8];
 } Aml_MP_VideoTrackInfo;
 
 typedef struct {
+    uint16_t                index;
     uint16_t                id;
     Aml_MP_CodecID          audioCodec;
     uint32_t                nChannels;
     uint32_t                nSampleRate;
     char mine[AML_MP_MAX_STREAM_PARAMETER_SIZE];
     char language[AML_MP_MAX_STREAM_PARAMETER_SIZE];
+    long reserved[8];
 } Aml_MP_AudioTrackInfo;
 
 typedef struct {
+    uint16_t                index;
     uint16_t                id;
     Aml_MP_CodecID subtitleCodec;
     char mine[AML_MP_MAX_STREAM_PARAMETER_SIZE];
     char language[AML_MP_MAX_STREAM_PARAMETER_SIZE];
+    long reserved[8];
 } Aml_MP_SubTrackInfo;
 
 typedef struct {
@@ -63,7 +69,8 @@ typedef struct {
         Aml_MP_VideoTrackInfo vInfo;
         Aml_MP_AudioTrackInfo aInfo;
         Aml_MP_SubTrackInfo   sInfo;
-    };
+    } u;
+    long reserved[8];
 } Aml_MP_StreamInfo;
 
 typedef enum {
@@ -79,7 +86,8 @@ typedef enum {
 typedef struct {
     int nb_streams;
     Aml_MP_StreamInfo streamInfo[AML_MP_MAX_STREAMS_COUNT];
-}Aml_MP_TrackInfo;
+    long reserved[8];
+} Aml_MP_TrackInfo;
 
 ////////////////////////////////////////
 //AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO
@@ -89,7 +97,11 @@ typedef struct {
     int64_t file_size;
     int64_t bitrate;
     int     nb_streams;
-}Aml_MP_MediaInfo;
+    int64_t curVideoIndex;
+    int64_t curAudioIndex;
+    int64_t curSubIndex;
+    long reserved[8];
+} Aml_MP_MediaInfo;
 
 ////////////////////////////////////////
 //Aml_MP_MediaPlayerInvokeRequest
@@ -98,7 +110,8 @@ typedef struct {
     union {
     int32_t data32;
     int64_t data64;
-    }u;
+    } u;
+    long reserved[8];
 } Aml_MP_MediaPlayerInvokeRequest;
 
 ////////////////////////////////////////
@@ -110,7 +123,8 @@ typedef struct {
         int64_t data64;
         Aml_MP_TrackInfo trackInfo;
         Aml_MP_MediaInfo mediaInfo;
-    }u;
+    } u;
+    long reserved[8];
 } Aml_MP_MediaPlayerInvokeReply;
 
 ///////////////////////////////////////////////////////////////////////////////
