@@ -317,11 +317,11 @@ void BufferQueue::initSessionIfNeeded()
         }
 
         uint32_t source = SECMEM_V2_MEM_SOURCE_VDEC;
-        uint32_t flags = SECMME_V2_FLAGS_USAGE(SECMEM_V2_USAGE_DRM_PLAYBACK);
+        uint32_t flags = SECMEM_V2_FLAGS_USAGE(SECMEM_V2_USAGE_DRM_PLAYBACK);
         if (mStreamType == AML_MP_STREAM_TYPE_VIDEO) {
-            flags |= SECMME_V2_FLAGS_TVP(mIsUHD ? SECMEM_TVP_TYPE_UHD : SECMEM_TVP_TYPE_FHD);
+            flags |= SECMEM_V2_FLAGS_TVP(mIsUHD ? SECMEM_TVP_TYPE_UHD : SECMEM_TVP_TYPE_FHD);
         } else if (mStreamType == AML_MP_STREAM_TYPE_AUDIO) {
-            flags |= SECMME_V2_FLAGS_VP9(SECMEM_CODEC_AUDIO);
+            flags |= SECMEM_V2_FLAGS_VP9(SECMEM_CODEC_AUDIO);
         }
         MLOGI("secmem session source:%d, flags:%#x", source, flags);
         ret = Secure_V2_Init(mSecMemSession, source, flags, 0, 0);
