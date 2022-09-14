@@ -63,14 +63,14 @@ uint32_t AmlMpBitReader::getBitsWithFallback(size_t n, uint32_t fallback) {
 }
 
 bool AmlMpBitReader::getBitsGraceful(size_t n, uint32_t *out) {
-    if (n >= 32) {
+    if (n > 32) {
         return false;
     }
 
     uint32_t result = 0;
     while (n > 0) {
         if (mNumBitsLeft == 0) {
-            if (!fillReservoir() || mNumBitsLeft == 0) {
+            if (!fillReservoir()) {
                 return false;
             }
         }
@@ -80,8 +80,13 @@ bool AmlMpBitReader::getBitsGraceful(size_t n, uint32_t *out) {
             m = mNumBitsLeft;
         }
 
-        result = (uint32_t)(result << m) | (mReservoir >> (32 - m));
-        mReservoir <<= m;
+        if (32 == m) {
+            result = mReservoir;
+            mReservoir = 0;
+        } else if (m > 0) {
+            result = (uint32_t)(result << m) | (mReservoir >> (32 - m));
+            mReservoir <<= m;
+        }
         mNumBitsLeft -= m;
 
         n -= m;
