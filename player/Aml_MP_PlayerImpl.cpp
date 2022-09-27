@@ -388,9 +388,7 @@ int AmlMpPlayerImpl::stop_l(std::unique_lock<std::mutex>& lock, bool clearCasSes
 {
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         if (mPlayer) {
-            lock.unlock();
             mPlayer->stop();
-            lock.lock();
 
             Aml_MP_AudioParams dummyAudioParam;
             memset(&dummyAudioParam, 0, sizeof(dummyAudioParam));
@@ -1348,12 +1346,7 @@ int AmlMpPlayerImpl::stopVideoDecoding()
     MLOGI("stopVideoDecoding\n");
     if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
         if (mPlayer) {
-            //release the lock in case of event handle thread try to acquire lock at stopping time.
-            MLOGI("release lock!");
-            lock.unlock();
             mPlayer->stopVideoDecoding();
-            lock.lock();
-            MLOGI("reacquire lock!");
         }
     }
 
