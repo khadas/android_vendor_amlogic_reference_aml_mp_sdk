@@ -104,7 +104,6 @@ int AmlMpMediaPlayerImpl::setVideoWindow(int32_t x, int32_t y, int32_t width, in
 {
     AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
-
     if (width < 0 || height < 0) {
         MLOGI("Invalid windowsize: %dx%d, return fail", width, height);
         return -1;
@@ -626,7 +625,7 @@ int AmlMpMediaPlayerImpl::invoke_l(Aml_MP_MediaPlayerInvokeRequest* request, Aml
     return ret;
 }
 
-int AmlMpMediaPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
+int AmlMpMediaPlayerImpl::setAVSyncSource(Aml_MP_MediaPlayerAVSyncSource syncSource)
 {
     AML_MP_TRACE(10);
     std::unique_lock<std::mutex> _l(mLock);
@@ -635,12 +634,13 @@ int AmlMpMediaPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)
     return setAVSyncSource_l(syncSource);
 }
 
-int AmlMpMediaPlayerImpl::setAVSyncSource_l(Aml_MP_AVSyncSource syncSource)
+int AmlMpMediaPlayerImpl::setAVSyncSource_l(Aml_MP_MediaPlayerAVSyncSource syncSource)
 {
-    int ret = 0;
     mSyncSource = syncSource;
+    RETURN_IF(-1, mPlayer == nullptr);
 
-    return ret;
+    return mPlayer->setAVSyncSource(mSyncSource);
+
 }
 
 int AmlMpMediaPlayerImpl::setParameter(Aml_MP_MediaPlayerParameterKey key, void* parameter)
@@ -817,4 +817,4 @@ void AmlMpMediaPlayerImpl::setState_l(State state)
     }
 }
 
-}
+}

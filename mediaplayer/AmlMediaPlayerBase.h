@@ -26,7 +26,7 @@ typedef struct {
 //#define AML_MP_DRMPLAYER_EVENT_PLAYBACK_STOP_END (0x500222)
 
 //Aml_MediaPlayer.h
-typedef Aml_MP_AVSyncSource Aml_MP_MediaPlayerAVSyncSource;
+//typedef Aml_MP_AVSyncSource Aml_MP_MediaPlayerAVSyncSource;
 
 //Aml_MediaPlayer.h
 typedef enum {
@@ -86,7 +86,7 @@ public:
     virtual int showVideo() = 0;
     virtual int hideVideo() = 0;
     virtual int invoke(Aml_MP_MediaPlayerInvokeRequest* request, Aml_MP_MediaPlayerInvokeReply* reply) = 0;
-    virtual int setAVSyncSource(Aml_MP_AVSyncSource syncSource) = 0;
+    virtual int setAVSyncSource(Aml_MP_MediaPlayerAVSyncSource syncSource) = 0;
     virtual int setParameter(Aml_MP_MediaPlayerParameterKey key, void* parameter) = 0;
     virtual int getParameter(Aml_MP_MediaPlayerParameterKey key, void* parameter) = 0;
     virtual bool isPlaying() = 0;

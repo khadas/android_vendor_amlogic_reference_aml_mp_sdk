@@ -555,21 +555,55 @@ static struct TestModule::Command g_commandTable[] = {
     },
 /*
     {
-        "hide", 0, "hide video",
+        "u", 0, "set data source",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            printf("call hide video, not finished\n");
-            return Aml_MP_MediaPlayer_HideVideo(player);
+            TTY_RESET_FD(STDIN_FILENO);
+
+            printf("call setdatasource,url address: ");
+            int ret=0;
+            std::string urlStr;
+            const char* url;
+
+            try {
+                std::getline (std::cin, urlStr);
+                url = urlStr.c_str();
+            } catch (const std::invalid_argument & ia) {
+                printf("Invalid argument: %s. \n", ia.what());
+            }
+
+            if (url < 0) {
+                ret = -1;
+                goto exit;
+            }
+
+            ret = Aml_MP_MediaPlayer_SetDataSource(player, url);
+
+exit:
+            printf("call set data source:%s ret: %d\n", url, ret);
+            TTY_CBREAK_FD(STDIN_FILENO);
+
+            return ret;
+        }
+    },
+*/
+    {
+        "d", 0, "hide video",
+        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
+            int ret = Aml_MP_MediaPlayer_HideVideo(player);
+            printf("call hide video, ret : %d\n",ret);
+            return ret;
         }
     },
 
     {
-        "show", 0, "show video",
+        "D", 0, "show video",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            printf("call show video, not finished\n");
-            return Aml_MP_MediaPlayer_ShowVideo(player);
+            int ret = Aml_MP_MediaPlayer_ShowVideo(player);
+            printf("call show video,ret : %d\n",ret);
+            return ret;
         }
     },
-*/
+
     {
         "K", 0, "call seek",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -602,41 +636,7 @@ exit:
             return ret;
         }
     },
-/*
-    {
-        "selectTrack", 0, "select track",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            int ret = 0;
-            Aml_MP_MediaPlayerInvokeRequest request;
-            Aml_MP_MediaPlayerInvokeReply reply;
-            memset(&request, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
-            memset(&reply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
 
-            request.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_SELECT_TRACK;
-            request.u.data32 = atoi(args.at(1).c_str());
-            ret = Aml_MP_MediaPlayer_Invoke(player, &request, &reply);
-            printf("call selectTrack, index:%d, ret:%d\n", request.u.data32, ret);
-            return ret;
-        }
-    },
-
-    {
-        "unselectTrack", 0, "unselect track",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            int ret = 0;
-            Aml_MP_MediaPlayerInvokeRequest request;
-            Aml_MP_MediaPlayerInvokeReply reply;
-            memset(&request, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
-            memset(&reply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
-
-            request.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_UNSELECT_TRACK;
-            request.u.data32 = atoi(args.at(1).c_str());
-            ret = Aml_MP_MediaPlayer_Invoke(player, &request, &reply);
-            printf("call unselect track, index:%d, ret:%d\n", request.u.data32, ret);
-            return ret;
-        }
-    },
-*/
     {
         "v", 0, "get volume",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -763,15 +763,6 @@ exit:
         }
     },
 
-/*
-    {
-        "sZorder", 0, "set zorder",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            printf("call set zorder, not finished\n");
-            return -1;
-        }
-    },
-*/
     {
         "sOnlyHint", 0, "set only hint",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -786,34 +777,20 @@ exit:
     },
 /*
     {
-        "sParam", 0, "set param",
+        "y", 0, "set AVSync Source",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = 0;
+            Aml_MP_MediaPlayerAVSyncSource syncSource;
 
-            printf("set param ret: %d\n", ret);
+            memset(&syncSource, 0, sizeof(Aml_MP_MediaPlayerAVSyncSource));
+            syncSource = AML_MP_AVSYNC_SOURCE_VIDEO;
+            ret = Aml_MP_MediaPlayer_SetAVSyncSource(player,syncSource);
+            printf("AML_MP_AVSYNC_SOURCE_VIDEO set SyncSource: 0x%x,ret: %d\n\n", syncSource, ret);
+
             return ret;
-        }
-    },
-
-    {
-        "gParam", 0, "get param",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            int ret = 0;
-
-            printf("get param ret: %d\n", ret);
-            return ret;
-        }
-    },
-
-    {
-        "sSync", 0, "set sync mode",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            printf("call set sync mode, not finished\n");
-            return -1;
         }
     },
 */
-
     {
         "M", 0, "set mute umute",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -948,14 +925,22 @@ exit:
             mediaRequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_GET_MEDIA_INFO;
             ret = Aml_MP_MediaPlayer_Invoke(player, &mediaRequest, &mediaReply);
 
-
             index = getNextTrack(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_AUDIO);
+
             if (index < 0) {
                 goto exit;
             }
 
             //TODO: selectTrack
             ret = 0;
+            Aml_MP_MediaPlayerInvokeRequest selectrequest;
+            Aml_MP_MediaPlayerInvokeReply selectreply;
+            memset(&selectrequest, 0, sizeof(Aml_MP_MediaPlayerInvokeRequest));
+            memset(&selectreply, 0, sizeof(Aml_MP_MediaPlayerInvokeReply));
+
+            selectrequest.requestId = AML_MP_MEDIAPLAYER_INVOKE_ID_SELECT_TRACK;
+            selectrequest.u.data32 = index;
+            ret = Aml_MP_MediaPlayer_Invoke(player, &selectrequest, &selectreply);
 
 exit:
             printf("Set Next Audio component, ret:%d, index:%d\n", ret, index);
@@ -1045,17 +1030,6 @@ exit:
             return ret;
         }
     },
-/*
-    {
-        "gIsPlaying", 0, "get is playing",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            bool isPlaying = Aml_MP_MediaPlayer_IsPlaying(player);
-            printf("Aml_MP_MediaPlayer_IsPlaying get isPlaying: %d, ret: %d\n", isPlaying, 0);
-
-            return 0;
-        }
-    },
-*/
 
     {
         "i", 0, "invoke generic method",
@@ -1082,6 +1056,7 @@ exit:
             printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_AUDIO);
             printCurTrackInfo(&trackReply.u.trackInfo, &mediaReply.u.mediaInfo, AML_MP_STREAM_TYPE_SUBTITLE);
             printMediaInfo(&mediaReply.u.mediaInfo);
+            printf("call isplaying ret: %d\n", Aml_MP_MediaPlayer_IsPlaying(player));
 
             return ret;
         }
@@ -1141,9 +1116,9 @@ exit:
             return ret;
         }
     },
-
+/*
     {
-        "reset", 0, "call reset",
+        "R", 0, "call reset",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Reset(player);
             printf("call reset ret: %d\n", ret);
@@ -1152,17 +1127,7 @@ exit:
     },
 
     {
-        "sDatasource", 0, "set data source",
-        [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
-            const char *url = args.at(1).c_str();
-            int ret = Aml_MP_MediaPlayer_SetDataSource(player, url);
-            printf("call set data source:%s ret: %d\n", url, ret);
-            return ret;
-        }
-    },
-
-    {
-        "prepare", 0, "call prepare",
+        "b", 0, "call prepare",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Prepare(player);
             printf("call prepare ret: %d\n", ret);
@@ -1171,7 +1136,7 @@ exit:
     },
 
     {
-        "start", 0, "call start",
+        "T", 0, "call start",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Start(player);
             printf("call start ret: %d\n", ret);
@@ -1180,14 +1145,14 @@ exit:
     },
 
     {
-        "stop", 0, "call stop",
+        "t", 0, "call stop",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             int ret = Aml_MP_MediaPlayer_Stop(player);
             printf("call stop ret: %d\n", ret);
             return ret;
         }
     },
-
+*/
     {
         "q", 0, "exit playback",
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
@@ -1385,9 +1350,6 @@ static int getNextTrack(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo
             }
         } while (1);
     }
-
-    //printf("getNextTrack findTrackIndex:%d, preTrackIndex:%d\n", findTrackIndex, preTrackIndex);
-
     return findTrackIndex;
 }
 
@@ -1804,9 +1766,11 @@ static void showOption()
     "         S.................Set Next Subtitle component\n"
     "         i.................Get Track/Media info\n"
     "         n.................Get Position [milliseconds]\n"
-    "         d.................Get Duration [milliseconds]\n"
+    "         N.................Get Duration [milliseconds]\n"
     "         w.................Get Main Window Position\n"
     "         W.................Set Main Window Position\n"
+    "         D.................Show Video\n"
+    "         d.................Hide Video\n"
     "\n"
     "PIP:\n"
     "         O.................Open PIP\n"

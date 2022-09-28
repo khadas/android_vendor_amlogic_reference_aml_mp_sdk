@@ -71,7 +71,7 @@ public:
     int hideSubtitle();
     int setSubtitleWindow(int x, int y, int width, int height);
     int invoke(Aml_MP_MediaPlayerInvokeRequest* request, Aml_MP_MediaPlayerInvokeReply* reply);
-    int setAVSyncSource(Aml_MP_AVSyncSource syncSource);
+    int setAVSyncSource(Aml_MP_MediaPlayerAVSyncSource syncSource);
     int setParameter(Aml_MP_MediaPlayerParameterKey key, void* parameter);
     int getParameter(Aml_MP_MediaPlayerParameterKey key, void* parameter);
     bool isPlaying();

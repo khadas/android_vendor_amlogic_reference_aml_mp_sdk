@@ -24,6 +24,7 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 typedef void* AML_MP_MEDIAPLAYER;
 
+typedef Aml_MP_AVSyncSource Aml_MP_MediaPlayerAVSyncSource;
 typedef Aml_MP_PlayerEventType Aml_MP_MediaPlayerEventType;
 typedef void (*Aml_MP_MediaPlayerEventCallback)(void* userData, Aml_MP_MediaPlayerEventType event, int64_t param);
 
@@ -390,6 +391,48 @@ int Aml_MP_MediaPlayer_GetVolume(AML_MP_MEDIAPLAYER handle, float* volume);
  * \return 0 if success
  */
 int Aml_MP_MediaPlayer_SetPlaybackRate(AML_MP_MEDIAPLAYER handle, float rate);
+
+/**
+ * \brief  Aml_MP_MediaPlayer_IsPlaying
+ * Is Playing
+ *
+ * \param [in] player handle
+ *
+ * \return 0 if success
+ */
+bool Aml_MP_MediaPlayer_IsPlaying(AML_MP_MEDIAPLAYER handle);
+
+/**
+ * \brief  Aml_MP_MediaPlayer_ShowVideo
+ * Show Video
+ *
+ * \param [in] player handle
+ *
+ * \return true if playing
+ */
+int Aml_MP_MediaPlayer_ShowVideo(AML_MP_MEDIAPLAYER handle);
+
+/**
+ * \brief  Aml_MP_MediaPlayer_HideVideo
+ * Hide Video
+ *
+ * \param [in] player handle
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_HideVideo(AML_MP_MEDIAPLAYER handle);
+
+/**
+ * \brief  Aml_MP_MediaPlayer_SetAVSyncSource
+ * Set AVSync Source
+ *
+ * \param [in] player handle
+ * \param [in] sync   Source
+ *
+ * \return 0 if success
+ */
+int Aml_MP_MediaPlayer_SetAVSyncSource(AML_MP_MEDIAPLAYER handle, Aml_MP_MediaPlayerAVSyncSource syncSource);
+
 
 #ifdef __cplusplus
 }
