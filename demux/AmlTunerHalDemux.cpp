@@ -149,7 +149,7 @@ void SectionFilterCallback::onFilterEvent(const DemuxFilterEvent& filterEvent) {
 
         sptr<AmlMpBuffer> data = new AmlMpBuffer(dataLength);
         size_t readLen = mTunerFilter->read(data->base(), dataLength);
-        MLOGI("SectionFilterCallback::onFilterEvent event datalen: %d, readLen: %d", dataLength, readLen);
+        MLOGI("SectionFilterCallback::onFilterEvent event datalen: %zu, readLen: %zu", dataLength, readLen);
         mAmlTunerHalDemux->notifyDataWrapper(mPid, data, sectionEvent.version);
     }
     MLOGI("SectionFilterCallback::onFilterEvent exit");
