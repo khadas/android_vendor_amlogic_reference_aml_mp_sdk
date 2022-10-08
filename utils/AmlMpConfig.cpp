@@ -88,12 +88,12 @@ void AmlMpConfig::init()
 void AmlMpConfig::initLinux()
 {
     mTsPlayerNonTunnel = 0;
-    bool isMultiHwDemux = access("/sys/module/dvb_demux/", F_OK) == 0;
+    bool isMultiHwDemux = isSupportMultiHwDemux();
     if (isMultiHwDemux) {
-        if ((access("/usr/bin/westeros",F_OK) == 0) || (access("/usr/bin/weston",F_OK) == 0)) {
+         if ((access("/usr/bin/westeros",F_OK) == 0) || (access("/usr/bin/weston",F_OK) == 0)) {
             mTsPlayerNonTunnel = 1;
             MLOGI("is non tunnel mode!");
-        }
+          }
     }
 
     initProperty("vendor_amlmp_log_debug", mLogDebug);

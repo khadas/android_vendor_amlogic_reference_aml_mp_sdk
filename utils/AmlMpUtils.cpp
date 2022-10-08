@@ -1145,7 +1145,7 @@ AML_MP_SubtitleDataType convertToMpSubtitleDataType(AmlSubDataType subDataType) 
 
 bool isSupportMultiHwDemux()
 {
-    return access("/sys/module/dvb_demux/", F_OK) == 0;
+    return access("/sys/class/stb/demux0_source",F_OK) != 0;
 }
 
 NativeWindowHelper::NativeWindowHelper()

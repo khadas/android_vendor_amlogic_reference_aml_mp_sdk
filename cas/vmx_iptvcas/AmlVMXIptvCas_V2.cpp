@@ -240,7 +240,7 @@ int AmlVMXIptvCas_V2::setDscSource(const char* source)
     int ret = 0;
     bool use_hw_multi_demux = false;
 #if 1
-    if (access("/sys/module/dvb_demux/", F_OK) == 0) {
+    if (isSupportMultiHwDemux()) {
         MLOGI("Work with Hw Multi Demux.");
         use_hw_multi_demux = true;
     } else {
