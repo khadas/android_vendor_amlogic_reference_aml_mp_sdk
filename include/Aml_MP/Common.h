@@ -757,15 +757,17 @@ typedef struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {
-    AML_MP_EVENT_UNKNOWN,
-    AML_MP_PLAYER_EVENT_FIRST_FRAME,
-    AML_MP_PLAYER_EVENT_AV_SYNC_DONE,
-    AML_MP_PLAYER_EVENT_DATA_LOSS,
-    AML_MP_PLAYER_EVENT_DATA_RESUME,
-    AML_MP_PLAYER_EVENT_SCRAMBLING,
-    AML_MP_PLAYER_EVENT_USERDATA_AFD,
-    AML_MP_PLAYER_EVENT_USERDATA_CC,
-    AML_MP_PLAYER_EVENT_PID_CHANGED,                        //param: Aml_MP_PlayerEventPidChangeInfo
+    AML_MP_EVENT_UNKNOWN                            = 0x0000,
+    AML_MP_PLAYER_EVENT_FIRST_FRAME                 = 0x0001,
+    AML_MP_PLAYER_EVENT_AV_SYNC_DONE                = 0x0002,
+    AML_MP_PLAYER_EVENT_DATA_LOSS                   = 0x0003,   //Demod data loss
+    AML_MP_PLAYER_EVENT_DATA_RESUME                 = 0x0004,   //Demod data loss
+    AML_MP_PLAYER_EVENT_SCRAMBLING                  = 0x0005,
+    AML_MP_PLAYER_EVENT_USERDATA_AFD                = 0x0006,
+    AML_MP_PLAYER_EVENT_USERDATA_CC                 = 0x0007,
+    AML_MP_PLAYER_EVENT_PID_CHANGED                 = 0x0008,   //param: Aml_MP_PlayerEventPidChangeInfo
+    AML_MP_PLAYER_EVENT_DECODER_DATA_LOSS           = 0x0009,   //Decoder data loss
+    AML_MP_PLAYER_EVENT_DECODER_DATA_RESUME         = 0x000A,   //Decoder data resume
 
     // DVR player
     AML_MP_DVRPLAYER_EVENT_ERROR                = 0x1000,   /**< Signal a critical playback error*/

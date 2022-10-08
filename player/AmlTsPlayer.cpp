@@ -291,7 +291,7 @@ int AmlTsPlayer::writeEsData(Aml_MP_StreamType type, const uint8_t* buffer, size
     sptr<AmlMpBuffer> tsPackets;
     int ret;
     ret = packetize(1, (char *)buffer, size, &tsPackets, 0, NULL, 0, 2, pts);
-    //ALOGI("writeEsdata, buffer:%p, size:%d, ret:%d", buffer, size, ret);
+    //MLOGI("writeEsdata, buffer:%p, size:%d, ret:%d", buffer, size, ret);
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
@@ -343,7 +343,7 @@ int AmlTsPlayer::packetize(
     if (isAudio) {
         stream_id = AUDIO_STREAM_ID;
     } else {
-        ALOGE("packetize error! only support audio es data");
+        MLOGE("packetize error! only support audio es data");
         return -1;
     }
 
@@ -401,7 +401,7 @@ int AmlTsPlayer::packetize(
     if (numTSPackets * TS_PACKET_SIZE > mPacktsBuffer->capacity()) {
         mPacktsBuffer = new AmlMpBuffer(numTSPackets * TS_PACKET_SIZE);
     }
-    //ALOGI("second mPacktsBuffer=%p,numTSPackets=%d,mPacktsBuffer.size=%d,mPacktsBuffer.capacity=%d\n",mPacktsBuffer.get(),numTSPackets,mPacktsBuffer->size(),mPacktsBuffer->capacity());
+    //MLOGI("second mPacktsBuffer=%p,numTSPackets=%d,mPacktsBuffer.size=%d,mPacktsBuffer.capacity=%d\n",mPacktsBuffer.get(),numTSPackets,mPacktsBuffer->size(),mPacktsBuffer->capacity());
     uint8_t *packetDataStart = mPacktsBuffer->data();
     uint64_t PTS = (timeUs * 9ll) / 100ll;
     if (PES_packet_length >= PES_PACKET_LENGTH_MAX) {
@@ -504,7 +504,7 @@ int AmlTsPlayer::packetize(
     *packets = mPacktsBuffer;
     if (mPacketsizefd >= 0) {
         write(mPacketsizefd, mPacktsBuffer->data(), numTSPackets * TS_PACKET_SIZE);
-        //ALOGE("[%s %d] PacketizeEstoTsFile.ts size:%d", __FUNCTION__, __LINE__, numTSPackets * TS_PACKET_SIZE);
+        //MLOGE("[%s %d] PacketizeEstoTsFile.ts size:%d", __FUNCTION__, __LINE__, numTSPackets * TS_PACKET_SIZE);
     }
     ret = writeData(mPacktsBuffer->data(),numTSPackets * TS_PACKET_SIZE);
     if (ret != AM_TSPLAYER_OK) {
@@ -1163,7 +1163,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_AUDIO_CHANGED:
     {
-        ALOGE("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_CHANGED\n");
+        MLOGE("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_CHANGED\n");
         Aml_MP_PlayerEventAudioFormat audioFormatEvent;
         convertToMpPlayerEventAudioFormat(&audioFormatEvent, &(event->event.audio_format));
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_CHANGED, (int64_t)&audioFormatEvent);
@@ -1172,14 +1172,14 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_VIDEO:
     {
-        ALOGE("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_VIDEO\n");
+        MLOGE("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_VIDEO\n");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_DECODE_FIRST_FRAME);
     }
     break;
 
     case AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_AUDIO:
     {
-        ALOGE("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_AUDIO\n");
+        MLOGE("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FIRST_FRAME_AUDIO\n");
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_DECODE_FIRST_FRAME);
     }
     break;
@@ -1244,7 +1244,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 #ifdef ANDROID
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW\n");
         uint32_t video_overflow_num;
         video_overflow_num = event->event.av_flow_cnt.video_overflow_num;
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_OVERFLOW, (int64_t)&video_overflow_num);
@@ -1253,7 +1253,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_UNDERFLOW:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_UNDERFLOW\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_UNDERFLOW\n");
         uint32_t video_underflow_num;
         video_underflow_num = event->event.av_flow_cnt.video_underflow_num;
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_UNDERFLOW, (int64_t)&video_underflow_num);
@@ -1262,7 +1262,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_AUDIO_OVERFLOW:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_OVERFLOW\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_OVERFLOW\n");
         uint32_t audio_overflow_num;
         audio_overflow_num = event->event.av_flow_cnt.audio_overflow_num;
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_OVERFLOW, (int64_t)&audio_overflow_num);
@@ -1271,7 +1271,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_AUDIO_UNDERFLOW:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_UNDERFLOW\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_UNDERFLOW\n");
         uint32_t audio_underflow_num;
         audio_underflow_num = event->event.av_flow_cnt.audio_underflow_num;
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_UNDERFLOW, (int64_t)&audio_underflow_num);
@@ -1280,28 +1280,28 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_TIMESTAMP:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_TIMESTAMP\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_TIMESTAMP\n");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_INVALID_TIMESTAMP);
     }
     break;
 
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_DATA:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_DATA\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_INVALID_DATA\n");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_INVALID_DATA);
     }
     break;
 
     case AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_TIMESTAMP:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_TIMESTAMP\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_TIMESTAMP\n");
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_INVALID_TIMESTAMP);
     }
     break;
 
     case AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_DATA:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_DATA\n");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_AUDIO_INVALID_DATA\n");
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_INVALID_DATA);
     }
     break;
@@ -1310,7 +1310,7 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 #ifdef ANDROID
     case AM_TSPLAYER_EVENT_TYPE_DECODE_FRAME_ERROR_COUNT:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FRAME_ERROR_COUNT");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FRAME_ERROR_COUNT");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_ERROR_FRAME_COUNT);
     }
     break;
@@ -1319,8 +1319,24 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
 #if ANDROID_PLATFORM_SDK_VERSION >= 30
     case AM_TSPLAYER_EVENT_TYPE_DECODE_VIDEO_UNSUPPORT:
     {
-        ALOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_VIDEO_UNSUPPORT");
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_VIDEO_UNSUPPORT");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_UNSUPPORT);
+    }
+    break;
+#endif
+
+#ifdef ANDROID
+    case AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_LOSS:
+    {
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_LOSS");
+        notifyListener(AML_MP_PLAYER_EVENT_DECODER_DATA_LOSS);
+    }
+    break;
+
+    case AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_RESUME:
+    {
+        MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_RESUME");
+        notifyListener(AML_MP_PLAYER_EVENT_DECODER_DATA_RESUME);
     }
     break;
 #endif
