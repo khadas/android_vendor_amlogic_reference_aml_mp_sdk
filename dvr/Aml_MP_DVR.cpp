@@ -124,6 +124,8 @@ int Aml_MP_DVRRecorder_GetSegmentList(const char* location, uint32_t* segmentNum
 int Aml_MP_DVRRecorder_GetSegmentInfo(const char* location, uint64_t segmentId, Aml_MP_DVRSegmentInfo* segmentInfo)
 {
     DVR_RecordSegmentInfo_t info;
+    uint32_t pidNums;
+    memset(&info, 0, sizeof(info));
     int ret = dvr_segment_get_info(location, segmentId, &info);
 
     if (ret != DVR_SUCCESS) {
@@ -134,8 +136,9 @@ int Aml_MP_DVRRecorder_GetSegmentInfo(const char* location, uint64_t segmentId, 
     memset(segmentInfo, 0, sizeof(*segmentInfo));
     segmentInfo->id = info.id;
     segmentInfo->streams.nbStreams = info.nb_pids;
-    MLOGD("nb_pids:%d", info.nb_pids);
-    for (size_t i = 0; i < info.nb_pids; ++i) {
+    pidNums = info.nb_pids < AML_MP_DVR_STREAMS_COUNT ? info.nb_pids: AML_MP_DVR_STREAMS_COUNT;
+    MLOGD("nb_pids:%d", pidNums);
+    for (size_t i = 0; i < pidNums; ++i) {
         convertToMpDVRStream(&segmentInfo->streams.streams[i], &info.pids[i]);
 
         MLOGD("streamType:%d, pid:%d, codecId:%d(%s)", segmentInfo->streams.streams[i].type,
