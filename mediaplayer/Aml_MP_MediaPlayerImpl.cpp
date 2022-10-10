@@ -613,9 +613,17 @@ int AmlMpMediaPlayerImpl::invoke(Aml_MP_MediaPlayerInvokeRequest* request, Aml_M
 
 int AmlMpMediaPlayerImpl::invoke_l(Aml_MP_MediaPlayerInvokeRequest* request, Aml_MP_MediaPlayerInvokeReply* reply)
 {
+    int ret = 0;
     RETURN_IF(-1, mPlayer == nullptr);
 
-    return mPlayer->invoke(request, reply);
+    if (mState < STATE_PREPARED || mState >= STATE_STOPPED) {
+        MLOGE("%s, mState failed! mState:%s, id:%x", __FUNCTION__, stateString(mState), request == NULL ? 0 : request->requestId);
+        return -1;
+    }
+
+    ret = mPlayer->invoke(request, reply);
+
+    return ret;
 }
 
 int AmlMpMediaPlayerImpl::setAVSyncSource(Aml_MP_AVSyncSource syncSource)

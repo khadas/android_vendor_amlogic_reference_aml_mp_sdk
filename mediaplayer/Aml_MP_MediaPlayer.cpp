@@ -25,16 +25,19 @@ int Aml_MP_MediaPlayer_Create(AML_MP_MEDIAPLAYER* handle)
 
     *handle = aml_handle_cast(player);
 
+    MLOG();
     return 0;
 }
 
 int Aml_MP_MediaPlayer_Destroy(AML_MP_MEDIAPLAYER handle)
 {
+    MLOG();
     //release
     sptr<AmlMpMediaPlayerImpl> player = aml_handle_cast<AmlMpMediaPlayerImpl>(handle);
     RETURN_IF(-1, player == nullptr);
     player->reset();
 
+    MLOG();
     //destroy
     player->decStrong(handle);
 
