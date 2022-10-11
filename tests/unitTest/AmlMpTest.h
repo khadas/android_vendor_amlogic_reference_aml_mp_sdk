@@ -108,6 +108,7 @@ public:
     void dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int64_t param);
     void createMpTestSupporter(bool isPlayer = true);
     void createMpTestSupporter2(bool isPlayer = true);
+    void createMpTestSupporter(sptr<AmlMpTestSupporter>* testSupporter, bool isPlayer = true);
     void DVRSegment(std::string url, bool isDelete = false);
     void getDVRSourceInfo(Aml_MP_DVRSourceInfo info);
     void DVRPlayback_SetGetVolume(std::string url, float volume);
@@ -123,6 +124,8 @@ public:
     AML_MP_PLAYER getPlayer();
     AML_MP_DVRRECORDER getRecorder();
     AML_MP_DVRPLAYER getDVRPlayer();
+    AML_MP_DVRRECORDER getRecorder(sptr<AmlMpTestSupporter> testSupporter);
+    AML_MP_DVRPLAYER getDVRPlayer(sptr<AmlMpTestSupporter> testSupporter);
     Aml_MP_PlayerParameterKey key;
     Aml_MP_VideoDisplayMode parameter;
     Aml_MP_AVSyncSource mSyncSource = AML_MP_AVSYNC_SOURCE_DEFAULT;
@@ -138,6 +141,8 @@ public:
     void audioDecoding(const std::string & url, bool mStart, bool mSourceReceiver);
     void FCCAndPIPTest(const std::string & url, bool mPIP);
     Aml_MP_PlayerWorkMode mWorkMode = AML_MP_PLAYER_MODE_NORMAL;
+
+    void DVRRecordRecordStream(std::string url);
 
 protected:
     sptr <AmlMpTestSupporter> mpTestSupporter;

@@ -18,7 +18,8 @@ LOCAL_SRC_FILES := \
     AmlMpDvrRecorderProbeTest.cpp \
     AmlMpDvrPlayerTest.cpp \
     AmlMpDvrPlayerVideoTest.cpp \
-    AmlMpDvrPlayerAudioTest.cpp
+    AmlMpDvrPlayerAudioTest.cpp \
+    AmlMpMultiThreadTest.cpp \
 
 LOCAL_CFLAGS := -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-Werror -Wsign-compare
@@ -41,4 +42,3 @@ LOCAL_SYSTEM_EXT_MODULE := true
 endif
 
 include $(BUILD_EXECUTABLE)
-

@@ -84,6 +84,17 @@ void check_vfm_map(int timeoutMs)
     }
 }
 
+void AmlMpBase::createMpTestSupporter(sptr<AmlMpTestSupporter>* testSupporter, bool isPlayer) {
+    if (*testSupporter == nullptr) {
+        *testSupporter = new AmlMpTestSupporter;
+        if (isPlayer) {
+            (*testSupporter)->playerRegisterEventCallback([] (void * userData, Aml_MP_PlayerEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->playereventCallback(event, param); }, this);
+        } else {
+            (*testSupporter)->DVRRecorderRegisterEventCallback([] (void * userData, AML_MP_DVRRecorderEventType event, int64_t param){ AmlMpBase * self = (AmlMpBase *) userData; return self->dvrRecorderEventCallback(event, param); }, this);
+        }
+    }
+}
+
 void AmlMpBase::createMpTestSupporter(bool isPlayer)
 {
     if (mpTestSupporter == nullptr)
@@ -170,7 +181,9 @@ void AmlMpBase::startPlaying(const std::string & url)
 
 void AmlMpBase::stopPlaying()
 {
-    mpTestSupporter->stop();
+    if (mpTestSupporter != nullptr) {
+        mpTestSupporter->stop();
+    }
     if (mpTestSupporter2 != nullptr) {
         mpTestSupporter2->stop();
     }
@@ -356,9 +369,32 @@ void AmlMpBase::dvrRecorderEventCallback(AML_MP_DVRRecorderEventType event, int6
     }
 }
 
+AML_MP_DVRPLAYER AmlMpBase::getDVRPlayer()
+{
+    sptr <TestModule> testModule = mpTestSupporter2->getDVRPlayer();
+    printf("testModule %p \n", testModule.get());
+    AML_MP_DVRPLAYER dvrplayer = testModule->getCommandHandle();
+    return dvrplayer;
+}
+
+AML_MP_DVRPLAYER AmlMpBase::getDVRPlayer(sptr<AmlMpTestSupporter> testSupporter)
+{
+    sptr <TestModule> testModule = testSupporter->getDVRPlayer();
+    printf("testModule %p \n", testModule.get());
+    AML_MP_DVRPLAYER dvrplayer = testModule->getCommandHandle();
+    return dvrplayer;
+}
+
 AML_MP_DVRRECORDER AmlMpBase::getRecorder()
 {
     sptr <TestModule> testModule = mpTestSupporter->getRecorder();
+    AML_MP_DVRRECORDER recorder = testModule->getCommandHandle();
+    return recorder;
+}
+
+AML_MP_DVRRECORDER AmlMpBase::getRecorder(sptr<AmlMpTestSupporter> testSupporter)
+{
+    sptr <TestModule> testModule = testSupporter->getRecorder();
     AML_MP_DVRRECORDER recorder = testModule->getCommandHandle();
     return recorder;
 }
@@ -375,4 +411,18 @@ void AmlMpBase::DVRSegment(std::string url, bool isDelete)
     if (isDelete) {
         EXPECT_EQ(Aml_MP_DVRRecorder_DeleteSegment(url.c_str(), segmentIds[segmentIndex]), AML_MP_OK);
     }
+}
+
+void AmlMpBase::DVRRecordRecordStream(std::string url) {
+    sptr<AmlMpTestSupporter> testRecoder;
+    int ret = 0;
+    MLOGI("----------DVRRecordRecordStream START----------\n");
+    createMpTestSupporter(&testRecoder, false);
+    testRecoder->setDataSource(url);
+    testRecoder->prepare(CryptoMode);
+    EXPECT_EQ(testRecoder->startRecord(), AML_MP_OK);
+
+    waitPlaying(20 * 1000ll);
+    testRecoder->stop();
+    MLOGI("----------DVRRecordRecordStream END----------\n");
 }
