@@ -194,8 +194,9 @@ int AmlDVRPlayer::stop()
     }
 
     if (mMpPlayerHandle != AML_MP_INVALID_HANDLE) {
-        ret = Aml_MP_Player_Destroy(mMpPlayerHandle);
+        AML_MP_PLAYER tmpHandle = mMpPlayerHandle;
         mMpPlayerHandle = AML_MP_INVALID_HANDLE;
+        ret = Aml_MP_Player_Destroy(tmpHandle);
         if (ret < 0) {
             MLOGE("mp player close playback failed!");
         }
