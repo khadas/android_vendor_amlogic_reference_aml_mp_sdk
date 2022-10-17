@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.8)
 project(aml_mp_sdk)
 
 OPTION(HAVE_CTC "CTC player" OFF)
-OPTION(HAVE_SUBTITLE "subtitle" OFF)
+OPTION(HAVE_SUBTITLE "subtitle" ON)
 OPTION(HAVE_VMXIPTV "verimatrix iptv" ON)
 OPTION(HAVE_VMXWEB "verimatrix web" ON)
 OPTION(HAVE_NAGRAWEB "nagra web" ON)
@@ -90,6 +90,7 @@ ENDIF()
 
 IF(HAVE_SUBTITLE)
     LIST(APPEND AML_MP_DEFINITIONS HAVE_SUBTITLE)
+    LIST(APPEND subtitle_LINK_LIBRARIES subtitleclient)
 ENDIF()
 
 IF(HAVE_CTC)
@@ -138,6 +139,7 @@ TARGET_COMPILE_DEFINITIONS(${TARGET} PUBLIC __unused= )
 TARGET_COMPILE_DEFINITIONS(${TARGET} PUBLIC ${AML_MP_DEFINITIONS})
 
 TARGET_LINK_LIBRARIES(${TARGET} PUBLIC
+    ${subtitle_LINK_LIBRARIES}
     mediahal_tsplayer
     amdvr
     amcas

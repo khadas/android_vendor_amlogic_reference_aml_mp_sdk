@@ -250,7 +250,11 @@ int AmlPlayerBase::startSubtitleDecoding()
 
 
     sSubtitleCbHandle = this;
+#ifndef ANDROID
+    amlsub_RegistOnDataCB(mSubtitleHandle, NULL);
+#else
     amlsub_RegistOnDataCB(mSubtitleHandle, AmlMPSubtitleDataCb);
+#endif
     amlsub_RegistOnSubtitleAvailCb(mSubtitleHandle, AmlMPSubtitleAvailCb);
     amlsub_RegistGetDimensionCb(mSubtitleHandle, AmlMPSubtitleDimensionCb);
     amlsub_RegistAfdEventCB(mSubtitleHandle, AmlMPSubtitleAfdEventCb);
