@@ -9,15 +9,6 @@
 #include <DVRRecord.h>
 #include <pthread.h>
 #include <getopt.h>
-#include "source/Source.h"
-#include <Aml_MP/Aml_MP.h>
-#include "string.h"
-#include <stdio.h>
-#include <thread>
-#include <Aml_MP/Aml_MP.h>
-#include <stdlib.h>
-#include <chrono>
-#include <utils/Log.h>
 
 using namespace aml_mp;
 

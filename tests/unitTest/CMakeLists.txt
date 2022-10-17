@@ -11,6 +11,7 @@ SET(AML_MP_UNITTEST_SRC
     AmlMpDvrRecorderTest.cpp
     AmlMpDvrRecorderProbeTest.cpp
     AmlMpDvrPlayerTest.cpp
+    AmlMpMultiThreadTest.cpp
 )
 
 SET(TARGET amlMpUnitTest)
