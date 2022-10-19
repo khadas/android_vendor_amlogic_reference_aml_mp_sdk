@@ -130,6 +130,10 @@ private:
     void setDecodingState_l(Aml_MP_StreamType streamType, int state);
     AML_MP_DecodingState getDecodingState_l(Aml_MP_StreamType streamType);
     int setSidebandIfNeeded_l();
+    void openParser_l();
+    bool tryWaitEcm_l();
+    bool tryWaitCodecId_l();
+    bool tryMonitorPidChange_l();
     int prepare_l();
     int finishPreparingIfNeeded_l();
     int resetIfNeeded_l(std::unique_lock<std::mutex>& lock, bool clearCasSession = true);
@@ -187,6 +191,7 @@ private:
 
 
     mutable std::mutex mLock;
+    State mLastState{STATE_IDLE};
     State mState{STATE_IDLE};
     uint32_t mStreamState{0};
     uint32_t mPrepareWaitingType{kPrepareWaitingNone};

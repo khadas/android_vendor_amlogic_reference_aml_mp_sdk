@@ -981,6 +981,10 @@ bool Parser::checkPidChange(const PMTSection& oldPmt, const PMTSection& newPmt, 
 int Parser::addFilter(int pid, Aml_MP_Demux_FilterCb cb, void* userData, const Aml_MP_DemuxFilterParams* params)
 {
     int ret = 0;
+    if (mFilters.find(pid) != mFilters.end()) {
+        MLOGW("addFilter repeately, pid:%d", pid);
+        return -1;
+    }
 
     sptr<FilterContext> context = new FilterContext(pid);
     if (context == nullptr) {

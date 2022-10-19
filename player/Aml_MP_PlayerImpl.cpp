@@ -539,6 +539,16 @@ int AmlMpPlayerImpl::flush()
         getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_PAUSED) {
         mPlayer->setADParams(&mADParams, true);
     }
+
+    if (tryWaitEcm_l()) {
+        setState_l(STATE_PREPARING);
+        setDecodingState_l(AML_MP_STREAM_TYPE_AUDIO, AML_MP_DECODING_STATE_START_PENDING);
+        setDecodingState_l(AML_MP_STREAM_TYPE_VIDEO, AML_MP_DECODING_STATE_START_PENDING);
+        setDecodingState_l(AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_DECODING_STATE_START_PENDING);
+        setDecodingState_l(AML_MP_STREAM_TYPE_AD, AML_MP_DECODING_STATE_START_PENDING);
+        return ret;
+    }
+
     ret = mPlayer->start();
     if (ret < 0) {
         MLOGI("[%s, %d] start play fail ret: %d", __FUNCTION__, __LINE__, ret);
@@ -759,7 +769,7 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size, std::uniq
                 size_t partialSize = ecmOffset;
                 int ret = 0;
                 int retryCount = 0;
-                do {
+                while (partialSize) {
                     lock.unlock();
                     ret = mPlayer->writeData(buffer, partialSize);
                     lock.lock();
@@ -779,7 +789,7 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size, std::uniq
                         written += ret;
                         size -= ret;
                     }
-                } while (partialSize);
+                };
 
                 if (ecmSize > 0) {
                     mCasHandle->processEcm(false, 0, buffer, ecmSize);
@@ -1721,6 +1731,7 @@ void AmlMpPlayerImpl::setState_l(State state)
 {
     if (mState != state) {
         MLOGI("%s -> %s", stateString(mState), stateString(state));
+        mLastState = mState;
         mState = state;
     }
 }
@@ -1825,8 +1836,30 @@ int AmlMpPlayerImpl::prepare_l()
 
     applyParameters_l();
 
-    mPrepareWaitingType = kPrepareWaitingNone;
+    tryMonitorPidChange_l();
+    if (tryWaitCodecId_l() | tryWaitEcm_l()) {
+        setState_l(STATE_PREPARING);
+        return 0;
+    }
 
+    setState_l(STATE_PREPARED);
+
+    return 0;
+}
+
+void AmlMpPlayerImpl::openParser_l() {
+    if (mParser == nullptr) {
+        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_DEMUX_TYPE_HARDWARE, mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY);
+        mParser->open();
+        mParser->selectProgram(mVideoParams.pid, mAudioParams.pid);
+        mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
+                return programEventCallback(event, param1, param2, data);
+        });
+    }
+}
+
+bool AmlMpPlayerImpl::tryWaitEcm_l() {
+    bool isNeedWaitEcm = false;
     if (mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_MEMORY &&
         mCreateParams.drmMode == AML_MP_INPUT_STREAM_ENCRYPTED &&
         mWaitingEcmMode == kWaitingEcmASynchronous &&
@@ -1834,62 +1867,65 @@ int AmlMpPlayerImpl::prepare_l()
         for (size_t i = 0; i < mEcmPids.size(); ++i) {
             int ecmPid = mEcmPids[i];
             if (ecmPid > 0 && ecmPid < AML_MP_INVALID_PID) {
-                mPrepareWaitingType |= kPrepareWaitingEcm;
+                isNeedWaitEcm = true;
                 break;
             }
         }
     }
+    if (!isNeedWaitEcm) {
+        return false;
+    }
+    openParser_l();
+    mFirstEcmWritten = false;
+    mTsBuffer.reset();
+    mWriteBuffer->setRange(0, 0);
+    int lastEcmPid = AML_MP_INVALID_PID;
+    for (size_t i = 0; i < mEcmPids.size(); ++i) {
+        int ecmPid = mEcmPids[i];
+        if (ecmPid <= 0 ||ecmPid >= AML_MP_INVALID_PID) {
+            continue;
+        }
 
+        if (ecmPid != lastEcmPid) {
+            mParser->removeSectionFilter(ecmPid);
+            mParser->addSectionFilter(ecmPid, [] (int pid, size_t size, const uint8_t* data, void* userData) -> int {
+                AmlMpPlayerImpl* playerImpl = (AmlMpPlayerImpl*)userData;
+                if (playerImpl) {
+                    playerImpl->programEventCallback(Parser::ProgramEventType::EVENT_ECM_DATA_PARSED, pid, size, (void*)data);
+                }
+                return 0;
+            }, this, false);
+            lastEcmPid = ecmPid;
+        }
+    }
+
+    if (lastEcmPid == AML_MP_INVALID_PID) {
+        MLOGE("no valid ecm pid!");
+    }
+    mPrepareWaitingType |= kPrepareWaitingEcm;
+    return true;
+}
+
+bool AmlMpPlayerImpl::tryWaitCodecId_l() {
     if (mCreateParams.sourceType != AML_MP_INPUT_SOURCE_ES_MEMORY &&
         ((mVideoParams.videoCodec == AML_MP_CODEC_UNKNOWN && mVideoParams.pid != AML_MP_INVALID_PID) ||
         (mAudioParams.audioCodec == AML_MP_CODEC_UNKNOWN && mAudioParams.pid != AML_MP_INVALID_PID) ||
         (mADParams.audioCodec == AML_MP_CODEC_UNKNOWN && mADParams.pid != AML_MP_INVALID_PID))) {
+        openParser_l();
+        mParser->parseProgramInfoAsync();
         mPrepareWaitingType |= kPrepareWaitingCodecId;
+        return true;
     }
+    return false;
+}
 
-    if (mPrepareWaitingType == kPrepareWaitingNone) {
-        setState_l(STATE_PREPARED);
-    } else {
-        setState_l(STATE_PREPARING);
+bool AmlMpPlayerImpl::tryMonitorPidChange_l() {
+    if (mCreateParams.options & AML_MP_OPTION_MONITOR_PID_CHANGE) {
+        openParser_l();
+        mParser->parseProgramInfoAsync();
+        return true;
     }
-
-    if (mParser == nullptr && (mPrepareWaitingType != kPrepareWaitingNone || (mCreateParams.options & AML_MP_OPTION_MONITOR_PID_CHANGE))) {
-        mParser = new Parser(mCreateParams.demuxId, mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD, AML_MP_DEMUX_TYPE_HARDWARE, mCreateParams.drmMode == AML_MP_INPUT_STREAM_SECURE_MEMORY);
-        mParser->open();
-        mParser->selectProgram(mVideoParams.pid, mAudioParams.pid);
-        mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
-                return programEventCallback(event, param1, param2, data);
-        });
-
-        if (mPrepareWaitingType == kPrepareWaitingEcm) {
-            int lastEcmPid = AML_MP_INVALID_PID;
-            for (size_t i = 0; i < mEcmPids.size(); ++i) {
-                int ecmPid = mEcmPids[i];
-                if (ecmPid <= 0 ||ecmPid >= AML_MP_INVALID_PID) {
-                    continue;
-                }
-
-                if (ecmPid != lastEcmPid) {
-                    mParser->addSectionFilter(ecmPid, [] (int pid, size_t size, const uint8_t* data, void* userData) -> int {
-                        AmlMpPlayerImpl* playerImpl = (AmlMpPlayerImpl*)userData;
-                        if (playerImpl) {
-                            playerImpl->programEventCallback(Parser::ProgramEventType::EVENT_ECM_DATA_PARSED, pid, size, (void*)data);
-                        }
-                        return 0;
-                    }, this, false);
-                    lastEcmPid = ecmPid;
-                }
-            }
-
-            if (lastEcmPid == AML_MP_INVALID_PID) {
-                MLOGE("no valid ecm pid!");
-            }
-        } else {
-            mParser->parseProgramInfoAsync();
-        }
-    }
-
-    return 0;
+    return false;
 }
 
 void AmlMpPlayerImpl::programEventCallback(Parser::ProgramEventType event, int param1, int param2, void* data)
@@ -1961,6 +1997,8 @@ int AmlMpPlayerImpl::finishPreparingIfNeeded_l()
         return 0;
     }
 
+    bool needPause = (mLastState == STATE_PAUSED);
+
     setState_l(STATE_PREPARED);
 
     if (getDecodingState_l(AML_MP_STREAM_TYPE_VIDEO) == AML_MP_DECODING_STATE_START_PENDING) {
@@ -1980,6 +2018,10 @@ int AmlMpPlayerImpl::finishPreparingIfNeeded_l()
 
     if (getDecodingState_l(AML_MP_STREAM_TYPE_AD) == AML_MP_DECODING_STATE_START_PENDING) {
         startADDecoding_l();
+    }
+
+    if (needPause) {
+        pause_l();
     }
 
     return 0;
