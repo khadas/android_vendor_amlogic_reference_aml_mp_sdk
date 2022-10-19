@@ -388,6 +388,7 @@ typedef enum {
     AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE,      //setVideoErrorRecoveryMode(Aml_MP_VideoErrorRecoveryMode*)
     AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE,                 //setAudioLanguage(Aml_MP_AudioLanguage*)
     AML_MP_PLAYER_PARAMETER_VIDEO_AFD_ASPECT_MODE,          //setVideoAFDAspectMode(Aml_MP_VideoAFDAspectMode *)
+    AML_MP_PLAYER_PARAMETER_LIBDVR_FAKE_PID,                //setLibDvrFakePID(int*)
 
     //get only
     AML_MP_PLAYER_PARAMETER_GET_BASE        = 0x2000,
