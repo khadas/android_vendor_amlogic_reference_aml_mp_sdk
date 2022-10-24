@@ -350,7 +350,7 @@ int AmlDVRPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter)
         case AML_MP_PLAYER_PARAMETER_LIBDVR_FAKE_PID:
         {
             const int fake_pid = *(int*)parameter;
-            //dvr_wrapper_property_set("vendor.tv.dtv.fake_pid",std::to_string(fake_pid).c_str());
+            dvr_wrapper_property_set("vendor.tv.dtv.fake_pid",std::to_string(fake_pid).c_str());
             break;
         }
         default:
