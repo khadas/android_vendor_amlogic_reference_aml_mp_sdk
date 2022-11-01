@@ -276,6 +276,8 @@ int AmlMpPlayerImpl::setCasSession(AML_MP_CASSESSION casSession)
         MLOGE("do not support bind DVB caseSession!");
     } else if (casBase->serviceType() == AML_MP_CAS_SERVICE_VERIMATRIX_WEB) {
         MLOGW("verimatrix web casSession don't need bind!");
+    } else if (casBase->serviceType() == AML_MP_CAS_SERVICE_NAGRA_WEB) {
+        MLOGW("nagra web casSession don't need bind!");
     }
 
     mCasHandle = casBase;

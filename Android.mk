@@ -21,6 +21,8 @@ HAVE_VMXIPTV_CAS := true
 HAVE_VMXWEB_CAS := true
 endif
 
+HAVE_NAGRAWEB_CAS := false
+
 ifeq (1, $(shell expr $(PLATFORM_SDK_VERSION) \>= 31))
 HAVE_TUNER_HAL := true
 endif
@@ -73,6 +75,13 @@ endif
 ifeq ($(HAVE_VMXWEB_CAS), true)
 AML_MP_CAS_SYSTEM_SRC_ge_30 += \
 	cas/vmx_webcas/AmlVMXWebCas.cpp
+endif
+
+ifeq ($(HAVE_NAGRAWEB_CAS), true)
+AML_MP_CAS_VENDOR_SRC_ge_30 += \
+	cas/nagra_webcas/AmlNagraWebCas.cpp
+AML_MP_CAS_SYSTEM_SRC_ge_30 += \
+	cas/nagra_webcas/AmlNagraWebCas.cpp
 endif
 
 AML_MP_DVR_SRC := \
@@ -227,6 +236,11 @@ endif
 ifeq ($(HAVE_VMXWEB_CAS), true)
 AML_MP_SYSTEM_CFLAGS_ge_30 += \
 	-DHAVE_VMXWEB_CAS
+endif
+
+ifeq ($(HAVE_NAGRAWEB_CAS), true)
+AML_MP_SYSTEM_CFLAGS_ge_30 += \
+	-DHAVE_NAGRAWEB_CAS
 endif
 
 #######################################

@@ -1621,6 +1621,13 @@ static int isUrlValid(const std::string url, std::string& urlHead, std::string& 
         if (access(urlFile.c_str(), F_OK) == 0) {
             ret = 0;
         }
+    } else if (urlHead.compare("hclr") == 0 ||
+            urlHead.compare("vstb") == 0 ||
+            urlHead.compare("vwch") == 0 ||
+            urlHead.compare("nwch") == 0 ||
+            urlHead.compare("wcas") == 0 ||
+            urlHead.compare("ncas") == 0) {
+        ret = 0;
     }
 
     //printf("isUrlValid, ret:%d, url:%s, urlHead:%s, urlHead:%s\n", ret, url.c_str(), urlHead.c_str(), urlFile.c_str());

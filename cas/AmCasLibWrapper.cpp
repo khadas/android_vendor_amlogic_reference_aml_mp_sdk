@@ -271,6 +271,7 @@ F AmCasLibWrapper<ServiceType>::lookupSymbol(const char *symbolName)
 
 template class AmCasLibWrapper<AML_MP_CAS_SERVICE_VERIMATRIX_IPTV>;
 template class AmCasLibWrapper<AML_MP_CAS_SERVICE_VERIMATRIX_WEB>;
+template class AmCasLibWrapper<AML_MP_CAS_SERVICE_NAGRA_WEB>;
 template class AmCasLibWrapper<AML_MP_CAS_SERVICE_WIDEVINE>;
 
 }

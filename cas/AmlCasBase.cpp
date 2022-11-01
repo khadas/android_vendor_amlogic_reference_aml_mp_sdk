@@ -16,6 +16,7 @@
 #include "vmx_iptvcas/AmlVMXIptvCas.h"
 #include "vmx_iptvcas/AmlVMXIptvCas_V2.h"
 #include "vmx_webcas/AmlVMXWebCas.h"
+#include "nagra_webcas/AmlNagraWebCas.h"
 #include <utils/AmlMpUtils.h>
 
 static const char* mName = LOG_TAG;
@@ -68,6 +69,15 @@ sptr<AmlCasBase> AmlCasBase::create(Aml_MP_CASServiceType serviceType)
 #ifdef HAVE_VMXWEB_CAS
         MLOGI("%s, vmx_web support", __func__);
         cas = new AmlVMXWebCas(serviceType);
+#endif
+    }
+    break;
+
+    case AML_MP_CAS_SERVICE_NAGRA_WEB:
+    {
+#ifdef HAVE_NAGRAWEB_CAS
+        MLOGI("%s, nagra_web support", __func__);
+        cas = new AmlNagraWebCas(serviceType);
 #endif
     }
     break;

@@ -315,6 +315,7 @@ const char* mpCASServiceType2Str(Aml_MP_CASServiceType serviceType)
     case AML_MP_CAS_SERVICE_PVR_TIMESHIFT_PLAY: return "pvr playback for timeshift";
     case AML_MP_CAS_SERVICE_VERIMATRIX_IPTV: return "verimatrix IPTV";
     case AML_MP_CAS_SERVICE_VERIMATRIX_WEB: return "verimatrix WEB";
+    case AML_MP_CAS_SERVICE_NAGRA_WEB: return "nagra WEB";
     case AML_MP_CAS_SERVICE_WIDEVINE: return "widevine";
     default: break;
     }
