@@ -82,6 +82,30 @@ typedef enum {
     AML_MP_DEMUX_SECSOURCE_DMA5, /**< DMA secure port 5.*/
     AML_MP_DEMUX_SECSOURCE_DMA6, /**< DMA secure port 6.*/
     AML_MP_DEMUX_SECSOURCE_DMA7, /**< DMA secure port 7.*/
+    AML_MP_DEMUX_SOURCE_DMA0_1,  /**< DMA input port 0_1.*/
+    AML_MP_DEMUX_SOURCE_DMA1_1,   /**< DMA input port 1_1.*/
+    AML_MP_DEMUX_SOURCE_DMA2_1,  /**< DMA input port 2_1.*/
+    AML_MP_DEMUX_SOURCE_DMA3_1,   /**< DMA input port 3_1.*/
+    AML_MP_DEMUX_SOURCE_DMA4_1,  /**< DMA input port 4_1.*/
+    AML_MP_DEMUX_SOURCE_DMA5_1,   /**< DMA input port 5_1.*/
+    AML_MP_DEMUX_SOURCE_DMA6_1,  /**< DMA input port 6_1.*/
+    AML_MP_DEMUX_SOURCE_DMA7_1,   /**< DMA input port 7_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA0_1, /**< DMA secure port 0_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA1_1, /**< DMA secure port 1_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA2_1, /**< DMA secure port 2_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA3_1, /**< DMA secure port 3_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA4_1, /**< DMA secure port 4_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA5_1, /**< DMA secure port 5_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA6_1, /**< DMA secure port 6_1.*/
+    AML_MP_DEMUX_SECSOURCE_DMA7_1,  /**< DMA secure port 7_1.*/
+    AML_MP_DEMUX_SOURCE_TS0_1, /**< DMA secure port 0_1.*/
+    AML_MP_DEMUX_SOURCE_TS1_1, /**< DMA secure port 1_1.*/
+    AML_MP_DEMUX_SOURCE_TS2_1, /**< DMA secure port 2_1.*/
+    AML_MP_DEMUX_SOURCE_TS3_1, /**< DMA secure port 3_1.*/
+    AML_MP_DEMUX_SOURCE_TS4_1, /**< DMA secure port 4_1.*/
+    AML_MP_DEMUX_SOURCE_TS5_1, /**< DMA secure port 5_1.*/
+    AML_MP_DEMUX_SOURCE_TS6_1, /**< DMA secure port 6_1.*/
+    AML_MP_DEMUX_SOURCE_TS7_1, /**< DMA secure port 7_1.*/
 } Aml_MP_DemuxSource;
 
 typedef enum {
