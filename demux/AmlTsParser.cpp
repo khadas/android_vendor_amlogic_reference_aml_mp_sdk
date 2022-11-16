@@ -1088,16 +1088,15 @@ size_t findEcmPacket(const uint8_t* buffer, size_t size, const std::vector<int>&
     size_t offset = 0;
     int pid = -1;
 
-    for (; offset <= size-TS_PACKET_SIZE; ++offset) {
-        if (buffer[offset] != 0x47) {
+    for (; offset <= size-TS_PACKET_SIZE; ) {
+        if (buffer[offset] != 0x47 || buffer[offset+TS_PACKET_SIZE] != 0x47) {
+            ++offset;
             continue;
         }
 
-        if (buffer[offset+TS_PACKET_SIZE] < size && buffer[offset+TS_PACKET_SIZE] != 0x47)
-            continue;
-
         pid = (buffer[offset+1]<<8 | buffer[offset+2]) & 0x1FFF;
         if (pid == 0 || pid == 0x1FFF) {
+            offset += TS_PACKET_SIZE;
             continue;
         }
 
@@ -1107,6 +1106,7 @@ size_t findEcmPacket(const uint8_t* buffer, size_t size, const std::vector<int>&
                 return offset;
             }
         }
+        offset += TS_PACKET_SIZE;
     }
 
     *ecmSize = 0;

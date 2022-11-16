@@ -177,6 +177,7 @@ private:
     void collectBuffingInfos_l();
 
     void resetVariables_l();
+    void resetDrmVariables_l();
 
     void increaseDmxSecMemSize();
     void recoverDmxSecMemSize();
@@ -196,6 +197,7 @@ private:
     uint32_t mStreamState{0};
     uint32_t mPrepareWaitingType{kPrepareWaitingNone};
     WaitingEcmMode mWaitingEcmMode = kWaitingEcmSynchronous;
+    WaitingEcmMode mUserWaitingEcmMode = kWaitingEcmSynchronous;
     bool mFirstEcmWritten = false;
     bool mAudioStoppedInSwitching = false;
 

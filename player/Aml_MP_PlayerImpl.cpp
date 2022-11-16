@@ -86,7 +86,7 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
 
     memset(&mAudioLanguage, 0, sizeof(mAudioLanguage));
 
-    mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
+    mUserWaitingEcmMode = mWaitingEcmMode = (WaitingEcmMode)AmlMpConfig::instance().mWaitingEcmMode;
     MLOGI("mWaitingEcmMode:%d", mWaitingEcmMode);
 
     mTsBuffer.init(AmlMpConfig::instance().mWriteBufferSize * 1024 * 1024);
@@ -796,7 +796,6 @@ int AmlMpPlayerImpl::doWriteData_l(const uint8_t* buffer, size_t size, std::uniq
                         size -= ret;
                     }
                 };
-
                 if (ecmSize > 0) {
                     mCasHandle->processEcm(false, 0, buffer, ecmSize);
                     buffer += ecmSize;
@@ -1766,8 +1765,20 @@ int AmlMpPlayerImpl::prepare_l()
 {
     MLOG();
 
-    if (mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL && !mIsStandaloneCas) {
-        startDescrambling_l();
+    if (mCreateParams.drmMode != AML_MP_INPUT_STREAM_NORMAL) {
+        if (!mIsStandaloneCas) {
+            startDescrambling_l();
+        }
+
+        // in trick mode play, ecm may not match ts packets well
+        // if use asynchronous wait ecm mode,
+        // because inject speed is faster than normal play,
+        // so force change to synchronous mode here.
+        if (mVideoDecodeMode == AML_MP_VIDEO_DECODE_MODE_IONLY) {
+            mWaitingEcmMode = kWaitingEcmSynchronous;
+        } else {
+            mWaitingEcmMode = mUserWaitingEcmMode;
+        }
     }
 
     if (mPlayer == nullptr) {
@@ -1868,7 +1879,6 @@ bool AmlMpPlayerImpl::tryWaitEcm_l() {
     bool isNeedWaitEcm = false;
     if (mCreateParams.sourceType == AML_MP_INPUT_SOURCE_TS_MEMORY &&
         mCreateParams.drmMode == AML_MP_INPUT_STREAM_ENCRYPTED &&
-        mWaitingEcmMode == kWaitingEcmASynchronous &&
         mCasHandle) {
         for (size_t i = 0; i < mEcmPids.size(); ++i) {
             int ecmPid = mEcmPids[i];
@@ -1878,13 +1888,18 @@ bool AmlMpPlayerImpl::tryWaitEcm_l() {
             }
         }
     }
+
     if (!isNeedWaitEcm) {
         return false;
     }
+
+    resetDrmVariables_l();
+
+    if (mWaitingEcmMode != kWaitingEcmASynchronous) {
+        return true;
+    }
+
     openParser_l();
-    mFirstEcmWritten = false;
-    mTsBuffer.reset();
-    mWriteBuffer->setRange(0, 0);
     int lastEcmPid = AML_MP_INVALID_PID;
     for (size_t i = 0; i < mEcmPids.size(); ++i) {
         int ecmPid = mEcmPids[i];
@@ -2051,8 +2066,6 @@ int AmlMpPlayerImpl::resetIfNeeded_l(std::unique_lock<std::mutex>& lock, bool cl
 int AmlMpPlayerImpl::reset_l(std::unique_lock<std::mutex>& lock, bool clearCasSession)
 {
     MLOG();
-    mTsBuffer.reset();
-    mWriteBuffer->setRange(0, 0);
     if (mParser) {
         lock.unlock();
         mParser->close();
@@ -2275,11 +2288,18 @@ void AmlMpPlayerImpl::collectBuffingInfos_l()
 
 void AmlMpPlayerImpl::resetVariables_l()
 {
-    mFirstEcmWritten = false;
-
     mLastBytesWritten = 0;
     mLastWrittenTimeUs = 0;
     mAudioStoppedInSwitching = false;
+
+    resetDrmVariables_l();
+}
+
+void AmlMpPlayerImpl::resetDrmVariables_l()
+{
+    mFirstEcmWritten = false;
+    mTsBuffer.reset();
+    mWriteBuffer->setRange(0, 0);
 }
 
 int AmlMpPlayerImpl::getDecodingState(Aml_MP_StreamType streamType, AML_MP_DecodingState* streamState) {
