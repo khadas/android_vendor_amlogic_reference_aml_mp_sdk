@@ -164,7 +164,7 @@ CasLibWrapper::CasLibWrapper()
     ca_writedata   = (int (*)(dvb_ca_t *, uint8_t *, size_t, void *)) dlsym(casHandle, "AM_MP_DVB_write");
     ca_callback    = (int (*)(dvb_ca_t *, dvb_ca_callback)) dlsym(casHandle, "AM_MP_DVB_set_callback");
     ca_stop        = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_stop");
-    ca_destroy     = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_destory");
+    ca_destroy     = (int (*)(dvb_ca_t *))dlsym(casHandle, "AM_MP_DVB_destroy");//Typo need to modify
 
     init();
 }
