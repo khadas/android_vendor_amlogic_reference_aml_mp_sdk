@@ -117,6 +117,7 @@ int AmlNagraWebCas::processEmm(const uint8_t* data, size_t size)
 
 int AmlNagraWebCas::decrypt(uint8_t *in, int size, void *ext_data, Aml_MP_Buffer* outbuffer)
 {
+    outbuffer->address = pIptvCas->getOutbuffer();
     int ret = pIptvCas->decrypt(in, outbuffer->address, size, ext_data);
     if (ret) {
         MLOGE("decrypt failed, ret=%d", ret);
