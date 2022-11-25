@@ -67,6 +67,8 @@ const char* mpCodecId2Str(Aml_MP_CodecID codecId)
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_AVS2);
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_MJPEG);
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_AV1);
+        ENUM_TO_STR(AML_MP_VIDEO_CODEC_DVES_AVC);
+        ENUM_TO_STR(AML_MP_VIDEO_CODEC_DVES_HEVC);
         ENUM_TO_STR(AML_MP_VIDEO_CODEC_MAX);
 
         ENUM_TO_STR(AML_MP_AUDIO_CODEC_BASE);
@@ -468,6 +470,14 @@ am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec) {
             return AV_VIDEO_CODEC_H265;
         case AML_MP_VIDEO_CODEC_MJPEG:
             return AV_VIDEO_CODEC_MJPEG;
+        case AML_MP_VIDEO_CODEC_AV1:
+            return AV_VIDEO_CODEC_AUTO;  //no AV1 codec defined in mediahal
+#ifdef ANDROID  //bellow codec types not found in mediahal linux sdk
+        case AML_MP_VIDEO_CODEC_DVES_AVC:
+            return AV_VIDEO_CODEC_DVES_AVC;
+        case AML_MP_VIDEO_CODEC_DVES_HEVC:
+            return AV_VIDEO_CODEC_DVES_HEVC;
+#endif
         default:
             return AV_VIDEO_CODEC_AUTO;
     }
@@ -1290,6 +1300,8 @@ const char codecMap[][20][30] = {
         "video/avs2",           //AML_MP_VIDEO_CODEC_AVS2
         "video/x-motion-jpeg",  //AML_MP_VIDEO_CODEC_MJPEG
         "video/av01",           //AML_MP_VIDEO_CODEC_AV1
+        "video/dves-avc",       //AML_MP_VIDEO_CODEC_DVES_AVC
+        "video/dves-hevc",      //AML_MP_VIDEO_CODEC_DVES_HEVC
     },
     //Audio codec
     {
