@@ -104,7 +104,7 @@ private:
 class BufferQueue::Buffer
 {
 public:
-    static Buffer* create(size_t size, void* secMemSession);
+    static Buffer* create(size_t size, void* secMemSession, Aml_MP_StreamType streamType);
 
     virtual ~Buffer();
     virtual int resize(size_t capacity __unused) { return 0; }
@@ -126,7 +126,7 @@ public:
     void setPts(uint64_t pts) { mPts = pts; }
 
 protected:
-    explicit Buffer(size_t capacity);
+    explicit Buffer(size_t capacity, Aml_MP_StreamType streamType);
 
     void* mData = nullptr; //normal or secure buffer pointer
     size_t mCapacity = 0;
@@ -138,6 +138,8 @@ protected:
 
     Buffer* mReaderView = nullptr;
     int64_t mRecycleHandle = -1;
+    Aml_MP_StreamType mStreamType = AML_MP_STREAM_TYPE_UNKNOWN;
+    int mIsNonTunnelMode = true;
 
 private:
     Buffer(const Buffer&) = delete;
@@ -151,8 +153,8 @@ public:
     virtual ~SecBuffer();
 
 protected:
-    friend Buffer* Buffer::create(size_t, void*);
-    SecBuffer(size_t capacity, void* secMemSession);
+    friend Buffer* Buffer::create(size_t, void*, Aml_MP_StreamType);
+    SecBuffer(size_t capacity, void* secMemSession, Aml_MP_StreamType streamType);
 
     virtual int resize(size_t capacity) override;
     virtual size_t append(const uint8_t* data, size_t size) override;
@@ -249,7 +251,7 @@ private:
     int mDumpFd = -1;
 
     std::mutex mRecycleHandleLock;
-    std::list<uint32_t> mRecycleHandles;
+    std::list<int64_t> mRecycleHandles;
 
 private:
     Consumer(const Consumer&) = delete;

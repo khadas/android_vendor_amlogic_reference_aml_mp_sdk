@@ -769,7 +769,7 @@ int Playback::start(const sptr<ProgramInfo>& programInfo, AML_MP_CASSESSION casS
         }
 
         if (mProgramInfo->audioPid != AML_MP_INVALID_PID) {
-            mDemuxer->openStream(AML_MP_STREAM_TYPE_AUDIO, 16, 4 * 1024, false,
+            mDemuxer->openStream(AML_MP_STREAM_TYPE_AUDIO, 128, 4 * 1024, false,
                 [this](Aml_MP_StreamType streamType, const uint8_t* data, size_t size, int64_t pts) {
                     return Aml_MP_Player_WriteEsData(mPlayer, streamType, data, size, pts);
             });

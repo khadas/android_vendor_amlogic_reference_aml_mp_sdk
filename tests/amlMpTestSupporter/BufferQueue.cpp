@@ -28,21 +28,22 @@ static const char* mName = LOG_TAG;
 
 namespace aml_mp {
 ////////////////////////////////////////////////////////////////////////////////
-BufferQueue::Buffer* BufferQueue::Buffer::create(size_t size, void* secMemSession)
+BufferQueue::Buffer* BufferQueue::Buffer::create(size_t size, void* secMemSession, Aml_MP_StreamType streamType)
 {
     Buffer* buffer = nullptr;
 
     if (secMemSession) {
-        buffer = new SecBuffer(size, secMemSession);
+        buffer = new SecBuffer(size, secMemSession, streamType);
     } else {
-        buffer = new Buffer(size);
+        buffer = new Buffer(size, streamType);
     }
 
     return buffer;
 }
 
-BufferQueue::Buffer::Buffer(size_t capacity)
+BufferQueue::Buffer::Buffer(size_t capacity, Aml_MP_StreamType streamType)
 : mRangeOffset(0)
+, mStreamType(streamType)
 {
     if (capacity > 0) {
         mData  = malloc(capacity);
@@ -55,6 +56,8 @@ BufferQueue::Buffer::Buffer(size_t capacity)
         mCapacity = capacity;
         mRangeLength = 0;
     }
+
+    mIsNonTunnelMode = AmlMpConfig::instance().mTsPlayerNonTunnel;
 
     MLOGV("ctor Buffer(this:%p), mData:%p", this, mData);
 
@@ -116,6 +119,10 @@ bool BufferQueue::Buffer::needRecycle() const
     //in non tunnel mode, clear video es buffer also use asynchronous write
 #ifdef ANDROID
     result = true;
+#else
+    if (mIsNonTunnelMode && mStreamType == AML_MP_STREAM_TYPE_VIDEO) {
+        result = true;
+    }
 #endif
 
     return result;
@@ -148,8 +155,8 @@ struct drm_info {
     uint32_t extpad[7];
 } /*drminfo_t */;
 
-BufferQueue::SecBuffer::SecBuffer(size_t capacity, void* secMemSession)
-: Buffer(0)
+BufferQueue::SecBuffer::SecBuffer(size_t capacity, void* secMemSession, Aml_MP_StreamType streamType)
+: Buffer(0, streamType)
 , mSecMemSession(secMemSession)
 {
     int ret = 0;
@@ -266,7 +273,7 @@ size_t BufferQueue::SecBuffer::append(const uint8_t* data __unused, size_t size)
 int BufferQueue::SecBuffer::prepareReaderView()
 {
     if (mReaderView == nullptr) {
-        mReaderView = Buffer::create(sizeof(drm_info), nullptr);
+        mReaderView = Buffer::create(sizeof(drm_info), nullptr, mStreamType);
     }
     mRecycleHandle = mHandle;
 
@@ -301,6 +308,8 @@ BufferQueue::BufferQueue(Aml_MP_StreamType streamType, size_t bufferCount, size_
 , mLastDequeueBufferResult(0)
 , mStopped(false)
 {
+    AmlMpConfig::instance().init();
+
     MLOGI("constructor BufferQueue(%zu, %zu), mIsSecure:%d, isUHD:%d", bufferCount, bufferSize, mIsSecure, isUHD);
 }
 
@@ -378,7 +387,7 @@ int BufferQueue::dequeueBuffer(Buffer** buffer)
 
             initSessionIfNeeded();
 
-            b.reset(Buffer::create(mBufferCapacity, mSecMemSession));
+            b.reset(Buffer::create(mBufferCapacity, mSecMemSession, mStreamType));
             if (b != nullptr) {
                 ++mBufferCount;
             } else {
@@ -833,19 +842,21 @@ int BufferQueue::Consumer::threadLoop()
 
             case kWorkRecycleBuffer:
             {
-                std::lock_guard<std::mutex> _l(mRecycleHandleLock);
                 bool canNotify = false;
-                auto it = mRecycleHandles.begin();
-                while (it != mRecycleHandles.end()) {
-                    std::shared_ptr<Buffer> buffer = mBufferQueue->getRecycledBuffer(*it);
-                    if (buffer == nullptr) {
-                        break;
-                    }
-                    mBufferQueue->releaseBuffer(buffer);
-                    it = mRecycleHandles.erase(it);
+                {
+                    std::lock_guard<std::mutex> _l(mRecycleHandleLock);
+                    auto it = mRecycleHandles.begin();
+                    while (it != mRecycleHandles.end()) {
+                        std::shared_ptr<Buffer> buffer = mBufferQueue->getRecycledBuffer(*it);
+                        if (buffer == nullptr) {
+                            break;
+                        }
+                        mBufferQueue->releaseBuffer(buffer);
+                        it = mRecycleHandles.erase(it);
 
-                    canNotify = true;
-                    MLOGV("[%u] recycle releaseBuffer base:%p", ++mReleasedCount, buffer->base());
+                        canNotify = true;
+                        MLOGV("[%u] recycle releaseBuffer base:%p", ++mReleasedCount, buffer->base());
+                    }
                 }
 
                 if (mBufferQueue->lastDequeueResult() != 0 && canNotify) {
