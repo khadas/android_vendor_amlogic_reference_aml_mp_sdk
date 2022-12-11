@@ -64,9 +64,8 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
         "vendor";
 #endif
     MLOG("sdk:%d, platform:%s, mTsPlayerNonTunnel: %d", sdkVersion, platform, AmlMpConfig::instance().mTsPlayerNonTunnel);
-#else
-    ;
 #endif
+
     MLOG("drmMode:%s, sourceType:%s", mpInputStreamType2Str(createParams->drmMode), mpInputSourceType2Str(createParams->sourceType));
 
     memset(&mVideoParams, 0, sizeof(mVideoParams));

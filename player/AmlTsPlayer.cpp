@@ -75,13 +75,9 @@ AmlTsPlayer::~AmlTsPlayer()
     MLOGI("mBlackOut: %d", mBlackOut);
     if (mBlackOut) {
         if (AmlMpConfig::instance().mTsPlayerNonTunnel == 0) {
-#if 1
 #ifdef ANDROID
             if (mNativewindow != nullptr)
                 native_window_set_sideband_stream(mNativewindow, nullptr);
-#endif
-#else
-            pushBlankBuffersToNativeWindow(mNativewindow);
 #endif
         }
     }
@@ -742,16 +738,17 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_SURFACE_HANDLE:
         {
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
-            // this is video tunnel id, must be a member variable address
-            // parameter variable stores videoTunnel ID value instead if its address.
-            mVideoTunnelId = (int)(intptr_t)parameter;
-            MLOGI("set videoTunnelId: %d", mVideoTunnelId);
-            ret = AmTsPlayer_setSurface(mPlayer, &mVideoTunnelId);
-#else
-            void* surface = parameter;
-            ret = AmTsPlayer_setSurface(mPlayer, surface);
-#endif
+            if (AmlMpConfig::instance().mUseVideoTunnel) {
+                // this is video tunnel id, must be a member variable address
+                // parameter variable stores videoTunnel ID value instead if its address.
+                mVideoTunnelId = (int)(intptr_t)parameter;
+                MLOGI("set videoTunnelId: %d", mVideoTunnelId);
+                ret = AmTsPlayer_setSurface(mPlayer, &mVideoTunnelId);
+            } else {
+                void* surface = parameter;
+                ret = AmTsPlayer_setSurface(mPlayer, surface);
+            }
+
             break;
         }
 
@@ -767,7 +764,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_USE_TIF:
         {
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
+#ifdef ANDROID //yocto mediahal hasn't define this function
             am_tsplayer_audio_patch_manage_mode audioPatchManageMode = AUDIO_PATCH_MANAGE_AUTO;
             int para = *(bool*)parameter;
             MLOGI("setUseTif: %d", para);
@@ -781,13 +778,11 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_SPDIF_PROTECTION:
         {
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
             int para = *(int*)parameter;
             MLOGI("SetSPDIFProtection: %d", para);
             if (para != -1) {
                 ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_SPDIF_STATUS, parameter);
             }
-#endif
             break;
         }
 
@@ -801,16 +796,13 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_VIDEO_ERROR_RECOVERY_MODE:
         {
-#ifdef __linux__
-#ifndef ANDROID
             MLOGI("setVideoErrorRecoveryMode: %s", mpVideoErrorRecoveryMode2Str(*(Aml_MP_VideoErrorRecoveryMode*)parameter));
             int recoveryMode = convertToCodecRecoveryMode(*(Aml_MP_VideoErrorRecoveryMode*)parameter);
             ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_VIDEO_RECOVERY_MODE, &recoveryMode);
-#endif
-#endif
         }
         break;
-#ifdef ANDROID
+
+#ifdef ANDROID //yocto mediahal hasn't define this function
         case AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE:
         {
             am_tsplayer_audio_lang audioLang;
@@ -819,6 +811,7 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         }
         break;
 #endif
+
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;
     }
@@ -876,7 +869,6 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         }
         break;
 
-#ifdef ANDROID
         case AML_MP_PLAYER_PARAMETER_AV_INFO_JSON: {
             Aml_MP_AvInfo *mpAvInfo = (Aml_MP_AvInfo*)parameter;
             am_tsplayer_state_t tsAvInfo;
@@ -890,6 +882,8 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             if (mpAvInfo->streamTypeMask & AML_MP_STREAM_TYPE_MASK_AUDIO) {
                 hasAudio = true;
             }
+
+#ifdef ANDROID //yocto mediahal hasn't define av_flag
             if (hasVideo && hasAudio) {
                 tsAvInfo.av_flag = (am_tsplayer_av_info_state)0;
             } else if (hasAudio) {
@@ -897,11 +891,12 @@ int AmlTsPlayer::getParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             } else if (hasVideo) {
                 tsAvInfo.av_flag = (am_tsplayer_av_info_state)2;
             }
+#endif
             ret = AmTsPlayer_getState(mPlayer, &tsAvInfo);
             mpAvInfo->actualLength = tsAvInfo.actual_len;
             break;
         }
-#endif
+
         case AML_MP_PLAYER_PARAMETER_AD_MIX_LEVEL:
         {
             Aml_MP_ADVolume* ADVolume = (Aml_MP_ADVolume*)parameter;
@@ -1107,14 +1102,7 @@ int AmlTsPlayer::setADVolume(float volume) {
 
     MLOGI("setADVolume, tsplayer_advolume: %d", tsplayer_advolume);
 
-#ifdef ANDROID
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
     ret = AmTsPlayer_setADVolume(mPlayer, tsplayer_advolume);
-#endif
-#else
-    ret = AmTsPlayer_setADVolume(mPlayer, tsplayer_advolume);
-#endif
-
     if (ret != AM_TSPLAYER_OK) {
         return -1;
     }
@@ -1129,13 +1117,7 @@ int AmlTsPlayer::getADVolume(float* volume) {
         return -1;
     }
 
-#ifdef ANDROID
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
     ret = AmTsPlayer_getADVolume(mPlayer, &tsplayer_advolume);
-#endif
-#else
-    ret = AmTsPlayer_getADVolume(mPlayer, &tsplayer_advolume);
-#endif
 
     MLOGI("getADVolume tsplayer_advolume: %d, ret: %d", tsplayer_advolume, ret);
     if (ret != AM_TSPLAYER_OK) {
@@ -1242,7 +1224,8 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
         notifyListener(AML_MP_PLAYER_EVENT_USERDATA_CC, (int64_t)&userData);
     }
     break;
-#ifdef ANDROID
+
+#ifdef ANDROID //yocto mediahal doesn't support these enumeration definitions
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW:
     {
         MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW\n");
@@ -1306,27 +1289,21 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
         notifyListener(AML_MP_PLAYER_EVENT_AUDIO_INVALID_DATA);
     }
     break;
-#endif
 
-#ifdef ANDROID
     case AM_TSPLAYER_EVENT_TYPE_DECODE_FRAME_ERROR_COUNT:
     {
         MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_FRAME_ERROR_COUNT");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_ERROR_FRAME_COUNT);
     }
     break;
-#endif
 
-#if ANDROID_PLATFORM_SDK_VERSION >= 30
     case AM_TSPLAYER_EVENT_TYPE_DECODE_VIDEO_UNSUPPORT:
     {
         MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODE_VIDEO_UNSUPPORT");
         notifyListener(AML_MP_PLAYER_EVENT_VIDEO_UNSUPPORT);
     }
     break;
-#endif
 
-#ifdef ANDROID
     case AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_LOSS:
     {
         MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_DECODER_DATA_LOSS");

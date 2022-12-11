@@ -715,7 +715,7 @@ int AmlMpTestSupporter::setOsdBlank(int blank)
     };
     MLOGI("setOsdBlank: %d", blank);
     int ret = 0;
-    #if ANDROID_PLATFORM_SDK_VERSION == 30
+    #if ANDROID_PLATFORM_SDK_VERSION >= 30
         ret += writeNode("/sys/kernel/debug/dri/0/vpu/blank", blank);
     #else
         ret += writeNode("/sys/class/graphics/fb0/osd_display_debug", blank);

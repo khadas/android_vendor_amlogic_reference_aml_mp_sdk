@@ -11,18 +11,12 @@
 #define _AML_DUMMY_TSPLAYER_H_
 
 #include "AmlPlayerBase.h"
-#include <AmTsPlayer.h>
+#include "AmlTsPlayer.h"
 #include <utils/AmlMpUtils.h>
 #include <utils/AmlMpBuffer.h>
 
-#ifdef ANDROID
-namespace android {
-class NativeHandle;
-}
-#endif
-
 namespace aml_mp {
-class AmlDummyTsPlayer : public aml_mp::AmlTsPlayer
+class AmlDummyTsPlayer : public AmlTsPlayer
 {
 public:
     AmlDummyTsPlayer(Aml_MP_PlayerCreateParams* createParams, int instanceId);

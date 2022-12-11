@@ -213,11 +213,9 @@ int DvbSource::start()
     }
 
     MLOGI("start, fendState:%d", fendState);
-    #if ANDROID
     if (fendState != FEND_STATE_LOCKED) {
         return -1;
     }
-    #endif
     return 0;
 }
 

@@ -358,6 +358,7 @@ void convertToTsPlayerAudioLanguage(am_tsplayer_audio_lang* tsPlayerAudioLang, A
     tsPlayerAudioLang->second_lang = audioLanguage->secondLanguage;
 }
 #endif
+
 ////////////////////////////////////////////////////////////////////////
 #ifdef ANDROID
 vformat_t convertToVFormat(Aml_MP_CodecID videoCodec)
@@ -870,7 +871,7 @@ am_tsplayer_audio_stereo_mode convertToTsPlayerAudioStereoMode(Aml_MP_AudioBalan
 void convertToMpPlayerEventAudioFormat(Aml_MP_PlayerEventAudioFormat* dest, am_tsplayer_audio_format_t* source) {
     dest->sample_rate = source->sample_rate;
     dest->channels = source->channels;
-#ifdef ANDROID
+#ifdef ANDROID //yocto mediahal hasn't define channel_mask.
     dest->channel_mask = source->channel_mask;
 #endif
 }

@@ -210,6 +210,7 @@ Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryM
 #ifdef ANDROID
 void convertToTsPlayerAudioLanguage(am_tsplayer_audio_lang* tsPlayerAudioLang, Aml_MP_AudioLanguage* audioLanguage);
 #endif
+
 #ifdef HAVE_SUBTITLE
 AmlTeletextCtrlParam convertToTeletextCtrlParam(AML_MP_TeletextCtrlParam* teletextCtrlParam);
 AmlTeletextEvent convertToTeletextEvent(Aml_MP_TeletextEvent teletextEvent);

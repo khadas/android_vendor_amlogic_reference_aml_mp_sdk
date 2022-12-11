@@ -127,13 +127,11 @@ int AmlPlayerBase::stop()
 
 int AmlPlayerBase::flush() {
 #ifdef HAVE_SUBTITLE
-#ifndef __ANDROID_VNDK__
     AmlSubtitleStatus ret = amlsub_Reset(mSubtitleHandle);
     if (ret != SUB_STAT_OK) {
-        MLOGE("amlsub_UiShow failed! %d", ret);
+        MLOGE("amlsub_Reset failed! %d", ret);
         return -1;
     }
-#endif
 #endif
     return 0;
 }
@@ -234,6 +232,7 @@ int AmlPlayerBase::startSubtitleDecoding()
 #ifdef HAVE_SUBTITLE
     AmlSubtitleParam subParam{};
     subParam.ioSource = AmlSubtitleIOType::E_SUBTITLE_DEMUX;
+    subParam.dmxId = mCreateParams->demuxId;
     if (!constructAmlSubtitleParam(&subParam, &mSubtitleParams)) {
         MLOGI("unknown subtitle codec, not start subtitle");
         return 0;
@@ -250,9 +249,7 @@ int AmlPlayerBase::startSubtitleDecoding()
 
 
     sSubtitleCbHandle = this;
-#ifndef ANDROID
-    amlsub_RegistOnDataCB(mSubtitleHandle, NULL);
-#else
+#ifdef ANDROID
     amlsub_RegistOnDataCB(mSubtitleHandle, AmlMPSubtitleDataCb);
 #endif
     amlsub_RegistOnSubtitleAvailCb(mSubtitleHandle, AmlMPSubtitleAvailCb);

@@ -88,9 +88,7 @@ int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
     int ret = setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
         if (mAudioPresentationId > -1) {
-#if ANDROID_PLATFORM_SDK_VERSION != 29
             ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
-#endif
         }
         ret = dvr_wrapper_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {
@@ -106,9 +104,7 @@ int AmlDVRPlayer::onlySetStreams(Aml_MP_DVRStreamArray* streams)
     int ret = setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
         if (mAudioPresentationId > -1) {
-#if ANDROID_PLATFORM_SDK_VERSION != 29
             ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
-#endif
         }
         ret = dvr_wrapper_only_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {

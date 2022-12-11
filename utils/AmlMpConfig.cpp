@@ -52,6 +52,7 @@ void AmlMpConfig::reset()
     mWriteBufferSize = 2; // default write buffer size set to 2MB.
     mDumpPackts = 0;
 
+// android Q is use surface by default in AmTsPlayer
 #if ANDROID_PLATFORM_SDK_VERSION == 29
     mUseVideoTunnel = 0;
 #else

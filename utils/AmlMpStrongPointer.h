@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef AML_MP_ANDROID_STRONG_POINTER_H
-#define AML_MP_ANDROID_STRONG_POINTER_H
+#ifndef AML_MP_STRONG_POINTER_H
+#define AML_MP_STRONG_POINTER_H
 
 #include <functional>
 #include <type_traits>  // for common_type.
@@ -270,4 +270,4 @@ void sptr<T>::set_pointer(T* ptr) {
 
 // ---------------------------------------------------------------------------
 
-#endif // ANDROID_STRONG_POINTER_H
+#endif // AML_MP_STRONG_POINTER_H

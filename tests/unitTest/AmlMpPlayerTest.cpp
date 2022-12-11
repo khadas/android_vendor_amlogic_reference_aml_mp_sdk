@@ -85,10 +85,10 @@ void AmlMpBase::audioDecoding(const std::string & url, bool mStart, bool mSource
     MLOGI("----------AudioDecodingTest END----------\n");
 }
 
-#ifdef ANDROID
 void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
 {
     MLOGI("----------FCCAndPIPTest START----------\n");
+#ifdef ANDROID
     createMpTestSupporter();
     char demuxInfo[30];
     sprintf(demuxInfo, "?demuxid=%d&sourceid=%d", 1, 0);
@@ -157,9 +157,9 @@ void AmlMpBase::FCCAndPIPTest(const std::string & url, bool mPIP)
         EXPECT_FALSE(waitPlayingErrors());
     }
     stopPlaying();
+#endif
     MLOGI("----------FCCAndPIPTest END----------\n");
 }
-#endif
 
 TEST_F(AmlMpTest, PlayerStartStopTest)
 {
@@ -436,7 +436,6 @@ TEST_F(AmlMpTest, AVSyncModeTest)
     }
 }
 
-#ifdef ANDROID
 TEST_F(AmlMpTest, PIPTest)
 {
     std::string url;
@@ -455,5 +454,4 @@ TEST_F(AmlMpTest, FCCTest)
         FCCAndPIPTest(url, false);
     }
 }
-#endif
 

@@ -167,8 +167,8 @@
 // to THE SAME sp<> or wp<>.  In effect, their thread-safety properties are
 // exactly like those of T*, NOT atomic<T*>.
 
-#ifndef AML_MP_ANDROID_REF_BASE_H
-#define AML_MP_ANDROID_REF_BASE_H
+#ifndef AML_MP_REF_BASE_H
+#define AML_MP_REF_BASE_H
 
 #include <atomic>
 #include <functional>
@@ -734,4 +734,4 @@ void move_backward_type(wptr<TYPE>* d, wptr<TYPE> const* s, size_t n) {
 
 // ---------------------------------------------------------------------------
 
-#endif // ANDROID_REF_BASE_H
+#endif // AML_MP_REF_BASE_H
