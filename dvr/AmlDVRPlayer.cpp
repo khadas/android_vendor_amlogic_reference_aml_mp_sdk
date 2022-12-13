@@ -85,10 +85,14 @@ int AmlDVRPlayer::registerEventCallback(Aml_MP_PlayerEventCallback cb, void* use
 int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
 {
     MLOG();
-    int ret = setStreamsCommon(streams);
+    int ret = 0;
+    setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
         if (mAudioPresentationId > -1) {
             ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
+            if (ret < 0) {
+                MLOGE("set ac4 preselection id failed!");
+            }
         }
         ret = dvr_wrapper_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {
@@ -101,10 +105,14 @@ int AmlDVRPlayer::setStreams(Aml_MP_DVRStreamArray* streams)
 int AmlDVRPlayer::onlySetStreams(Aml_MP_DVRStreamArray* streams)
 {
     MLOG();
-    int ret = setStreamsCommon(streams);
+    int ret = 0;
+    setStreamsCommon(streams);
     if (mDVRPlayerHandle) {
         if (mAudioPresentationId > -1) {
             ret = dvr_wrapper_set_ac4_preselection_id(mDVRPlayerHandle, mAudioPresentationId);
+            if (ret < 0) {
+                MLOGE("set ac4 preselection id failed!");
+            }
         }
         ret = dvr_wrapper_only_update_playback(mDVRPlayerHandle, &mPlayPids);
         if (ret < 0) {

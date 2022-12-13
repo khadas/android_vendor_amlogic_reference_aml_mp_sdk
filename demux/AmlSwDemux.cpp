@@ -86,7 +86,7 @@ private:
 
     std::vector<sptr<Program> > mPrograms;
     int mPcrPid = 0x1FFF;
-    size_t mNumTSPacketsParsed;
+    size_t mNumTSPacketsParsed = 0;
 
     uint32_t mCrcTable[256];
     std::map<unsigned, sptr<PSISection> > mPSISections;

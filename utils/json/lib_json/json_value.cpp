@@ -352,9 +352,10 @@ Value::Value(ValueType type) {
   initBasic(type);
   switch (type) {
   case nullValue:
+  case uintValue:
+    value_.uint_ = 0;
     break;
   case intValue:
-  case uintValue:
     value_.int_ = 0;
     break;
   case realValue:

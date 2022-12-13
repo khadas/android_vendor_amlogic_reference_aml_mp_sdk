@@ -83,7 +83,7 @@ struct PMTStream {
     int streamPid;
     int streamType;
     int ecmPid={AML_MP_INVALID_PID}; //es info
-    int descriptorTags[10];
+    int descriptorTags[10] = {0};
     int descriptorCount = 0;
 
     int compositionPageId{}; //dvb subtitle
@@ -108,7 +108,7 @@ struct PMTSection {
     SCRAMBLE_INFO_t scrambleInfo{};
 #define PRIVATE_DATA_LENGTH_MAX 256
     int privateDataLength = 0;
-    uint8_t privateData[PRIVATE_DATA_LENGTH_MAX];
+    uint8_t privateData[PRIVATE_DATA_LENGTH_MAX] = {0};
 
     int streamCount = 0;
     std::vector<PMTStream> streams;
