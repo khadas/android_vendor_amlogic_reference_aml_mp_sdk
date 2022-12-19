@@ -738,13 +738,16 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
 
         case AML_MP_PLAYER_PARAMETER_SURFACE_HANDLE:
         {
+#ifdef ANDROID
             if (AmlMpConfig::instance().mUseVideoTunnel) {
                 // this is video tunnel id, must be a member variable address
                 // parameter variable stores videoTunnel ID value instead if its address.
                 mVideoTunnelId = (int)(intptr_t)parameter;
                 MLOGI("set videoTunnelId: %d", mVideoTunnelId);
                 ret = AmTsPlayer_setSurface(mPlayer, &mVideoTunnelId);
-            } else {
+            } else
+#endif
+            {
                 void* surface = parameter;
                 ret = AmTsPlayer_setSurface(mPlayer, surface);
             }
