@@ -122,6 +122,11 @@ AmlMpPlayerImpl::~AmlMpPlayerImpl()
 {
     MLOG();
 
+    if (mState != STATE_IDLE) {
+        std::unique_lock<std::mutex> lock(mLock);
+        resetIfNeeded_l(lock);
+    }
+
     AML_MP_CHECK(mState == STATE_IDLE);
     AML_MP_CHECK(mStreamState == 0);
 
