@@ -26,6 +26,7 @@ sptr<Source> Source::create(const char* url)
     Aml_MP_DemuxId demuxId = AML_MP_HW_DEMUX_ID_0;
     int programNumber = -1;
     Aml_MP_DemuxSource sourceId = AML_MP_DEMUX_SOURCE_TS0;
+    int fendId = 0;
 
     const char* p = nullptr;
     if ((p = strstr(url, "://")) == nullptr) {
@@ -65,13 +66,15 @@ sptr<Source> Source::create(const char* url)
                 programNumber = std::stoi(value);
             } else if (key == "sourceid") {
                 sourceId = (Aml_MP_DemuxSource)std::stoi(value);
+            } else if (key == "fendid") {
+                fendId = std::stoi(value);
             }
         }
     } else {
         strncpy(address, p, sizeof(address)-1);
     }
 
-    MLOGV("proto:%s, address:%s, programNumber:%d, demuxId:%d, sourceid:%d\n", proto, address, programNumber, demuxId, sourceId);
+    MLOGV("proto:%s, address:%s, programNumber:%d, demuxId:%d, sourceid:%d, fendid:%d\n", proto, address, programNumber, demuxId, sourceId, fendId);
 
     bool isUdpSource = false;
     bool isDvbSource = false;
@@ -97,6 +100,7 @@ sptr<Source> Source::create(const char* url)
     inputParameter.demuxId = demuxId;
     inputParameter.programNumber = programNumber;
     inputParameter.sourceId = sourceId;
+    inputParameter.fendId = fendId;
 
     if (isUdpSource) {
         flags |= Source::kIsMemorySource;

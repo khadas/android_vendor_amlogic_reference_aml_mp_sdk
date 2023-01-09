@@ -184,7 +184,7 @@ int DvbSource::initCheck()
 
     free(address);
 
-    int fendIndex = mInputParameter.sourceId;
+    int fendIndex = mInputParameter.fendId;
     MLOGI("open frontend dev, id:%d", fendIndex);
     if (openFend(fendIndex) < 0) {
         MLOGE("openFend failed!\n");
@@ -204,12 +204,18 @@ int DvbSource::start()
     }
 
     FendLockState fendState = FEND_STATE_UNKNOWN;
-    while ((fendState = queryFendLockState()) == FEND_STATE_UNKNOWN) {
+    int times = 0;
+    while ((fendState = queryFendLockState()) == FEND_STATE_UNKNOWN || fendState == FEND_STATE_LOCK_TIMEOUT) {
         if (mRequestQuit) {
             break;
         }
-
-        usleep(10 * 1000);
+        //Wait for the frequency lock to succeed 6s
+        if (times < 60) {
+            times++;
+            usleep(100 * 1000);
+        } else {
+            break;
+        }
     }
 
     MLOGI("start, fendState:%d", fendState);

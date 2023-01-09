@@ -19,6 +19,7 @@ struct InputParameter {
     int programNumber = -1;
     Aml_MP_DemuxId demuxId = AML_MP_HW_DEMUX_ID_0;
     Aml_MP_DemuxSource sourceId = AML_MP_DEMUX_SOURCE_TS0;
+    int fendId = 0;
 };
 
 struct ISourceReceiver : virtual public AmlMpRefBase {

@@ -247,7 +247,7 @@ static void showUsage()
             "   --timeshift   enable timeshift\n"
             "   --appendmode  enable appendmode to save record file with same location for dvr\n"
             "\n"
-            "url format: url?program=xx&demuxid=xx&sourceid=xx\n"
+            "url format: url?program=xx&demuxid=xx&sourceid=xx&fendid=xx\n"
             "    DVB-T dvbt://<freq>/<bandwidth>, eg: dvbt://474/8M\n"
             "    DVB-C dvbc://<freq>/<symbol rate>/<modulation>, eg: dvbc://474/6900/64qam\n"
             "    local file, eg: /data/a.ts\n"
