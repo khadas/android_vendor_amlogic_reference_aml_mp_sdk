@@ -43,13 +43,7 @@ typedef struct {
 #define DMX_ONESHOT     2
 #define DMX_IMMEDIATE_START 4
 #define DMX_KERNEL_CLIENT   0x8000
-#define DMX_MEM_SEC_LEVEL1   (1 << 10)
-#define DMX_MEM_SEC_LEVEL2   (2 << 10)
-#define DMX_MEM_SEC_LEVEL3   (3 << 10)
-#define DMX_MEM_SEC_LEVEL4   (4 << 10)
-#define DMX_MEM_SEC_LEVEL5   (5 << 10)
-#define DMX_MEM_SEC_LEVEL6   (6 << 10)
-#define DMX_MEM_SEC_LEVEL7   (7 << 10)
+
 /*bit 16~23 for output */
 #define DMX_ES_OUTPUT        (1 << 16)
 /*set raw mode, it will send the struct dmx_sec_es_data, not es data*/
