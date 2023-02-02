@@ -56,6 +56,11 @@ static const StreamType g_identifierTypes[] = {
     {0, AML_MP_STREAM_TYPE_UNKNOWN, AML_MP_CODEC_UNKNOWN},
 };
 
+static const StreamType g_extDescTypes[] = {
+    { 0x15, AML_MP_STREAM_TYPE_AUDIO,    AML_MP_AUDIO_CODEC_AC4          }, /* AC-4 descriptor */
+    {0, AML_MP_STREAM_TYPE_UNKNOWN, AML_MP_CODEC_UNKNOWN},
+};
+
 static const struct StreamType* getStreamTypeInfo(int esStreamType, const StreamType* table = g_streamTypes)
 {
     const struct StreamType* result = nullptr;
@@ -502,6 +507,16 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                 }
                 break;
 
+                case 0x7f:
+                {
+                    int extDescTag = p2[2];
+                    if (extDescTag == 0x15) {
+                        MLOGI("found AC4 extDescTag");
+                        esStream.descriptorTags[esStream.descriptorCount-1] = extDescTag;
+                    }
+                }
+                break;
+
                 default:
                     //MLOGI("unhandled stream descriptor_tag:%#x, length:%d", descriptor_tag, descriptor_length);
                     break;
@@ -731,6 +746,12 @@ void Parser::onPmtParsed(const SectionData& sectionData, const PMTSection& resul
                 typeInfo = getStreamTypeInfo(stream->descriptorTags[j], g_identifierTypes);
                 if (typeInfo != nullptr) {
                     MLOGI("identified stream pid:%d, %.4s", stream->streamPid, (char*)&stream->descriptorTags[j]);
+                    break;
+                }
+
+                typeInfo = getStreamTypeInfo(stream->descriptorTags[j], g_extDescTypes);
+                if (typeInfo != nullptr) {
+                    MLOGI("extDescTag match stream pid:%d, tag:%#x", stream->streamPid, stream->descriptorTags[j]);
                     break;
                 }
             }
