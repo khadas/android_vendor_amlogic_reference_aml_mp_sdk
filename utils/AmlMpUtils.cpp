@@ -471,8 +471,13 @@ am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec) {
             return AV_VIDEO_CODEC_H265;
         case AML_MP_VIDEO_CODEC_MJPEG:
             return AV_VIDEO_CODEC_MJPEG;
+#ifdef __linux__
+#ifndef ANDROID
+            //TODO: android does not merge mediahal, currently only used on Yocto
         case AML_MP_VIDEO_CODEC_AV1:
-            return AV_VIDEO_CODEC_AUTO;  //no AV1 codec defined in mediahal
+            return AV_VIDEO_CODEC_AV1;
+#endif
+#endif
 #ifdef ANDROID  //bellow codec types not found in mediahal linux sdk
         case AML_MP_VIDEO_CODEC_DVES_AVC:
             return AV_VIDEO_CODEC_DVES_AVC;
