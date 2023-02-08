@@ -15,6 +15,7 @@
 #include <utils/AmlMpHandle.h>
 #include <utils/AmlMpBuffer.h>
 #include <utils/AmlMpEventLooper.h>
+#include <utils/AmlMpUtils.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <sstream>
@@ -275,23 +276,26 @@ int HwTsParser::dvr_open(int demuxId, bool isHardwareSource, bool isSecurebuffer
     MLOGI("open %s  ok \n", name);
 
     mIsSecurebuffer = isSecurebuffer;
-    if (!isHardwareSource) {
-        if (isSecurebuffer) {
-            MLOGI("set ---> INPUT_LOCAL_SEC \n");
-            ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL_SEC);
+    if (isSupportMultiHwDemux()) {
+        if (!isHardwareSource) {
+            if (isSecurebuffer) {
+                MLOGI("set ---> INPUT_LOCAL_SEC \n");
+                ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL_SEC);
+            } else {
+                MLOGI("set ---> INPUT_LOCAL \n");
+                ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL);
+            }
         } else {
-            MLOGI("set ---> INPUT_LOCAL \n");
-            ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_LOCAL);
+            MLOGI("set ---> INPUT_DEMOD \n" );
+            ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_DEMOD);
         }
-    } else {
-        MLOGI("set ---> INPUT_DEMOD \n" );
-        ret = ioctl(mDvrFd, DMX_SET_INPUT, INPUT_DEMOD);
+        MLOGI("DMX_SET_INPUT ret:%d\n", ret);
+        if (ret < 0) {
+            MLOGE("dvr_open ioctl failed %s\n", strerror(errno));
+            return -1;
+        }
     }
-    MLOGI("DMX_SET_INPUT ret:%d\n", ret);
-    if (ret < 0) {
-        MLOGE("dvr_open ioctl failed %s\n", strerror(errno));
-        return -1;
-    }
+
     return 0;
 }
 
