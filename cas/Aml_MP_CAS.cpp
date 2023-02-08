@@ -194,9 +194,17 @@ int Aml_MP_CAS_RegisterEventCallback(AML_MP_CASSESSION casSession, Aml_MP_CAS_Ev
 int Aml_MP_CAS_Ioctl(AML_MP_CASSESSION casSession, const char* inJson, char* outJson, uint32_t outLen)
 {
     sptr<AmlCasBase> casBase = aml_handle_cast<AmlCasBase>(casSession);
-    RETURN_IF(-1, casBase == nullptr);
+    int ret = AML_MP_OK;
 
-    return casBase->ioctl(inJson, outJson, outLen);
+    if (casBase) {
+        ret = casBase->ioctl(inJson, outJson, outLen);
+    } else {
+#ifdef HAVE_CAS_HAL
+        ret = AM_CA_Ioctl((CasSession)nullptr, inJson, outJson, outLen);
+#endif
+    }
+
+    return ret;
 }
 
 int Aml_MP_CAS_StartDescrambling(AML_MP_CASSESSION casSession, Aml_MP_CASServiceInfo* serviceInfo)
