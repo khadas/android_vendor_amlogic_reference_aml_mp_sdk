@@ -105,7 +105,8 @@ int Aml_MP_Player_SetCASParams(AML_MP_PLAYER handle, Aml_MP_CASParams* params)
     iptvCasParam.audioCodec = params->u.iptvCasParam.audioCodec;
     iptvCasParam.videoPid = params->u.iptvCasParam.videoPid;
     iptvCasParam.audioPid = params->u.iptvCasParam.audioPid;
-    iptvCasParam.ecmPid[0] = params->u.iptvCasParam.ecmPid;
+    iptvCasParam.ecmPid[0] = params->u.iptvCasParam.ecmPid;//audio ecm pid
+    iptvCasParam.ecmPid[1] = params->u.iptvCasParam.ecmPid;// video ecm pid
     iptvCasParam.demuxId = params->u.iptvCasParam.demuxId;
     strncpy(iptvCasParam.serverAddress, params->u.iptvCasParam.serverAddress, sizeof(params->u.iptvCasParam.serverAddress));
     iptvCasParam.serverPort = params->u.iptvCasParam.serverPort;
