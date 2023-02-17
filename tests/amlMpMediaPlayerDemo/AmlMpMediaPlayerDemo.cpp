@@ -40,8 +40,8 @@ struct AmlMpMediaPlayerDemo;
 struct playerRoster;
 
 //func
-int tty_reset(int fd);
-int tty_cbreak(int fd);
+static int tty_reset(int fd);
+static int tty_cbreak(int fd);
 
 //Track info
 static void printCurTrackInfo(Aml_MP_TrackInfo *trackInfo, Aml_MP_MediaInfo* mediaInfo, Aml_MP_StreamType streamType);
@@ -57,6 +57,7 @@ static void closeAllMultiPlayback();
 
 //utils
 static int isUrlValid(const std::string url, std::string& urlHead, std::string& urlFile);
+static int startingPlayCheck();
 
 //callback func
 void demoCallback(void* userData, Aml_MP_MediaPlayerEventType event, int64_t param);
@@ -72,6 +73,10 @@ using namespace aml_mp;
 
 ///////////////////////////////////////////////////////////////////////////////
 //define
+#define WRESET   "\033[0m"
+#define RED      "\033[31m"
+#define GREEN    "\033[32m"
+
 #define TTY_RESET_FD(fd)                                    \
     do {                                                    \
         if (tty_reset(fd) < 0) {                            \
@@ -85,6 +90,25 @@ using namespace aml_mp;
             printf("\n tty_cbreak error\n");                \
         }                                                   \
     } while (0)
+
+
+static bool AMMP_DEBUG_MODE_ENABLE = false;
+#define TERMINAL_DEBUG(fmt, ...)                                                \
+    do {                                                                        \
+        if (AMMP_DEBUG_MODE_ENABLE) {                                           \
+            printf("[%s:%d] " fmt , __FUNCTION__, __LINE__, ##__VA_ARGS__);     \
+        }                                                                       \
+    } while (0)
+
+#define TERMINAL_ERROR(fmt, ...)                                                                \
+    do {                                                                                        \
+        printf(RED "---------------------------ERROR---------------------------\n" WRESET);     \
+        printf(RED "-----------------------------------------------------------\n" WRESET);     \
+        printf(RED fmt "\n", ##__VA_ARGS__ WRESET);                                             \
+        printf(RED "-----------------------------------------------------------\n" WRESET);     \
+        printf(RED "---------------------------ERROR---------------------------\n" WRESET);     \
+    } while (0)
+
 
 #define MIN(A, B) ( (A) > (B) ? (B) : (A) )
 #define MAX(A, B) ( (A) > (B) ? (A) : (B) )
@@ -379,24 +403,33 @@ int AmlMpMediaPlayerCommandProcessor::fetchAndProcessCommands()
 
             if (len > -1)
                 buffer[len] = '\0';
-            //printf("read buf:%s, %d, size:%d\n", buffer, buffer[0], len);
-            //printf("\n");
 
+            {
+                //debug
+                TERMINAL_DEBUG("read buf:%s, %d, size:%d\n", buffer, buffer[0], len);
+                int i = 0;
+                for (i = 0; i < len; i++) {
+                    TERMINAL_DEBUG("%c(%d)\n", buffer[i], buffer[i]);
+                }
+            }
+
+            //check for whitespace characters
             std::string buf(buffer);
             size_t b = 0;
             size_t e = buf.size();
             while (b < e) {
-                if (isspace(buf[b])) ++b;
-                else if (isspace(buf[e])) --e;
+                if (isspace(buf[b]) || iscntrl(buf[b])) ++b;
+                else if (isspace(buf[e]) || iscntrl(buf[e])) --e;
                 else break;
             }
-            //printf("read b:%d, e:%d\n", b, e);
+            TERMINAL_DEBUG("read b:%zu, e:%zu\n", b, e);
 
             if (b < e) {
-                buf = buf.substr(b, e - b);
+                buf = buf.substr(b, e - b + 1);
                 lastCommand = buf;
-            } else if (b == e && !lastCommand.empty()) {
-                //buf = lastCommand;
+            } else if (b == e) {
+                //direct choice buf[0]
+                buf = buf[0];
             } else {
                 continue;
             }
@@ -432,11 +465,13 @@ struct AmlMpMediaPlayerDemo : public TestModule
         int installSignalHandler();
 
 public:
-        AML_MP_MEDIAPLAYER mPlayer = NULL;
         bool mQuitPending = false;
+        int mId;
+
+private:
+        AML_MP_MEDIAPLAYER mPlayer = NULL;
         std::condition_variable mCondition;
         std::mutex mMutex;
-        int mId;
 
 protected:
         const TestModule::Command* getCommandTable() const;
@@ -515,11 +550,15 @@ bool AmlMpMediaPlayerDemo::processCommand(const std::vector<std::string>& args)
             }
         }
 
-        /*int i = 0, size = args.size();
-        printf("processCommand: size:%d\n", size);
-        for (auto i = args.begin(); i != args.end(); i++) {
-            std::cout << *i << ' ' << std::endl;
-        }*/
+        {//debug
+            int i = 0, size = args.size();
+            TERMINAL_DEBUG("processCommand: size:%d\n", size);
+            for (auto i = args.begin(); i != args.end(); i++) {
+                //std::cout << *i << ' ' << std::endl;
+                std::string pStr = *i;
+                TERMINAL_DEBUG("%s\n", pStr.c_str());
+            }
+        }
 
         TestModule::processCommand(args);
     }
@@ -1209,6 +1248,7 @@ int AmlMpMediaPlayerDemo::installSignalHandler()
     sigset_t blockSet, oldMask;
     sigemptyset(&blockSet);
     sigaddset(&blockSet, SIGINT);
+    sigaddset(&blockSet, SIGQUIT);
     ret = pthread_sigmask(SIG_SETMASK, &blockSet, &oldMask);
     if (ret != 0) {
         MLOGE("pthread_sigmask failed! %d", ret);
@@ -1225,11 +1265,11 @@ int AmlMpMediaPlayerDemo::installSignalHandler()
                 MLOGE("sigwait error! %d", err);
                 exit(0);
             }
-
-            printf("%s\n", strsignal(signo));
+            printf("Signal Capture:%s\n", strsignal(signo));
 
             switch (signo) {
             case SIGINT:
+            case SIGQUIT:
             {
                 //quit
                 //mQuitPending = true;
@@ -1379,7 +1419,7 @@ static void printMediaInfo(Aml_MP_MediaInfo *mediaInfo)
 static struct termios save_termios;
 static int ttysavefd = -1;
 static enum { RESET, RAW, CBREAK } ttystate = RESET;
-int tty_cbreak(int fd) /* put terminal into a cbreak mode */
+static int tty_cbreak(int fd) /* put terminal into a cbreak mode */
 {
     int err;
     struct termios buf;
@@ -1431,7 +1471,7 @@ int tty_cbreak(int fd) /* put terminal into a cbreak mode */
     return(0);
 }
 
-int tty_reset(int fd) /* restore terminal’s mode */
+static int tty_reset(int fd) /* restore terminal’s mode */
 {
     if (ttystate == RESET)
         return(0);
@@ -1640,6 +1680,47 @@ static int isUrlValid(const std::string url, std::string& urlHead, std::string& 
     return ret;
 }
 
+static int startingPlayCheck()
+{
+    int ret = 0;
+    char errorInfo[50] = {0};
+
+#define YOCTO_libAmIptvMedia "/usr/lib/libAmIptvMedia.so"
+    if (access(YOCTO_libAmIptvMedia, F_OK) != 0) {
+        ret = -1;
+        strcpy(errorInfo, YOCTO_libAmIptvMedia);
+        goto EXIT;
+    }
+
+#define YOCTO_libaml_mp_mediaplayer "/usr/lib/libaml_mp_mediaplayer.so"
+    if (access(YOCTO_libaml_mp_mediaplayer, F_OK) != 0) {
+        ret = -1;
+        strcpy(errorInfo, YOCTO_libaml_mp_mediaplayer);
+        goto EXIT;
+    }
+
+#define YOCTO_libaml_mp_sdk "/usr/lib/libaml_mp_sdk.so"
+    if (access(YOCTO_libaml_mp_sdk, F_OK) != 0) {
+        ret = -1;
+        strcpy(errorInfo, YOCTO_libaml_mp_sdk);
+        goto EXIT;
+    }
+
+#define YOCTO_libffmpeg_ctc "/usr/lib/libffmpeg_ctc.so"
+    if (access(YOCTO_libffmpeg_ctc, F_OK) != 0) {
+        ret = -1;
+        strcpy(errorInfo, YOCTO_libffmpeg_ctc);
+        goto EXIT;
+    }
+
+    return ret;
+
+EXIT:
+    TERMINAL_ERROR("%s%s", errorInfo, " No Exist!!!");
+
+    return ret;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //Command Line
 static int parseCommandArgs(int argc, char* argv[], Argument* argument)
@@ -1649,6 +1730,7 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         {"size",        required_argument,  nullptr, 's'},
         {"pos",         required_argument,  nullptr, 'p'},
         {"channelId",   required_argument,  nullptr, 'c'},
+        {"debug",       required_argument,  nullptr, 'd'},
         {"onlyVideo",   no_argument,        nullptr, 'V'},
         {"onlyAudio",   no_argument,        nullptr, 'A'},
         {nullptr,       no_argument,        nullptr, 0},
@@ -1671,18 +1753,18 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
         }
         break;
         case 'p':
-            {
-                int x, y;
-                //printf("optarg:%s\n", optarg);
-                if (sscanf(optarg, "%dx%d", &x, &y) != 2) {
-                    printf("parse %s failed! %s\n", longopts[longindex].name, optarg);
-                } else {
-                    argument->x = x;
-                    argument->y = y;
-                    printf("pos:%dx%d\n", x, y);
-                }
+        {
+            int x, y;
+            //printf("optarg:%s\n", optarg);
+            if (sscanf(optarg, "%dx%d", &x, &y) != 2) {
+                printf("parse %s failed! %s\n", longopts[longindex].name, optarg);
+            } else {
+                argument->x = x;
+                argument->y = y;
+                printf("pos:%dx%d\n", x, y);
             }
-            break;
+        }
+        break;
         case 'c':
         {
             int channelId = strtol(optarg, nullptr, 0);
@@ -1690,18 +1772,25 @@ static int parseCommandArgs(int argc, char* argv[], Argument* argument)
             argument->channelId = channelId;
         }
         break;
+        case 'd':
+        {
+            int debuglevel = strtol(optarg, nullptr, 0);
+            printf("debug level:%d\n", debuglevel);
+            AMMP_DEBUG_MODE_ENABLE = (bool)debuglevel;
+        }
+        break;
         case 'V':
-             {
-                 argument->onlyVideo = true;
-                 printf("onlyVideo\n");
-             }
-             break;
+        {
+             argument->onlyVideo = true;
+             printf("onlyVideo\n");
+        }
+        break;
         case 'A':
-             {
-                 argument->onlyAudio = true;
-                 printf("onlyAudio\n");
-             }
-             break;
+        {
+            argument->onlyAudio = true;
+            printf("onlyAudio\n");
+        }
+        break;
 
         case 'h':
         default:
@@ -1802,6 +1891,7 @@ static void showUsage()
             "options:\n"
             "    --size:       eg: 1920x1080\n"
             "    --pos:        eg: 0x0\n"
+            "    --debug:      eg: 1\n"
             "    --channelId:  eg: 0 main, others: pip\n"
             "    --onlyVideo         \n"
             "    --onlyAudio         \n"
@@ -1817,6 +1907,16 @@ int main(int argc, char *argv[])
 {
     int ret = -1;
 
+    if (startingPlayCheck() < 0) {
+        return ret;
+    }
+
+    Argument argument{};
+    if (parseCommandArgs(argc, argv, &argument) < 0) {
+        showUsage();
+        return ret;
+    }
+
     if (tty_reset(STDIN_FILENO) < 0) {
         printf("\n tty_reset error\n");
         return 0;
@@ -1826,12 +1926,6 @@ int main(int argc, char *argv[])
         printf("\n tty_cbreak error\n");
     }
 
-
-    Argument argument{};
-    if (parseCommandArgs(argc, argv, &argument) < 0) {
-        showUsage();
-        return ret;
-    }
     playerRoster::instance().registerPlayerArgument(MEDIAPLAYERDEMO_MAIN, &argument);//only register argument
     ret = multiPlaybackThread(MEDIAPLAYERDEMO_MAIN, true/*isMain*/);
     if (ret < 0) {

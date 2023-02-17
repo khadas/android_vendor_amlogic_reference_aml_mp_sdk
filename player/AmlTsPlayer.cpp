@@ -158,6 +158,13 @@ int AmlTsPlayer::setAudioParams(const Aml_MP_AudioParams* params) {
         return -1;
     }
 
+    //sample_rate/channel
+    am_tsplayer_audio_info audio_extra_params = {params->nSampleRate, params->nChannels, 0/*channel_mask*/, 0/*bitrate*/};
+    ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_ES_AUDIO_EXTRA_PARAM, (void*)&audio_extra_params);
+    if (ret != AM_TSPLAYER_OK) {
+        MLOGW("set audio extra param failed.");
+    }
+
     Aml_MP_DemuxMemSecLevel secureLevel = params->secureLevel;
     ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_AUDIO_SECLEVEL, (void*)&secureLevel);
     if (ret != AM_TSPLAYER_OK) {
