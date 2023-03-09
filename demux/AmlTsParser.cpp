@@ -159,6 +159,16 @@ void Parser::parseProgramInfoAsync()
     addSectionFilter(1, catCb, this);
 }
 
+int Parser::waitCATSectionDataParsed()
+{
+    std::unique_lock<std::mutex> l(mLock);
+    bool ret = mCond.wait_for(l, std::chrono::seconds(60), [this] {
+        return mCATParseDone || mRequestQuit;
+    });
+
+    return ret ? 0 : -1;
+}
+
 int Parser::waitProgramInfoParsed()
 {
     std::unique_lock<std::mutex> l(mLock);
@@ -512,7 +522,8 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
     }
 
     if (parser) {
-        parser->onPmtParsed(results);
+        SectionData sectionData(pid, size, (uint8_t *)data);
+        parser->onPmtParsed(sectionData, results);
     }
 
     return 0;
@@ -573,7 +584,8 @@ int Parser::catCb(int pid, size_t size, const uint8_t* data, void* userData)
     }
 
     if (parser) {
-        parser->onCatParsed(results);
+        SectionData sectionData(pid, size, (uint8_t *)data);
+        parser->onCatParsed(sectionData, results);
     }
 
     return 0;
@@ -626,7 +638,7 @@ void Parser::onPatParsed(const PATSection& result)
     }
 }
 
-void Parser::onPmtParsed(const PMTSection& results)
+void Parser::onPmtParsed(const SectionData& sectionData, const PMTSection& results)
 {
     if (results.streamCount == 0) {
         return;
@@ -703,7 +715,6 @@ void Parser::onPmtParsed(const PMTSection& results)
     programInfo->ecmPid[ECM_INDEX_SUB] = results.ecmPid;
     programInfo->privateDataLength = results.privateDataLength;
     memcpy(programInfo->privateData, results.privateData, results.privateDataLength);
-
 
     const struct StreamType* typeInfo;
     for (auto it : results.streams) {
@@ -811,6 +822,10 @@ void Parser::onPmtParsed(const PMTSection& results)
         }
     }
 
+    if (mCb && isProgramSelected) {
+        mCb(ProgramEventType::EVENT_PMT_PARSED, sectionData.pid, sectionData.size, (void *)sectionData.data);
+    }
+
     if (isNewPmt) {
         if (mCb && mProgramInfo->isComplete()) {
             mCb(ProgramEventType::EVENT_PROGRAM_PARSED, mProgramInfo->pmtPid, mProgramInfo->programNumber, mProgramInfo.get());
@@ -829,14 +844,22 @@ void Parser::onPmtParsed(const PMTSection& results)
     }
 }
 
-void Parser::onCatParsed(const CATSection& results)
+void Parser::onCatParsed(const SectionData& sectionData, const CATSection& results)
 {
     mProgramInfo->scrambled = true;
     mProgramInfo->caSystemId = results.caSystemId;
     mProgramInfo->emmPid = results.emmPid;
 
-    if (mCb && mProgramInfo->isComplete()) {
-        mCb(ProgramEventType::EVENT_PROGRAM_PARSED, mProgramInfo->pmtPid, mProgramInfo->programNumber, mProgramInfo.get());
+    if (mCb) {
+        mCb(ProgramEventType::EVENT_CAT_PARSED, sectionData.pid, sectionData.size, (void *)sectionData.data);
+        {
+            std::lock_guard<std::mutex> _l(mLock);
+            mCATParseDone = true;
+            mCond.notify_all();
+        }
+        if (mProgramInfo->isComplete()) {
+            mCb(ProgramEventType::EVENT_PROGRAM_PARSED, mProgramInfo->pmtPid, mProgramInfo->programNumber, mProgramInfo.get());
+        }
     }
 
     if (mProgramInfo->isComplete()) {

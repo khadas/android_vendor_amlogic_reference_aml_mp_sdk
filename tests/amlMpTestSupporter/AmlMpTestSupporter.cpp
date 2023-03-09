@@ -26,6 +26,25 @@
 
 static const char* mName = LOG_TAG;
 
+//0x0606 used for irdeto 1
+//0x0602 0x0604 0x0606 0x0608 0x0622 0x0626 0x0664 0x0614 used for irdeto 2
+//0x0692 used for irdeto 3
+//0x0625 is used for DVT test stream
+static const uint16_t irdetoCasIdList[] = {0x0602,0x0604,0x0606,0x0608,0x0622,0x0626,0x0664,0x0614,0x0692,0x0625};
+
+static bool isIrdetoCas(uint16_t cas_id)
+{
+    int size = sizeof(irdetoCasIdList) / sizeof(irdetoCasIdList[0]);
+
+    for (int idx = 0; idx < size; idx++)
+    {
+        if (irdetoCasIdList[idx] == cas_id)
+            return true;
+    }
+
+    return false;
+}
+
 namespace aml_mp {
 AmlMpTestSupporter::AmlMpTestSupporter()
 {
@@ -161,6 +180,9 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
         return -1;
     }
     mParser->selectProgram(programNumber);
+    mParser->setEventCallback([this] (Parser::ProgramEventType event, int param1, int param2, void* data) {
+            return programEventCallback(event, param1, param2, data);
+    });
     ret = mParser->open();
     if (ret < 0) {
         MLOGE("parser open failed!");
@@ -180,8 +202,22 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     MLOGI("parsing...");
     ret = mParser->waitProgramInfoParsed();
     if (ret < 0) {
-        MLOGE("parser wait failed!");
+        MLOGE("parser wait program info failed!");
         return -1;
+    }
+
+    mProgramInfo = mParser->getProgramInfo();
+    if (mProgramInfo == nullptr) {
+        MLOGE("get programInfo failed!");
+        return -1;
+    }
+
+    if (mProgramInfo->scrambled && isIrdetoCas(mProgramInfo->caSystemId)) {
+        ret = mParser->waitCATSectionDataParsed();
+        if (ret < 0) {
+            MLOGE("parser wait CAT failed!");
+            return -1;
+        }
     }
 
     MLOGI("parsed done!");
@@ -189,11 +225,6 @@ int AmlMpTestSupporter::prepare(bool cryptoMode)
     mSource->restart();
     mParser->close();
 
-    mProgramInfo = mParser->getProgramInfo();
-    if (mProgramInfo == nullptr) {
-        MLOGE("get programInfo failed!");
-        return -1;
-    }
     return 0;
 }
 
@@ -262,6 +293,8 @@ int AmlMpTestSupporter::startPlay(PlayMode playMode, bool mStart, bool mSourceRe
 
     if (mProgramInfo->scrambled && mCasPlugin == nullptr) {
         mCasPlugin = new CasPlugin(demuxId, sourceType, mProgramInfo);
+        mCasPlugin->setCATSectionData(mCATSection);
+        mCasPlugin->setPMTSectionData(mPMTSection);
         if (mCasPlugin->start() < 0) {
             MLOGE("CasPlugin start failed!");
         } else {
@@ -685,6 +718,51 @@ void AmlMpTestSupporter::signalQuit()
     if (mSource) mSource->signalQuit();
     if (mParser) mParser->signalQuit();
     if (mPlayback) mPlayback->signalQuit();
+}
+
+void AmlMpTestSupporter::programEventCallback(Parser::ProgramEventType event, int param1, int param2, void* data)
+{
+
+    switch (event)
+    {
+        case Parser::ProgramEventType::EVENT_PMT_PARSED:
+        {
+            MLOGI("received program PMT parsed event");
+            if (mPMTSection == nullptr) {
+                mPMTSection = new SectionData();
+            }
+            mPMTSection->reset();
+            mPMTSection->init(param1, param2, (uint8_t *)data);
+            MLOGI("received program PMT data %p,size %d", mPMTSection->data, mPMTSection->size);
+            break;
+        }
+        case Parser::ProgramEventType::EVENT_CAT_PARSED:
+        {
+            MLOGI("received program CAT parsed event");
+            if (mCATSection == nullptr) {
+                mCATSection = new SectionData();
+            }
+            mCATSection->reset();
+            mCATSection->init(param1, param2, (uint8_t *)data);
+            MLOGI("received program CAT data %p,size %d", mCATSection->data, mCATSection->size);
+            break;
+        }
+        case Parser::ProgramEventType::EVENT_PROGRAM_PARSED:
+        {
+            MLOGI("received program parsed event");
+            break;
+        }
+        case Parser::ProgramEventType::EVENT_AV_PID_CHANGED:
+        {
+            MLOGI("received program av pid changed event");
+            break;
+        }
+        case Parser::ProgramEventType::EVENT_ECM_DATA_PARSED:
+        {
+            MLOGI("received program ecm data parsed event");
+            break;
+        }
+    }
 }
 
 void AmlMpTestSupporter::setDisplayParam(const DisplayParam& param)

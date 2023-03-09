@@ -20,6 +20,7 @@
 #include "TestUtils.h"
 #include <mutex>
 #include <Aml_MP/Dvr.h>
+#include <demux/AmlTsParser.h>
 
 namespace aml_mp {
 class Source;
@@ -109,12 +110,15 @@ private:
     //int startDVRPlayback();
     bool processCommand(const std::vector<std::string>& args);
     void signalQuit();
+    void programEventCallback(Parser::ProgramEventType event, int param1, int param2, void* data);
 
     std::string mUrl;
     sptr<Source> mSource;
     sptr<Parser> mParser;
     sptr<ParserReceiver> mParserReceiver;
     sptr<ProgramInfo> mProgramInfo;
+    sptr<SectionData> mPMTSection;
+    sptr<SectionData> mCATSection;
 
     sptr<TestModule> mTestModule;
 

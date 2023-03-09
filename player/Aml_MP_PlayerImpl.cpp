@@ -2008,7 +2008,10 @@ void AmlMpPlayerImpl::programEventCallback(Parser::ProgramEventType event, int p
                 mPrepareWaitingType &= ~kPrepareWaitingEcm;
                 finishPreparingIfNeeded_l();
             }
+            break;
         }
+        default:
+            break;
     }
 }
 

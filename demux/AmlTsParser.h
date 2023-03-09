@@ -126,6 +126,48 @@ struct ECMSection {
     uint8_t* data;
 };
 
+struct SectionData : public AmlMpRefBase
+{
+    int pid;
+    int size;
+    uint8_t* data;
+
+    SectionData()
+    {
+        reset();
+    }
+
+    SectionData(int pid, int size, uint8_t* data)
+    {
+        init(pid, size, data);
+    }
+
+    ~SectionData()
+    {
+        reset();
+    }
+
+    void init(int pid, int size, uint8_t* data)
+    {
+        this->pid = pid;
+        this->size = size;
+        this->data = new uint8_t[size];
+        memcpy(this->data, data, size);
+    }
+
+    void reset()
+    {
+        if (data)
+        {
+            delete[] data;
+        }
+
+        pid = 0x1FFF;
+        size = 0;
+        data = nullptr;
+    }
+};
+
 struct ProgramInfo : public AmlMpRefBase
 {
     int programNumber               = -1;
@@ -189,6 +231,7 @@ public:
     void selectProgram(int vPid, int aPid);
     void parseProgramInfoAsync();
     int waitProgramInfoParsed();
+    int waitCATSectionDataParsed();
     sptr<ProgramInfo> parseProgramInfo();
     sptr<ProgramInfo> getProgramInfo() const;
     int addFilter(int pid, Aml_MP_Demux_FilterCb cb, void* userData, const Aml_MP_DemuxFilterParams* params);
@@ -214,6 +257,8 @@ public:
 
     enum ProgramEventType {
         EVENT_PROGRAM_PARSED,
+        EVENT_PMT_PARSED,
+        EVENT_CAT_PARSED,
         EVENT_AV_PID_CHANGED,
         EVENT_ECM_DATA_PARSED
     };
@@ -278,8 +323,8 @@ private:
     static int ecmCb(int pid, size_t size, const uint8_t* data, void* userData);
 
     void onPatParsed(const PATSection& results);
-    void onPmtParsed(const PMTSection& results);
-    void onCatParsed(const CATSection& results);
+    void onPmtParsed(const SectionData& sectionData, const PMTSection& results);
+    void onCatParsed(const SectionData& sectionData, const CATSection& results);
     void onEcmParsed(const ECMSection& results);
 
     bool checkPidChange(const PMTSection& oldPmt, const PMTSection& newPmt, std::vector<Aml_MP_PlayerEventPidChangeInfo> *pidChangeInfo);
@@ -306,6 +351,7 @@ private:
     mutable std::mutex mLock;
     std::condition_variable mCond;
     bool mParseDone = false;
+    bool mCATParseDone = false; //for irdeto , cat seciont is needed
     std::map<int, sptr<FilterContext>> mFilters;  //pid, filter
 
     std::atomic_bool mRequestQuit{false};

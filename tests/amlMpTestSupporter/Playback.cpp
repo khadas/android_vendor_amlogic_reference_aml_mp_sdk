@@ -26,12 +26,12 @@ CasPlugin::CasPlugin(Aml_MP_DemuxId demuxId, Aml_MP_InputSourceType sourceType, 
 , mSourceType(sourceType)
 , mProgramInfo(programInfo)
 {
-
+    Aml_MP_CAS_Initialize();
 }
 
 CasPlugin::~CasPlugin()
 {
-
+    Aml_MP_CAS_Terminate();
 }
 
 int CasPlugin::start()
@@ -56,10 +56,45 @@ int CasPlugin::stop()
     return -1;
 }
 
+void CasPlugin::setPMTSectionData(const sptr<SectionData>& pmt)
+{
+    if (pmt == nullptr || pmt->size == 0 || pmt->data == nullptr) {
+        return;
+    }
+
+    if (Aml_MP_CAS_IsNeedWholeSection())
+    {
+        Aml_MP_CASSectionReportAttr attr;
+
+        memset(&attr, 0, sizeof(attr));
+        attr.dmxDev = mDemuxId;
+        // attr.serviceId;
+        attr.sectionType = AML_MP_CAS_SECTION_PMT;
+        Aml_MP_CAS_ReportSection(&attr, pmt->data, pmt->size);
+    }
+}
+
+void CasPlugin::setCATSectionData(const sptr<SectionData>& cat)
+{
+    if (cat == nullptr || cat->size == 0 || cat->data == nullptr) {
+        return;
+    }
+
+    if (Aml_MP_CAS_IsNeedWholeSection())
+    {
+        Aml_MP_CASSectionReportAttr attr;
+
+        memset(&attr, 0, sizeof(attr));
+        attr.dmxDev = mDemuxId;
+        // attr.serviceId;
+        attr.sectionType = AML_MP_CAS_SECTION_CAT;
+        Aml_MP_CAS_ReportSection(&attr, cat->data, cat->size);
+    }
+}
+
 int CasPlugin::startDVBDescrambling()
 {
     MLOG();
-    Aml_MP_CAS_Initialize();
 
     Aml_MP_CAS_SetEmmPid(mDemuxId, mProgramInfo->emmPid);
 

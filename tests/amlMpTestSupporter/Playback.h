@@ -30,6 +30,8 @@ public:
 
     int start();
     int stop();
+    void setPMTSectionData(const sptr<SectionData>& pmt);
+    void setCATSectionData(const sptr<SectionData>& cat);
 
     AML_MP_CASSESSION casSession() const {
         return mCasSession;
