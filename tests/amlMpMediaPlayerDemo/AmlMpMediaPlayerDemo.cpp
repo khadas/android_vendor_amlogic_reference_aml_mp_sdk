@@ -1617,16 +1617,22 @@ static int isUrlValid(const std::string url, std::string& urlHead, std::string& 
 
     if (urlHead.compare("dclr") == 0) {
         urlFile = url.substr(pos + 1);
-
-        if (access(urlFile.c_str(), F_OK) == 0) {
-            ret = 0;
-        }
-    } else if (urlHead.compare("hclr") == 0 ||
+        ret = 0;
+    }
+    /*
+    hclr-->HLS clear
+    vstb-->verimatrix IPTV
+    vwch-->verimatrix WEB Client HLS
+    nwch-->nagra WEB Client HLS
+    wcas-->widevine cas client
+    ncas-->nagra cas client
+    */
+    else if (urlHead.compare("hclr") == 0 ||
             urlHead.compare("vstb") == 0 ||
             urlHead.compare("vwch") == 0 ||
             urlHead.compare("nwch") == 0 ||
             urlHead.compare("wcas") == 0 ||
-            urlHead.compare("ncas") == 0) {
+            urlHead.compare("ncas") == 0 ) {
         ret = 0;
     }
 
