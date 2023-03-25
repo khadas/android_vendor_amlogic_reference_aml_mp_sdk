@@ -211,6 +211,10 @@ bool AmlPlayerBase::constructAmlSubtitleParam(AmlSubtitleParam* amlSubParam, Aml
         amlSubParam->subtitleType = AmlSubtitletype::TYPE_SUBTITLE_DVB_TELETEXT;
         break;
 
+    case AML_MP_SUBTITLE_CODEC_TTML:// TTML Subtitle Support
+        amlSubParam->subtitleType = AmlSubtitletype::TYPE_SUBTITLE_TTML;
+        break;
+
     default:
         ret = false;
         break;

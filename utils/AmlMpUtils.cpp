@@ -91,6 +91,7 @@ const char* mpCodecId2Str(Aml_MP_CodecID codecId)
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_SCTE27);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_DVB);
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_TELETEXT);
+        ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_TTML);//TTML Subtitle Support
         ENUM_TO_STR(AML_MP_SUBTITLE_CODEC_MAX);
         default: return "unknown codec Id";
     }

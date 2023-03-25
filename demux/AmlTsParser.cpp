@@ -58,6 +58,7 @@ static const StreamType g_identifierTypes[] = {
 
 static const StreamType g_extDescTypes[] = {
     { 0x15, AML_MP_STREAM_TYPE_AUDIO,    AML_MP_AUDIO_CODEC_AC4          }, /* AC-4 descriptor */
+    { 0x20, AML_MP_STREAM_TYPE_SUBTITLE, AML_MP_SUBTITLE_CODEC_TTML },/* subtitling descriptor */
     {0, AML_MP_STREAM_TYPE_UNKNOWN, AML_MP_CODEC_UNKNOWN},
 };
 
@@ -512,6 +513,9 @@ int Parser::pmtCb(int pid, size_t size, const uint8_t* data, void* userData)
                     int extDescTag = p2[2];
                     if (extDescTag == 0x15) {
                         MLOGI("found AC4 extDescTag");
+                        esStream.descriptorTags[esStream.descriptorCount-1] = extDescTag;
+                    } else if (extDescTag == 0x20) {
+                        MLOGI("found TTML extDescTag");
                         esStream.descriptorTags[esStream.descriptorCount-1] = extDescTag;
                     }
                 }

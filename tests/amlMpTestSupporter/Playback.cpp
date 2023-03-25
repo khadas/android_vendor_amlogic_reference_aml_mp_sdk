@@ -882,6 +882,10 @@ bool Playback::setSubtitleParams()
         subtitleParams.pid = mProgramInfo->subtitlePid;
         break;
 
+    case AML_MP_SUBTITLE_CODEC_TTML://TTML Subtitle Support
+        subtitleParams.pid = mProgramInfo->subtitlePid;
+        break;
+
     default:
         break;
     }
