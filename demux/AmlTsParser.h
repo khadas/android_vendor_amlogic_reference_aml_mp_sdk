@@ -130,7 +130,7 @@ struct SectionData : public AmlMpRefBase
 {
     int pid;
     int size;
-    uint8_t* data;
+    uint8_t* data = nullptr;
 
     SectionData()
     {
