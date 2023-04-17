@@ -142,6 +142,13 @@ int AmlMpMediaPlayerImpl::setVideoWindow(int32_t x, int32_t y, int32_t width, in
 #endif
 #endif
     mVideoWindow = {x, y, width, height};
+    if (mState == STATE_RUNNING || mState == STATE_PAUSED) {
+        RETURN_IF(-1, mPlayer == nullptr);
+        if (mVideoWindow.width >= 0 && mVideoWindow.height >= 0) {
+            mPlayer->setVideoWindow(x, y, width, height);
+        }
+    }
+
     return 0;
 }
 
