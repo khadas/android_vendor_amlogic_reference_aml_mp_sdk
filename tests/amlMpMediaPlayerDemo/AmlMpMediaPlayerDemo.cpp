@@ -122,8 +122,8 @@ struct Argument
     std::string url;
     int x = 0;
     int y = 0;
-    int viewWidth = -1;
-    int viewHeight = -1;
+    int viewWidth = 0;
+    int viewHeight = 0;
     int channelId = -1;
     bool onlyVideo = false;
     bool onlyAudio = false;
@@ -1568,6 +1568,7 @@ static int createMultiPlayback(int id, AML_MP_MEDIAPLAYER* player, struct Argume
 
     //set video window after setting datasource and before starting, take effect after starting.
     //or use --size options when amlMpMediaPlayerDemo
+    //passing (0, 0, 0, 0) is necessary to enable full-screen display by default.
     Aml_MP_MediaPlayer_SetVideoWindow(*player, argument->x, argument->y, argument->viewWidth, argument->viewHeight);
 
     //prepare

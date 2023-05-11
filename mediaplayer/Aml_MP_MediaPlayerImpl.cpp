@@ -254,7 +254,7 @@ int AmlMpMediaPlayerImpl::start_l()
 
     //set windowsize
     MLOGI("windowsize: %dx%d\n", mVideoWindow.width, mVideoWindow.height);
-    if (mVideoWindow.width > 0 && mVideoWindow.height > 0) {
+    if (mVideoWindow.width >= 0 && mVideoWindow.height >= 0) {
         mPlayer->setVideoWindow(mVideoWindow.x, mVideoWindow.y, mVideoWindow.width, mVideoWindow.height);
     }
 
