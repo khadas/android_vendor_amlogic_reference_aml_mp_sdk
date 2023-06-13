@@ -31,7 +31,7 @@ typedef void (*Aml_MP_MediaPlayerEventCallback)(void* userData, Aml_MP_MediaPlay
 
 ///////////////////////////////////////////////////////////////////////////////
 #define AML_MP_MAX_STREAM_PARAMETER_SIZE 64
-#define AML_MP_MAX_STREAMS_COUNT 16
+#define AML_MP_MAX_STREAMS_COUNT 64
 #define AML_MP_MAX_MEDIA_PARAMETER_SIZE 256
 
 typedef struct {
