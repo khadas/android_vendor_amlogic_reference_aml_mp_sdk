@@ -1804,7 +1804,7 @@ int AmlMpPlayerImpl::prepare_l()
         return thiz->notifyListener(event, param);
     }, this);
 
-    if ((mSubtitleWindow.width > 0) && (mSubtitleWindow.height > 0)) {
+    if ((mSubtitleWindow.width >= 0) && (mSubtitleWindow.height >= 0)) {
         mPlayer->setSubtitleWindow(mSubtitleWindow.x, mSubtitleWindow.y, mSubtitleWindow.width, mSubtitleWindow.height);
     }
 

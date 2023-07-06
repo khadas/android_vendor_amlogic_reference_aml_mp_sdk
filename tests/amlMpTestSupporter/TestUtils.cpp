@@ -99,6 +99,9 @@ NativeUI::NativeUI()
     graphicBuffer.clear();
     nativeWindow->queueBuffer_DEPRECATED(nativeWindow, buf);
 #endif
+#else
+    mSurfaceWidth = 0;
+    mSurfaceHeight = 0;
 #endif
 }
 
