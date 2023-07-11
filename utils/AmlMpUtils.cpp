@@ -475,6 +475,8 @@ am_tsplayer_video_codec convertToVideoCodec(Aml_MP_CodecID aml_MP_VideoCodec) {
             //TODO: android does not merge mediahal, currently only used on Yocto
         case AML_MP_VIDEO_CODEC_AV1:
             return AV_VIDEO_CODEC_AV1;
+        case AML_MP_VIDEO_CODEC_VC1:
+            return AV_VIDEO_CODEC_VC1;
 #endif
 #endif
 #ifdef ANDROID  //bellow codec types not found in mediahal linux sdk
