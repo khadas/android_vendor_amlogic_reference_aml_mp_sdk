@@ -444,12 +444,19 @@ int AmlMpMediaPlayerCommandProcessor::fetchAndProcessCommands()
 
 ///////////////////////////////////////////////////////////////////////////////
 //AmlMpMediaPlayerDemo
-static const char rateFactorMap[] = {
-    1, //1x
+static const int forwardRateFactorMap[] = {
     8,
     16,
     32,
     64,
+    1,
+};
+
+static const int rewindRateFactorMap[] = {
+    -8,
+    -16,
+    -32,
+    -64,
 };
 
 struct AmlMpMediaPlayerDemo : public TestModule
@@ -534,18 +541,20 @@ bool AmlMpMediaPlayerDemo::processCommand(const std::vector<std::string>& args)
         if (">" == cmd) {
             isRewindOrForward = true;
             RewindOrForward = cmd;
+            mRewindStateIndex = 0;
 
-            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(rateFactorMap[mForwardStateIndex]));
-            if (++mForwardStateIndex >= sizeof(rateFactorMap) / sizeof(rateFactorMap[0])) {
+            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(forwardRateFactorMap[mForwardStateIndex]));
+            if (++mForwardStateIndex >= sizeof(forwardRateFactorMap) / sizeof(forwardRateFactorMap[0])) {
                 mForwardStateIndex = 0;
             }
 
         } else if ("<" == cmd) {
             isRewindOrForward = true;
             RewindOrForward = cmd;
+            mForwardStateIndex = 0;
 
-            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(~(rateFactorMap[mRewindStateIndex]) + 1));
-            if (++mRewindStateIndex >= sizeof(rateFactorMap) / sizeof(rateFactorMap[0])) {
+            const_cast<std::vector<std::string>&>(args).emplace_back(std::to_string(rewindRateFactorMap[mRewindStateIndex]));
+            if (++mRewindStateIndex >= sizeof(rewindRateFactorMap) / sizeof(rewindRateFactorMap[0])) {
                 mRewindStateIndex = 0;
             }
         }
@@ -724,7 +733,7 @@ exit:
         [](AML_MP_MEDIAPLAYER player, const std::vector<std::string>& args __unused) -> int {
             TTY_RESET_FD(STDIN_FILENO);
 
-            printf("call set Fast rate, press rate [0.25x/0.5x/1x/1.25x/1.5x/2x] : ");
+            printf("call set Fast rate, press rate [0.25/0.5/1/1.25/1.5/2] : ");
             int ret = 0;
             std::string rateStr;
             float rate = -1;
@@ -1853,15 +1862,14 @@ static void showOption()
     "                                - igmp://239.0.5.246:8208\n"
     "                                - igmp://239.0.5.111:8208\n"
     "                                - igmp://239.0.5.114:8208\n"
-    "         p.................Play/Start x1 speed\n"
-    "         P.................Pause\n"
+    "         p.................Pause\n"
     "         r.................Resume\n"
     "         K.................Seek\n"
     "         v.................Get Volume\n"
     "         V.................Set Volume\n"
     "         F.................Set fast rate\n"
     "         M.................Set mute\n"
-    "         <.................Rewind  -> -x8 -> -x16 -> -x32 -> -x64 -> x1\n"
+    "         <.................Rewind  -> -x8 -> -x16 -> -x32 -> -x64\n"
     "         >.................Forward ->  x8 ->  x16 ->  x32 ->  x64 -> x1\n"
     "         a.................Get Audio Info Channels\n"
     "         A.................Set Next Audio component\n"
