@@ -812,7 +812,6 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
         }
         break;
 
-#ifdef ANDROID //yocto mediahal hasn't define this function
         case AML_MP_PLAYER_PARAMETER_AUDIO_LANGUAGE:
         {
             am_tsplayer_audio_lang audioLang;
@@ -820,7 +819,6 @@ int AmlTsPlayer::setParameter(Aml_MP_PlayerParameterKey key, void* parameter) {
             ret = AmTsPlayer_setParams(mPlayer, AM_TSPLAYER_KEY_SET_AUDIO_LANG, &audioLang);
         }
         break;
-#endif
 
         default:
             ret = AM_TSPLAYER_ERROR_INVALID_PARAMS;

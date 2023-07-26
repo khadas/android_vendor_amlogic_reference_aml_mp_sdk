@@ -352,13 +352,11 @@ const char* mpVideoAFDAspectMode2Str(Aml_MP_VideoAFDAspectMode afdAspectMode) {
     }
 }
 
-#ifdef ANDROID
 void convertToTsPlayerAudioLanguage(am_tsplayer_audio_lang* tsPlayerAudioLang, Aml_MP_AudioLanguage* audioLanguage)
 {
     tsPlayerAudioLang->first_lang = audioLanguage->firstLanguage;
     tsPlayerAudioLang->second_lang = audioLanguage->secondLanguage;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////
 #ifdef ANDROID

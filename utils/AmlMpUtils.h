@@ -207,9 +207,7 @@ am_tsplayer_input_buffer_type inputStreamTypeConvert(Aml_MP_InputStreamType stre
 
 int convertToCodecRecoveryMode(Aml_MP_VideoErrorRecoveryMode errorRecoveryMode);
 Aml_MP_VideoErrorRecoveryMode convertToAmlMPErrorRecoveryMode(int codecRecoveryMode);
-#ifdef ANDROID
 void convertToTsPlayerAudioLanguage(am_tsplayer_audio_lang* tsPlayerAudioLang, Aml_MP_AudioLanguage* audioLanguage);
-#endif
 
 #ifdef HAVE_SUBTITLE
 AmlTeletextCtrlParam convertToTeletextCtrlParam(AML_MP_TeletextCtrlParam* teletextCtrlParam);
