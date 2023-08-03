@@ -124,6 +124,7 @@ typedef enum {
     AML_MP_INPUT_SOURCE_TS_DEMOD,
     AML_MP_INPUT_SOURCE_TS_MEMORY,
     AML_MP_INPUT_SOURCE_ES_MEMORY,
+    AML_MP_INPUT_SOURCE_USBCAM,
 } Aml_MP_InputSourceType;
 
 typedef enum {

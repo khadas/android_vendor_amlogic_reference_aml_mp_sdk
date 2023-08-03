@@ -533,6 +533,10 @@ am_tsplayer_input_source_type convertToInputSourceType(Aml_MP_InputSourceType so
     case AML_MP_INPUT_SOURCE_ES_MEMORY:
         return ES_MEMORY;
 
+#ifdef ANDROID
+    case AML_MP_INPUT_SOURCE_USBCAM:
+        return TS_USB_CAMCARD;
+#endif
     default:
         return TS_MEMORY;
     }

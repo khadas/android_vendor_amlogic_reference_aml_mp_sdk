@@ -107,6 +107,8 @@ AmlMpPlayerImpl::AmlMpPlayerImpl(const Aml_MP_PlayerCreateParams* createParams)
     } else {
         if (createParams->sourceType == AML_MP_INPUT_SOURCE_TS_DEMOD) {
             ret = setTSNSourceToDemod();
+        } else if (createParams->sourceType == AML_MP_INPUT_SOURCE_USBCAM){
+            //Do nothing.
         } else {
             ret = setTSNSourceToLocal();
         }
