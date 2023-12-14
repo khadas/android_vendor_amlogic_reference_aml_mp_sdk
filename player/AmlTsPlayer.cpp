@@ -1327,7 +1327,6 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
     }
     break;
 
-#ifdef ANDROID //yocto mediahal doesn't support these enumeration definitions
     case AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW:
     {
         MLOGI("[evt] AM_TSPLAYER_EVENT_TYPE_VIDEO_OVERFLOW\n");
@@ -1419,7 +1418,6 @@ void AmlTsPlayer::eventCallback(am_tsplayer_event* event)
         notifyListener(AML_MP_PLAYER_EVENT_DECODER_DATA_RESUME);
     }
     break;
-#endif
 
     default:
         MLOGE("unhandled event:%d", event->type);
