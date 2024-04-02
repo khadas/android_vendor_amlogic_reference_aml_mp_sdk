@@ -174,16 +174,18 @@ typedef enum {
 ////////////////////////////////////////////
 //Aml_MP_MediaPlayerID3Info
 //pic_data pointer does not need to be released by user.
+#define AML_MP_MAX_ID3_STRING_LENGTH 128
+
 typedef struct
 {
-    char title[AML_MP_MAX_PATH_SIZE];                                //MP3_ID3_title
-    char author[AML_MP_MAX_PATH_SIZE];                               //MP3_ID3_artist
-    char album[AML_MP_MAX_PATH_SIZE];                                //MP3_ID3_album
-    char comment[AML_MP_MAX_PATH_SIZE];                              //MP3_ID3_comment
-    char year[5];                                                    //MP3_ID3_year
-    int track;                                                       //MP3_ID3_track
+    char title[AML_MP_MAX_ID3_STRING_LENGTH];                        //MP3_ID3_title
+    char author[AML_MP_MAX_ID3_STRING_LENGTH];                       //MP3_ID3_artist
+    char album[AML_MP_MAX_ID3_STRING_LENGTH];                        //MP3_ID3_album
+    char comment[AML_MP_MAX_ID3_STRING_LENGTH];                      //MP3_ID3_comment
+    char year[32];                                                   //MP3_ID3_year
+    int  track;                                                      //MP3_ID3_track
     char genre[32];                                                  //MP3_ID3_genre
-    char copyright[AML_MP_MAX_PATH_SIZE];                            //MP3_ID3_copyright
+    char copyright[AML_MP_MAX_ID3_STRING_LENGTH];                    //MP3_ID3_copyright
     char pic_type[20];                                               //MP3_ID3_picture_type
     int pic_size;                                                    //MP3_ID3_picture_size
     unsigned char *pic_data;                                         //MP3_ID3_picture_data
